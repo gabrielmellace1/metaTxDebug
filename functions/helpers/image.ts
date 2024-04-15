@@ -1,24 +1,26 @@
 // Handles downloading images from IPFS and returns success status
 
-export const downloadImage = async (updatedCID: string, r2Bucket: R2Bucket): Promise<boolean> => {
+export const downloadImage = async (updatedCID: string, r2Bucket: R2Bucket): Promise<{ success: boolean; error?: string }> => {
   const imageURL = `https://ipfs.io/ipfs/${updatedCID}`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);  // Increase timeout to 1 minute
+  const timeoutId = setTimeout(() => controller.abort(), 60000);  // 1 minute timeout
 
   try {
     const response = await fetch(imageURL, { signal: controller.signal });
     clearTimeout(timeoutId);
-    if (!response.ok) throw new Error('Failed to download image');
+    if (!response.ok) {
+      return { success: false, error: `Failed to download image: ${response.statusText}` };
+    }
+
     const imageBlob = await response.blob();
     await r2Bucket.put(updatedCID, imageBlob);
-    return true;  // Success
+    return { success: true };
   } catch (error) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
-      console.error('Download timeout for CID:', updatedCID);
-      return false;  // Indicate a timeout
+      return { success: false, error: 'Timeout' };  // Specifically handling timeout as a distinct error
     }
-    throw error;
+    return { success: false, error: `Download error: ${error.message}` };
   }
 };
 
