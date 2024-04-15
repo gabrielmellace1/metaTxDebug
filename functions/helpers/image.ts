@@ -1,35 +1,31 @@
-export const downloadImage = async (updatedCID: string, r2Bucket: R2Bucket): Promise<{ success: boolean; error?: string }> => {
-  const imageURL = `https://cloudflare-ipfs.com/ipfs/${updatedCID}`;
+export const downloadImage = async (updatedCID: string, r2Bucket: R2Bucket): Promise<{ success: boolean; errorCode?: number }> => {
+  const imageURL = `https://ipfs.io/ipfs/${updatedCID}`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 120000);  // 1 minute timeout
+  const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout
 
   try {
-    const response = await fetch(imageURL, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; YourBot/0.1; +http://yourdomain.com/bot.html)'
+      const response = await fetch(imageURL, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!response.ok) {
+          let errorCode;
+          switch (response.status) {
+              case 422: errorCode = 2; break;
+              case 404: errorCode = 3; break;
+              case 403: errorCode = 4; break;
+              case 500: errorCode = 5; break;
+              default: errorCode = 6; break;
+          }
+          return { success: false, errorCode };
       }
-    });
-    clearTimeout(timeoutId);
-    if (!response.ok) {
-      return { success: false, error: `Failed to download image: ${response.statusText} (Status code: ${response.status})` };
-    }
 
-    const contentType = response.headers.get('Content-Type');
-    console.log('Downloaded Content Type:', contentType);  // Log the content type for debugging
-
-    const imageBlob = await response.blob();
-    await r2Bucket.put(updatedCID, imageBlob, {
-      httpMetadata: {
-        contentType: contentType  // Set the correct Content-Type in R2
-      }
-    });
-    return { success: true };
+      const imageBlob = await response.blob();
+      await r2Bucket.put(updatedCID, imageBlob);
+      return { success: true };
   } catch (error) {
-    clearTimeout(timeoutId);
-    if (error.name === 'AbortError') {
-      return { success: false, error: 'Timeout: Image download operation timed out.' };
-    }
-    return { success: false, error: `Download error: ${error.message}` };
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+          return { success: false, errorCode: 1 }; // Timeout error
+      }
+      return { success: false, errorCode: 6 }; // Other errors
   }
 };
