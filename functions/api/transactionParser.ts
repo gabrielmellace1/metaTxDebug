@@ -1,20 +1,9 @@
+import { Env } from "../interfaces/Env";
+import { GraphTransactionsResponse } from "../interfaces/graphTransactionsResponse";
 import { error, json } from "../lib/response";
 
 // Declare the expected response structure from The Graph API
-interface GraphQLResponse {
-  data: {
-    transactions: Array<{
-      id: string,
-      tokenId: string,
-      updatedCID: string,
-      numericID: number
-    }>;
-  };
-}
 
-export interface Env {
-  squareblocksdb: D1Database;
-}
 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
   try {
@@ -45,7 +34,7 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       throw new Error(`Failed to fetch data from The Graph: ${response.statusText}`);
     }
 
-    const jsonResponse = await response.json() as GraphQLResponse;
+    const jsonResponse = await response.json() as GraphTransactionsResponse;
     const transactions = jsonResponse.data.transactions;
     let maxNumericID = lastTransactionParsed;
 
