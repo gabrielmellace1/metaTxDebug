@@ -11,7 +11,7 @@ export interface Env {
 export const onRequest: PagesFunction<{ squareblocksdb: D1Database }> = async ({ env }) => {
   try {
     // Perform a SELECT query on the 'counter' table
-    const { results } = await env.squareblocksdb.prepare("SELECT * FROM counter").all();
+    const { results } = await env.squareblocksdb.prepare("SELECT 1;").all();
 
     // Return the results as JSON
     return json(results);
