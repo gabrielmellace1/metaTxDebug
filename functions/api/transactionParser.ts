@@ -15,7 +15,7 @@ interface GraphQLResponse {
 
 export const onRequest: PagesFunction<any> = async () => {
   // Retrieve the last processed transaction ID
-  let lastTransactionParsed = parseInt(await COUNTERS.get("lastTransactionParsed")) || 0;
+  let lastTransactionParsed = parseInt(await squareblocksdb.get("lastTransactionParsed")) || 0;
 
   // Construct the GraphQL query
   const query = JSON.stringify({
@@ -53,7 +53,7 @@ export const onRequest: PagesFunction<any> = async () => {
     }
 
     // Update the counter in KV
-    await COUNTERS.put("lastTransactionParsed", maxNumericID.toString());
+    await squareblocksdb.put("lastTransactionParsed", maxNumericID.toString());
 
     // Return the JSON response using the provided `json` function
     return json({ transactions });

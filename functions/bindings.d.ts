@@ -2,7 +2,7 @@
 export {};
 
 declare global {
-  const COUNTERS: KVNamespace;
+  const squareblocksdb: D1Database;
 }
 
 

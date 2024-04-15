@@ -1,16 +1,22 @@
-export const onRequest: PagesFunction = async () => {
-    // Assuming 'squareblocksdb' is the binding name for your D1 database
-    const READ_COUNTER_QUERY = 'SELECT counter FROM counter LIMIT 1;';
-  
-    try {
-      const result = await squareblocksdb.execute(READ_COUNTER_QUERY);
-      const counterValue = result.rows[0]?.counter ?? 'Counter not found';
-      return new Response(counterValue.toString(), {
-        headers: { 'Content-Type': 'text/plain' },
-      });
-    } catch (err) {
-      console.error('Failed to read from D1 database:', err);
-      return new Response('Internal Server Error', { status: 500 });
-    }
-  };
-  
+import { error, json } from "../lib/response";
+
+
+export interface Env {
+  // If you set another name in wrangler.toml as the value for 'binding',
+  // replace "DB" with the variable name you defined.
+  squareblocksdb: D1Database;
+}
+
+
+export const onRequest: PagesFunction<{ squareblocksdb: D1Database }> = async ({ env }) => {
+  try {
+    // Perform a SELECT query on the 'counter' table
+    const { results } = await env.squareblocksdb.prepare("PRAGMA table_list").all();
+
+    // Return the results as JSON
+    return json(results);
+  } catch (err) {
+    // Handle any errors that occur during the query
+    return error(`Failed to query the 'counter' table: ${err.message}`, 500);
+  }
+};
