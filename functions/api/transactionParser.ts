@@ -1,4 +1,3 @@
-/// <reference types="@cloudflare/workers-types" />
 import { error, json } from "../lib/response";
 
 // Declare the expected response structure from The Graph API
@@ -13,23 +12,29 @@ interface GraphQLResponse {
   };
 }
 
-export const onRequest: PagesFunction<any> = async () => {
-  // Retrieve the last processed transaction ID
-  let lastTransactionParsed = parseInt(await squareblocksdb.get("lastTransactionParsed")) || 0;
+// Include the environment type that specifies the D1 binding
+export interface Env {
+  squareblocksdb: D1Database;
+}
 
-  // Construct the GraphQL query
-  const query = JSON.stringify({
-    query: `{
-      transactions(first: 5, orderBy: numericID, orderDirection: asc, skip: ${lastTransactionParsed}) {
-        id
-        tokenId
-        updatedCID
-        numericID
-      }
-    }`
-  });
-
+export const onRequest: PagesFunction<Env> = async ({ env }) => {
   try {
+    // Retrieve the last processed transaction ID from D1 database
+    const queryResult = await env.squareblocksdb.prepare("SELECT counter FROM counters WHERE counterName = 'lastTransactionParsed'").all();
+    let lastTransactionParsed = queryResult ? parseInt(queryResult[0].counter) : 0;
+
+    // Construct the GraphQL query
+    const query = JSON.stringify({
+      query: `{
+        transactions(first: 5, orderBy: numericID, orderDirection: asc, skip: ${lastTransactionParsed}) {
+          id
+          tokenId
+          updatedCID
+          numericID
+        }
+      }`
+    });
+
     // Query the subgraph API
     const url = "https://api.studio.thegraph.com/proxy/48884/squareblocks/version/latest";
     const response = await fetch(url, {
@@ -52,8 +57,7 @@ export const onRequest: PagesFunction<any> = async () => {
       maxNumericID = Math.max(maxNumericID, transaction.numericID);
     }
 
-    // Update the counter in KV
-    await squareblocksdb.put("lastTransactionParsed", maxNumericID.toString());
+    await env.squareblocksdb.prepare("UPDATE counters SET counter = ? WHERE counterName = 'lastTransactionParsed'").bind(maxNumericID).run();
 
     // Return the JSON response using the provided `json` function
     return json({ transactions });
