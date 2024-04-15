@@ -6,4 +6,9 @@ binding = "squareblocksdb" # available in your Worker on env.DB
 database_name = "squareblocksdb"
 database_id = "3cf11196-05cb-4276-9bbd-ead735f36c9f"
 
+[[r2_buckets]]
+binding = "squareblocksr2"
+bucket_name = "squareblocksr2"
+
+
 compatibility_flags = ["nodejs_compat"]

@@ -1,58 +1,34 @@
+import { fetchFromGraph, getTransactionsQuery } from "../helpers/graph";
+import { downloadImage } from "../helpers/image";
 import { Env } from "../interfaces/Env";
 import { GraphTransactionsResponse } from "../interfaces/graphTransactionsResponse";
 import { error, json } from "../lib/response";
 
-// Declare the expected response structure from The Graph API
-
-
-export const onRequest: PagesFunction<Env> = async ({ env }) => {
+export const onRequest: PagesFunction<Env & { myBucket: R2Bucket }> = async ({ env }) => {
   try {
-    // Retrieve the last processed transaction ID from D1 database
     const queryResult = await env.squareblocksdb.prepare("SELECT counter FROM counters WHERE counterName = 'lastTransactionParsed'").all();
     let lastTransactionParsed = queryResult.results.length > 0 ? parseInt(queryResult.results[0].counter as string) : 0;
-    // Construct the GraphQL query
-    const query = JSON.stringify({
-      query: `{
-        transactions(first: 5, orderBy: numericID, orderDirection: asc, skip: ${lastTransactionParsed}) {
-          id,
-          tokenId,
-          updatedCID,
-          numericID
-        }
-      }`
-    });
-
-    // Query the subgraph API
-    const url = "https://api.studio.thegraph.com/proxy/48884/squareblocks/version/latest";
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: query
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch data from The Graph: ${response.statusText}`);
-    }
-
-    const jsonResponse = await response.json() as GraphTransactionsResponse;
+    const query = getTransactionsQuery(lastTransactionParsed);
+    const jsonResponse = await fetchFromGraph<GraphTransactionsResponse>(query);
     const transactions = jsonResponse.data.transactions;
-    let maxNumericID = lastTransactionParsed;
+    let lastProcessedTransaction = lastTransactionParsed;
 
-    // Process transactions
     for (const transaction of transactions) {
-      maxNumericID = Math.max(maxNumericID, transaction.numericID);
+      const success = await downloadImage(transaction.updatedCID, env.myBucket);
+      if (!success) {
+        await env.squareblocksdb.prepare("INSERT INTO failedTransactions (transactionId, tokenId, updatedCID) VALUES (?, ?, ?)")
+          .bind(transaction.id, transaction.tokenId, transaction.updatedCID)
+          .run();
+      }
+      lastProcessedTransaction = transaction.numericID;
     }
 
-    // Update the counter in the D1 database
     if (transactions.length > 0) {
-      await env.squareblocksdb.prepare("UPDATE counters SET counter = ? WHERE counterName = 'lastTransactionParsed'").bind(maxNumericID.toString()).run();
+      await env.squareblocksdb.prepare("UPDATE counters SET counter = ? WHERE counterName = 'lastTransactionParsed'").bind(lastProcessedTransaction.toString()).run();
     }
 
-    // Return the JSON response using the provided `json` function
     return json({ lastTransactionParsed, transactions });
   } catch (err) {
-    console.error("Error:", err);
-    // Use the provided `error` function to return an error response
     return error(`Failed to process transactions: ${err.message}`, 500);
   }
 };
