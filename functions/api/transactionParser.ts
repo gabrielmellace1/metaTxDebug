@@ -21,7 +21,8 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
   try {
     // Retrieve the last processed transaction ID from D1 database
     const result = await env.squareblocksdb.prepare("SELECT counter FROM counters WHERE counterName = 'lastTransactionParsed'").all();
-    return json(result[0]);
+    let lastTransactionParsed = result[0] ? parseInt(result[0].counter) : 5; 
+
 
 
     // Construct the GraphQL query
@@ -61,7 +62,7 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     //await env.squareblocksdb.prepare("UPDATE counters SET counter = ? WHERE counterName = 'lastTransactionParsed'").bind(maxNumericID).run();
 
     // Return the JSON response using the provided `json` function
-    return json({ transactions });
+    return json({ lastTransactionParsed, transactions });
   } catch (err) {
     console.error(err);
     // Use the provided `error` function to return an error response
