@@ -1,7 +1,7 @@
 export const downloadImage = async (updatedCID: string, r2Bucket: R2Bucket): Promise<{ success: boolean; error?: string }> => {
   const imageURL = `https://ipfs.io/ipfs/${updatedCID}`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);  // 1 minute timeout
+  const timeoutId = setTimeout(() => controller.abort(), 120000);  // 1 minute timeout
 
   try {
     const response = await fetch(imageURL, {
