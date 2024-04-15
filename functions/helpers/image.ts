@@ -19,7 +19,11 @@ export const downloadImage = async (updatedCID: string, r2Bucket: R2Bucket): Pro
       }
 
       const imageBlob = await response.blob();
-      await r2Bucket.put(updatedCID, imageBlob);
+      const contentType = response.headers.get('Content-Type');
+
+      await r2Bucket.put(updatedCID, imageBlob,
+        { httpMetadata: { contentType: contentType   } }
+        );
       return { success: true };
   } catch (error) {
       clearTimeout(timeoutId);
