@@ -1,36 +1,44 @@
-export const downloadImage = async (updatedCID: string, r2Bucket: R2Bucket): Promise<{ success: boolean; errorCode?: number }> => {
+export const downloadImage = async (updatedCID: string): Promise<{ success: boolean; blob?: Blob; contentType?: string; errorCode?: number }> => {
   const imageURL = `https://cloudflare-ipfs.com/ipfs/${updatedCID}`;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout
 
   try {
-    const response = await fetch(imageURL, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    if (!response.ok) {
-        let errorCode;
-        switch (response.status) {
-            case 422: errorCode = 2; break;
-            case 404: errorCode = 3; break;
-            case 403: errorCode = 4; break;
-            case 500: errorCode = 5; break;
-            default: errorCode = 6; break;
-        }
-        return { success: false, errorCode };
-    }
-
-    const imageBlob = await response.blob();
-    const contentType = response.headers.get("Content-Type") || 'application/octet-stream'; // Default MIME type if not specified
-    await r2Bucket.put(updatedCID, imageBlob, {
-      httpMetadata: {
-        contentType: contentType
+      const response = await fetch(imageURL, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!response.ok) {
+          return { success: false, errorCode: determineErrorCode(response.status) };
       }
-    });
-    return { success: true };
-  } catch ( error) {
-    clearTimeout(timeoutId);
-    if (error.name === 'AbortError') {
-        return { success: false, errorCode: 1 }; // Timeout error
-    }
-    return { success: false, errorCode: 6 }; // Other errors
+
+      const imageBlob = await response.blob();
+      const contentType = response.headers.get("Content-Type") || 'application/octet-stream';
+      return { success: true, blob: imageBlob, contentType };
+  } catch (error) {
+      clearTimeout(timeoutId);
+      return { success: false, errorCode: error.name === 'AbortError' ? 1 : 6 };
   }
 };
+
+export const uploadToR2 = async (updatedCID: string, blob: Blob, contentType: string, r2Bucket: R2Bucket): Promise<boolean> => {
+  try {
+      await r2Bucket.put(updatedCID, blob, {
+          httpMetadata: {
+              contentType: contentType
+          }
+      });
+      return true;
+  } catch (error) {
+      console.error('Error uploading to R2:', error);
+      return false;
+  }
+};
+
+function determineErrorCode(status: number): number {
+  switch (status) {
+      case 422: return 2;
+      case 404: return 3;
+      case 403: return 4;
+      case 500: return 5;
+      default: return 6;
+  }
+}
