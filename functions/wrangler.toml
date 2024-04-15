@@ -1,0 +1,9 @@
+name = "transactionparser"
+type = "javascript" # Or "webpack" if you're using that
+
+[[d1_databases]]
+binding = "squareblocksdb" # available in your Worker on env.DB
+database_name = "squareblocksdb"
+database_id = "3cf11196-05cb-4276-9bbd-ead735f36c9f"
+
+compatibility_flags = ["nodejs_compat"]
