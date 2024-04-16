@@ -10,5 +10,5 @@ export interface Env {
   STATE_CONTRACT_ABI: string; // Add this line
   projectName: string;
   graphUrl: string;
-
+  PIXEL_SERVICE_URL:string;
 }

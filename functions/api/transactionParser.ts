@@ -8,11 +8,14 @@ import { error, json } from "../lib/response";
 
 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
+
+   
     try {
+        const pixelServiceUrl = env.PIXEL_SERVICE_URL;
         const queryResult = await env.squareblocksdb.prepare("SELECT counter FROM counters WHERE counterName = 'lastTransactionParsed'").all();
         let lastTransactionParsed = queryResult.results.length > 0 ? parseInt(queryResult.results[0].counter as string) : 0;
         const query = getTransactionsQuery(lastTransactionParsed);
-        const jsonResponse = await fetchFromGraph<GraphTransactionsResponse>(query);
+        const jsonResponse = await fetchFromGraph<GraphTransactionsResponse>(query,{ env });
         const transactions = jsonResponse.data.transactions;
         let lastProcessedTransaction = lastTransactionParsed;
         let failures = [];
@@ -20,8 +23,9 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
         for (const transaction of transactions) {
             lastProcessedTransaction = transaction.numericID;
 
-            const response = await fetch(`https://pixelservice.vercel.app/api/processImage?cid=${transaction.updatedCID}&tokenId=${transaction.tokenId}`);
-            const processResponse: ProcessImageResponse = await response.json();
+            const response = await fetch(`${pixelServiceUrl}/api/processImage?cid=${transaction.updatedCID}&tokenId=${transaction.tokenId}`);
+            const processResponse = (await response.json()) as ProcessImageResponse;
+
 
             if (!processResponse.success) {
                 failures.push({ transactionId: transaction.id, tokenId: transaction.tokenId, errorCode: processResponse.errorCode });
