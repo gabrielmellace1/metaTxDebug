@@ -1,8 +1,10 @@
 import { fetchFromGraph, getTransactionsQuery } from "../helpers/graph";
-import { downloadImage, uploadToR2 } from "../helpers/image";
 import { Env } from "../interfaces/Env";
 import { GraphTransactionsResponse } from "../interfaces/graphTransactionsResponse";
+import { ProcessImageResponse } from "../interfaces/processImageResponse";
 import { error, json } from "../lib/response";
+
+
 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
     try {
@@ -15,23 +17,16 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
         let failures = [];
 
         for (const transaction of transactions) {
+            lastProcessedTransaction = transaction.numericID;
 
-          lastProcessedTransaction = transaction.numericID;
-          
-            const { success, blob, contentType, errorCode } = await downloadImage(transaction.updatedCID);
-            if (!success) {
-                failures.push({ transactionId: transaction.id, tokenId: transaction.tokenId, errorCode });
-                await logFailure(transaction, errorCode, env);
-                continue; // Skip upload if download fails
+            const response = await fetch(`https://pixelservice.vercel.app/api/processImage?cid=${transaction.updatedCID}&tokenId=${transaction.tokenId}`);
+            const processResponse: ProcessImageResponse = await response.json();
+
+            if (!processResponse.success) {
+                failures.push({ transactionId: transaction.id, tokenId: transaction.tokenId, errorCode: processResponse.errorCode });
+                await logFailure(transaction, processResponse.errorCode || 500, env); // Default error code if undefined
+                continue; // Skip remaining logic if processing fails
             }
-
-            const uploadSuccess = await uploadToR2(transaction.updatedCID, blob, contentType, env.squareblocksr2);
-            if (!uploadSuccess) {
-                failures.push({ transactionId: transaction.id, tokenId: transaction.tokenId, errorCode: 6 }); // Use a specific error code for upload failure
-                await logFailure(transaction, 6, env);
-            }
-
-            
         }
 
         if (transactions.length > 0) {
