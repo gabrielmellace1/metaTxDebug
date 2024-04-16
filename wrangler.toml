@@ -10,5 +10,10 @@ database_id = "3cf11196-05cb-4276-9bbd-ead735f36c9f"
 binding = "squareblocksr2"
 bucket_name = "squareblocksr2"
 
+[vars]
+baseUrl = "https://squares.town"
+rpcUrl =  "https://polygon-mainnet.infura.io/v3/615e0266e5284aeeb5863c6731dbf11e"
+stateContractAddress = "0xFC9fbEEc0FFa9eF506c40c61114b5e18f378241c"
+squaresContractAddress = "0xE50f8Ce7F5aD35cd75cEF91F2c0E2b56b285ff80"
 
 compatibility_flags = ["nodejs_compat"]

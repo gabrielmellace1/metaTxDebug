@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "decentraland-ui": "^5.18.0",
+    "ethers": "^5.7.2",
     "impetus": "^0.8.8",
     "mouse-wheel": "^1.2.0",
     "react": "^18.2.0",
