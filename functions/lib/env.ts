@@ -7,4 +7,8 @@ export interface Env {
   stateContractAddress: string;
   squaresContractAddress: string;
   baseUrl: string;
+  STATE_CONTRACT_ABI: string; // Add this line
+  projectName: string;
+  graphUrl: string;
+
 }

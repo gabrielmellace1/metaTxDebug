@@ -1,6 +1,7 @@
 // File: src/helpers/graph.ts
 
-const apiUrl = "https://api.studio.thegraph.com/proxy/48884/squareblocks/version/latest";
+import { Env } from "../lib/env";
+
 
 // Function to construct the transaction query
 export const getTransactionsQuery = (lastTransactionParsed: number): string => {
@@ -16,9 +17,10 @@ export const getTransactionsQuery = (lastTransactionParsed: number): string => {
   });
 };
 
-// Generic function to fetch data from The Graph
-export const fetchFromGraph = async <T>(query: string): Promise<T> => {
-  const response = await fetch(apiUrl, {
+// Assuming `context` is the way you access environment variables
+export const fetchFromGraph = async <T>(query: string, context: { env: Env }): Promise<T> => {
+
+  const response = await fetch(context.env.graphUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: query
@@ -30,3 +32,4 @@ export const fetchFromGraph = async <T>(query: string): Promise<T> => {
 
   return response.json() as Promise<T>;
 };
+

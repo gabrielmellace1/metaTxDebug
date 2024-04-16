@@ -15,5 +15,20 @@ baseUrl = "https://squares.town"
 rpcUrl =  "https://polygon-mainnet.infura.io/v3/615e0266e5284aeeb5863c6731dbf11e"
 stateContractAddress = "0xFC9fbEEc0FFa9eF506c40c61114b5e18f378241c"
 squaresContractAddress = "0xE50f8Ce7F5aD35cd75cEF91F2c0E2b56b285ff80"
+STATE_CONTRACT_ABI = """
+[
+  {
+    "constant": true,
+    "inputs": [{"name": "stateId", "type": "uint256"}],
+    "name": "getStateSquares",
+    "outputs": [{"name": "", "type": "uint256[]"}],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+"""
+projectName="Squares Town"
+graphUrl="https://api.studio.thegraph.com/proxy/48884/squareblocks/version/latest"
 
 compatibility_flags = ["nodejs_compat"]

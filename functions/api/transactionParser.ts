@@ -1,7 +1,8 @@
 import { fetchFromGraph, getTransactionsQuery } from "../helpers/graph";
-import { Env } from "../interfaces/Env";
+
 import { GraphTransactionsResponse } from "../interfaces/graphTransactionsResponse";
 import { ProcessImageResponse } from "../interfaces/processImageResponse";
+import { Env } from "../lib/env";
 import { error, json } from "../lib/response";
 
 

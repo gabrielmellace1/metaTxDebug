@@ -1,13 +1,8 @@
-import { Env } from "../../../interfaces/Env";
+import Web3 from "web3";
+import { Env } from "../../../lib/env";
 import { error } from "../../../lib/response";
+import { tokenIdToPosition } from "../../../helpers/squareHelper";
 
-// Import and setup necessary for Ethereum blockchain interaction, commented for later use
-// import { ethers } from "ethers";
-// const provider = new ethers.providers.JsonRpcProvider("https://your-provider-url");
-// const stateContractAddress = "0xFC9fbEEc0FFa9eF506c40c61114b5e18f378241c";
-// const squareContractAddress = "0xE50f8Ce7F5aD35cd75cEF91F2c0E2b56b285ff80";
-// const stateContractABI = ["function getStateSquares(uint256 stateId) public view returns (uint256[])"];
-// const squareContractABI = ["function tokenIdToPosition(uint256 tokenId) public pure returns (uint256, uint256)"];
 
 enum Colors {
   EVEN = `#100e13`,
@@ -18,24 +13,30 @@ enum Colors {
 }
 
 export const onRequestGet: PagesFunction<Env, "id"> = async (context) => {
-  // const stateId = context.params.id as string;
+  
 
-  // Uncomment the following code when ready to integrate with Ethereum smart contracts
-  /*
-  const stateContract = new ethers.Contract(stateContractAddress, stateContractABI, provider);
-  const squareContract = new ethers.Contract(squareContractAddress, squareContractABI, provider);
-  let squares;
+  const { rpcUrl, stateContractAddress,STATE_CONTRACT_ABI } = context.env;
+  const web3 = new Web3(rpcUrl);
+
+const stateContract = new web3.eth.Contract(
+    JSON.parse(STATE_CONTRACT_ABI),
+    stateContractAddress
+  );
+
+  const stateTokenId = context.params.id as string;
+  let squareTokenIds, positions;
+
   try {
-    squares = await stateContract.getStateSquares(stateId);
-  } catch (e) {
-    return error(`Failed to fetch state squares for stateId=${stateId}: ${e.message}`, 400);
+    squareTokenIds = await stateContract.methods.getStateSquares(stateTokenId).call();
+    positions = squareTokenIds.map(tokenId => {
+      const { x, y } = tokenIdToPosition(tokenId);
+      return [x, y];
+    });
+  } catch (err) {
+    console.error("Error retrieving data from contracts:", err);
+    return error("Failed to retrieve data from contracts.", 500);
   }
-  const positions = await Promise.all(squares.map(tokenId => squareContract.tokenIdToPosition(tokenId)));
-  */
 
-  const positions = [
-    [5, 5], [5, 6], [6, 5], [6, 8]
-  ];
   
   // Calculate the grid dimensions including the additional rows and columns
   const maxX = Math.max(...positions.map(pos => pos[0]));
