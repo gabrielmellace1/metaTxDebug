@@ -1,13 +1,16 @@
 import React from 'react';
-import './Header.css';
+import './Header.css'; // Adjust the CSS as needed
 
-const Header: React.FC = () => {
+interface HeaderProps {
+    onHeaderClick: (type: string) => void; // Function to call on button click
+}
+
+const Header: React.FC<HeaderProps> = ({ onHeaderClick }) => {
     return (
         <header className="header">
-            <button>Home</button>
-            <button>About</button>
-            <button>Contact</button>
-            <button>Contact</button>
+            <button onClick={() => onHeaderClick('town')}>Town</button>
+            <button onClick={() => onHeaderClick('marketplace')}>Marketplace</button>
+            <button onClick={() => onHeaderClick('myAssets')}>My Assets</button>
         </header>
     );
 };

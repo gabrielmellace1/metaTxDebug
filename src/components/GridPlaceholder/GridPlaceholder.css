@@ -1,8 +1,0 @@
-.grid-placeholder {
-    padding: 20px;
-    text-align: center;
-    border: 1px solid #ccc;
-    height: calc(100vh - 60px); /* Account for header height plus any padding */
-    box-sizing: border-box;
-    min-width:100%;
-}
