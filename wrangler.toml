@@ -15,8 +15,8 @@ bucket_name = "squareblocksr2"
 [vars]
 baseUrl = "https://squares.town"
 rpcUrl =  "https://polygon-mainnet.infura.io/v3/615e0266e5284aeeb5863c6731dbf11e"
-stateContractAddress = "0xFC9fbEEc0FFa9eF506c40c61114b5e18f378241c"
-squaresContractAddress = "0xE50f8Ce7F5aD35cd75cEF91F2c0E2b56b285ff80"
+stateContractAddress = "0x922a1F8ab440de932F9eC2993900346B5017325c"
+squaresContractAddress = "0xb3bF02c0e2eC79606D94ceB630a0D28A65A94Ca6"
 STATE_CONTRACT_ABI = """
 [
   {
