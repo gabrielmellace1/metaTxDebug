@@ -6,3 +6,10 @@
   padding: 0;
   overflow: hidden; /* Prevents scrollbars */
 }
+
+
+.grid-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}

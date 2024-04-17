@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import './App.css';
 import Header from './components/Header/Header';
 import TownGrid from './components/Grids/TownGrid/TownGrid';

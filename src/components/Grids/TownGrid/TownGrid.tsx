@@ -1,6 +1,6 @@
 import React from 'react';
 import { Coord, Layer, TileMap } from 'react-tile-map';
-
+import './TownGrid.css';
 
 let hover: Coord = { x: 0, y: 0 }
 
@@ -21,7 +21,9 @@ const hoverLayer: Layer = (x, y) => {
 
 const TownGrid: React.FC = () => {
   return (
+    <div className="grid-container">
     <TileMap layers={[positiveLayer, hoverLayer]} onHover={(x, y) => (hover = { x, y })} />
+    </div>
   );
 };
 

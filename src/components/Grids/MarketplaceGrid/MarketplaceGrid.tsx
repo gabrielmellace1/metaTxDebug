@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Coord, Layer, TileMap } from 'react-tile-map'
-
+import './MarketplaceGrid.css';
 
 
 
@@ -104,6 +104,7 @@ const selectedFillLayer: Layer = (x, y) => {
 
 const MarketplaceGrid: React.FC = () => {
   return (
+    <div className="grid-container">
     <TileMap
     className="atlas"
     layers={[atlasLayer, onSaleLayer, selectedStrokeLayer, selectedFillLayer]}
@@ -115,6 +116,7 @@ const MarketplaceGrid: React.FC = () => {
       }
     }}
   />
+  </div>
   );
 };
 
