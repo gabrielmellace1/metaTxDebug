@@ -20,7 +20,7 @@ type AtlasTile = {
 let atlas: Record<string, AtlasTile> | null = null
 
 async function loadTiles() {
-  const resp = await fetch('https://api.decentraland.org/v1/tiles')
+  const resp = await fetch('https://squares.town/GeneratedTiles.json')
   const json = await resp.json()
   atlas = json.data as Record<string, AtlasTile>
 }
