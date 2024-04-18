@@ -20,7 +20,7 @@ type AtlasTile = {
 let atlas: Record<string, AtlasTile> | null = null
 
 async function loadTiles() {
-  const resp = await fetch('https://squares.town/GeneratedTiles.json')
+  const resp = await fetch('https://api.decentraland.org/v1/tiles')
   const json = await resp.json()
   atlas = json.data as Record<string, AtlasTile>
 }
@@ -92,11 +92,11 @@ const onSaleLayer: Layer = (x, y) => {
 }
 
 const selectedStrokeLayer: Layer = (x, y) => {
-  return isSelected(x, y) ? { color: '#ff0044', scale: 1.4 } : null
+  return isSelected(x, y) ? { color: '#ff0044', scale: 0.9 } : null
 }
 
 const selectedFillLayer: Layer = (x, y) => {
-  return isSelected(x, y) ? { color: '#ff9990', scale: 1.2 } : null
+  return isSelected(x, y) ? { color: '#ff9990', scale: 0.9 } : null
 }
 
 
