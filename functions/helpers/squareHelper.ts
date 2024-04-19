@@ -10,3 +10,7 @@ export function tokenIdToPosition(tokenId) {
     const y = Number(adjustedId / BigInt(GRID_WIDTH)); // Same as above
     return { x, y };
 }
+
+function positionToTokenId(x, y) {
+    return y * GRID_WIDTH + x + 1; // +1 for 1-based indexing
+}
