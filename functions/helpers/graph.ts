@@ -17,6 +17,29 @@ export const getTransactionsQuery = (lastTransactionParsed: number): string => {
   });
 };
 
+export const getSquaresQuery = (): string => {
+  return JSON.stringify({
+    query: `{
+      squares(first: 1000, orderDirection: asc, orderBy: tokenId) {
+        x
+        y
+        tokenId
+        clickableURL
+        forSale
+        price
+        owner 
+        isOnState
+        stateId {
+          stateForSale: forSale
+          stateOwner: owner
+          statePrice: price
+          stateTokenId: tokenId
+        }
+      }
+    }`
+  });
+};
+
 // Assuming `context` is the way you access environment variables
 export const fetchFromGraph = async <T>(query: string, context: { env: Env }): Promise<T> => {
 

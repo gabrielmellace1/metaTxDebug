@@ -11,7 +11,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@usedapp/core": "^1.2.13",
+    "@web3-react/core": "^8.2.3",
+    "@web3-react/injected-connector": "^6.0.7",
     "decentraland-ui": "^5.18.0",
+    "ethers": "^5.7.2",
     "impetus": "^0.8.8",
     "mouse-wheel": "^1.2.0",
     "react": "^18.2.0",
@@ -20,7 +24,7 @@
     "react-virtualized-auto-sizer": "^1.0.24",
     "touch-pinch": "^1.0.1",
     "touch-position": "^2.0.0",
-    "web3": "^4.7.0"
+    "web3": "^4.8.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240405.0",

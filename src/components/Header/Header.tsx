@@ -1,16 +1,22 @@
 import React from 'react';
-import './Header.css'; // Adjust the CSS as needed
+import './Header.css';
+import { useEthers } from '@usedapp/core';
 
-interface HeaderProps {
-    onHeaderClick: (type: string) => void; // Function to call on button click
-}
+const Header: React.FC<{ onHeaderClick: (type: string) => void }> = ({ onHeaderClick }) => {
+    const { activateBrowserWallet, account } = useEthers();
 
-const Header: React.FC<HeaderProps> = ({ onHeaderClick }) => {
     return (
         <header className="header">
             <button onClick={() => onHeaderClick('town')}>Town</button>
             <button onClick={() => onHeaderClick('marketplace')}>Marketplace</button>
             <button onClick={() => onHeaderClick('myAssets')}>My Assets</button>
+            <div className="wallet-connection">
+                {account ? (
+                    <span>Connected: {account}</span>
+                ) : (
+                    <button onClick={() => activateBrowserWallet()}>Connect Wallet</button>
+                )}
+            </div>
         </header>
     );
 };
