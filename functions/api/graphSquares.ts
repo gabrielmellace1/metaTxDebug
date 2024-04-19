@@ -3,7 +3,6 @@ import type { Env } from "../lib/env";
 import { json, error } from '../lib/response'; // Import response utilities
 import { AtlasTile } from '../interfaces/atlasTile';
 
-
 export async function onRequest(context: { env: Env }) {
     const query = getSquaresQuery();
 
@@ -12,7 +11,9 @@ export async function onRequest(context: { env: Env }) {
         const squares = data.data.squares;
         const gridWidth = 500; // Define grid width
 
-        const transformedTiles: AtlasTile[] = squares.map((square, index) => {
+        const transformedTiles: Record<string, AtlasTile> = {};
+
+        squares.forEach((square, index) => {
             const isOnState = square.isOnState;
             const tokenId = isOnState ? parseInt(square.stateId.stateTokenId) : parseInt(square.tokenId);
 
@@ -37,7 +38,8 @@ export async function onRequest(context: { env: Env }) {
                 }
             }
 
-            return {
+            const key = square.x + ',' + square.y;
+            transformedTiles[key] = {
                 x: parseInt(square.x),
                 y: parseInt(square.y),
                 tokenId,

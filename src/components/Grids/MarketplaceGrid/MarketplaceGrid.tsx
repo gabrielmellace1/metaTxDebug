@@ -25,7 +25,9 @@ function isSelected(x: number, y: number) {
 
 const atlasLayer: Layer = (x, y) => {
   const id = x + ',' + y
+
   if (atlas !== null && id in atlas) {
+    
     const tile = atlas[id]
     const color = COLOR_BY_TYPE[switchColor(tile.isOnState,tile.forSale,tile.owner,tile.owner)];
     const top = !!tile.top
@@ -38,7 +40,9 @@ const atlasLayer: Layer = (x, y) => {
       topLeft
     }
   } else {
+    
     return {
+      
       color: (x + y) % 2 === 0 ? COLOR_BY_TYPE[12] : COLOR_BY_TYPE[13]
     }
   }
@@ -69,6 +73,7 @@ const MarketplaceGrid: React.FC = () => {
       } else {
         selected.push({ x, y })
       }
+      console.log(x+","+y);
     }}
   />
   </div>
