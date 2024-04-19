@@ -30,8 +30,8 @@ const atlasLayer: Layer = (x, y) => {
     
     const tile = atlas[id]
     const color = COLOR_BY_TYPE[switchColor(tile.isOnState,tile.forSale,tile.owner,tile.owner)];
-    const top = !!tile.top
-    const left = !!tile.left
+    const top = tile.top
+    const left = tile.left
     const topLeft = true
     return {
       color,
