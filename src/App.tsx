@@ -1,17 +1,11 @@
-import { useState } from 'react';
-import { DAppProvider, Config } from '@usedapp/core';
+import React, { Suspense, lazy, useState } from 'react';
 import './App.css';
 import Header from './components/Header/Header';
-import TownGrid from './components/Grids/TownGrid/TownGrid';
-import MarketplaceGrid from './components/Grids/MarketplaceGrid/MarketplaceGrid';
-import MyAssetsGrid from './components/Grids/MyAssetsGrid/MyAssetsGrid';
 
-const config: Config = {
-  readOnlyChainId: 1, // Mainnet, change this as needed
-  readOnlyUrls: {
-    1: 'https://polygon-mainnet.infura.io/v3/615e0266e5284aeeb5863c6731dbf11e', // Replace with your Infura URL or another provider
-  },
-};
+// Lazy-loaded components
+const TownGrid = lazy(() => import('./components/Grids/TownGrid/TownGrid'));
+const MarketplaceGrid = lazy(() => import('./components/Grids/MarketplaceGrid/MarketplaceGrid'));
+const MyAssetsGrid = lazy(() => import('./components/Grids/MyAssetsGrid/MyAssetsGrid'));
 
 function App() {
   const [gridType, setGridType] = useState('town'); // Default grid type
@@ -20,26 +14,30 @@ function App() {
     setGridType(type);
   };
 
-  const renderGrid = () => {
-    switch (gridType) {
-      case 'town':
-        return <TownGrid />;
-      case 'marketplace':
-        return <MarketplaceGrid />;
-      case 'myAssets':
-        return <MyAssetsGrid />;
-      default:
-        return <TownGrid />;
-    }
-  };
+  // Determine which grid component to render based on the current gridType
+  let GridComponent;
+  switch (gridType) {
+    case 'town':
+      GridComponent = TownGrid;
+      break;
+    case 'marketplace':
+      GridComponent = MarketplaceGrid;
+      break;
+    case 'myAssets':
+      GridComponent = MyAssetsGrid;
+      break;
+    default:
+      GridComponent = TownGrid;
+  }
 
+  // Render the application
   return (
-    <DAppProvider config={config}>
-      <div className="app">
-        <Header onHeaderClick={handleHeaderClick} />
-        {renderGrid()}
-      </div>
-    </DAppProvider>
+    <div className="app">
+      <Header onHeaderClick={handleHeaderClick} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <GridComponent />
+      </Suspense>
+    </div>
   );
 }
 

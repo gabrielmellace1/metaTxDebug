@@ -12,6 +12,11 @@ database_id = "3cf11196-05cb-4276-9bbd-ead735f36c9f"
 binding = "squareblocksr2"
 bucket_name = "squareblocksr2"
 
+kv_namespaces = [
+  { binding = "SquaresKV", id = "758bea6a1d9a4c4688d1db73af49bdc6" }
+]
+
+
 [vars]
 baseUrl = "https://squares.town"
 rpcUrl =  "https://polygon-mainnet.infura.io/v3/615e0266e5284aeeb5863c6731dbf11e"

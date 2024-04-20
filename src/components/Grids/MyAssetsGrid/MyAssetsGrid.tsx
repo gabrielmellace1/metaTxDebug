@@ -57,8 +57,8 @@ const atlasLayer: Layer = (x, y) => {
     const tile = atlas[id]
     const color = COLOR_BY_TYPE[tile.type]
 
-    const top = !!tile.top
-    const left = !!tile.left
+    const top = false
+    const left = false
     const topLeft = !!tile.topLeft
 
     return {

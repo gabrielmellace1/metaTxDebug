@@ -17,10 +17,10 @@ export const getTransactionsQuery = (lastTransactionParsed: number): string => {
   });
 };
 
-export const getSquaresQuery = (): string => {
+export const getSquaresQuery = (cursor:number = 0): string => {
   return JSON.stringify({
     query: `{
-      squares(first: 1000, orderDirection: asc, orderBy: tokenId) {
+      squares(first: 1000, orderDirection: asc, orderBy: tokenId, skip: ${cursor}) {
         x
         y
         tokenId
@@ -46,7 +46,7 @@ export const fetchFromGraph = async <T>(query: string, context: { env: Env }): P
   const response = await fetch(context.env.graphUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: query
+    body: JSON.stringify({ query })
   });
 
   if (!response.ok) {

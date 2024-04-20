@@ -3,25 +3,30 @@
 
 
 export const switchColor = (
-    isOnState: boolean,
-    forSale: boolean,
-    owner: string,
-    userAccount: string | null | undefined
-  ): number => {
-    if (isOnState) {
+  isOnState: boolean,
+  forSale: boolean,
+  owner: string,
+  userAccount: string | null | undefined
+): number => {
+  // Normalize the case by converting both addresses to lowercase before comparison
+  const normalizedOwner = owner.toLowerCase();
+  const normalizedUserAccount = userAccount ? userAccount.toLowerCase() : '';
+
+  if (isOnState) {
       if (forSale) {
-        return userAccount && userAccount === owner ? 3 : 7;
+          return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 3 : 7;
       } else {
-        return userAccount && userAccount === owner ? 2 : 6;
+          return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 2 : 6;
       }
-    } else {
+  } else {
       if (forSale) {
-        return userAccount && userAccount === owner ? 1 : 5;
+          return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 1 : 5;
       } else {
-        return userAccount && userAccount === owner ? 0 : 4;
+          return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 0 : 4;
       }
-    }
-  };
+  }
+};
+
   
 
 
@@ -50,10 +55,5 @@ export const switchColor = (
     8: '#18141a', // background
     9: '#110e13', // loading odd
   
-    //erase
-    10: '#3D3A46', // parcels on sale (we show them as owned parcels)
-    11: '#09080A', // unowned pacel/estate
-    12: '#18141a', // background
-    13: '#110e13', // loading odd
-    14: '#0d0b0e' // loading even
+
   })
