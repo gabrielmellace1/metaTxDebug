@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react';
+import  { Suspense, lazy, useState } from 'react';
 import './App.css';
 import Header from './components/Header/Header';
 
