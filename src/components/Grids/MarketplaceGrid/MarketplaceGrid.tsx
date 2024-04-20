@@ -4,7 +4,7 @@ import './MarketplaceGrid.css';
 import { COLOR_BY_TYPE, switchColor } from '../../../helpers/GridHelper';
 import { AtlasTile } from '../../../types/atlasTypes';
 import { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
+
 import { getAccount } from '../../../services/walletManager';
 
 
