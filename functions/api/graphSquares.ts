@@ -17,7 +17,7 @@ export async function onRequest(context: { env: Env }) {
         // Try to get cached data
         let cachedData = await context.env.SquaresKV.get<CacheData>(CACHE_KEY, "json");
         if (cachedData && new Date().getTime() - cachedData.timestamp < CACHE_TTL * 1000) {
-            return json(cachedData.data);  // Serve from cache if it's still fresh
+            return json({ data: cachedData.data });  // Always wrap in { data: ... } for consistency
         }
 
         // Data needs refresh
@@ -32,7 +32,7 @@ export async function onRequest(context: { env: Env }) {
         // Update cache with new data and timestamp
         await context.env.SquaresKV.put(CACHE_KEY, JSON.stringify({ data: transformedTiles, timestamp: new Date().getTime() }), { expirationTtl: CACHE_TTL });
 
-        return json({ data: transformedTiles });
+        return json({ data: transformedTiles }); // Ensure the returned data is wrapped in { data: ... } as well
     } catch (error) {
         console.error("Failed to fetch or process batches:", error);
         return error('Internal server error: ' + (error.message || error), 500);
