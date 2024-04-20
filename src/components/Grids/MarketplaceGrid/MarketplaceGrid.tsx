@@ -5,7 +5,6 @@ import { COLOR_BY_TYPE, switchColor } from '../../../helpers/GridHelper';
 import { AtlasTile } from '../../../types/atlasTypes';
 import { useEffect, useState } from 'react';
 
-import { getAccount } from '../../../services/walletManager';
 
 
 
@@ -20,7 +19,8 @@ async function loadTiles(setAtlasLoaded: (loaded: boolean) => void) {
 
 
 
-let userWallet = await getAccount();
+let userWallet = "0x23"
+
 
 let selected: Coord[] = []
 
