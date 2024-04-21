@@ -138,9 +138,9 @@ function transformSquaresData(batchResults: any[], gridWidth: number): Record<st
         }
     });
 
-    // Convert the map to an object for the final output
     squaresMap.forEach((value, key) => {
-        transformedTiles[key.toString()] = value;
+        const coordinateKey = `${value.x},${value.y}`;  // Create a string key from the x and y properties
+        transformedTiles[coordinateKey] = value;
     });
 
     return transformedTiles;
