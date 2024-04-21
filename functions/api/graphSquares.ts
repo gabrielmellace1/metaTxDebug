@@ -83,62 +83,68 @@ async function fetchAllBatches(totalTokens: number, queriesPerBatch: number, bat
 
 
 
+// Transform function utilizing AtlasTile
 function transformSquaresData(batchResults: any[], gridWidth: number): Record<string, AtlasTile> {
     const transformedTiles: Record<string, AtlasTile> = {};
-
-    // Directly populate the map from batch data, eliminating the allSquares array
     const squaresMap = new Map<number, AtlasTile>();
+
+    // Flatten all batch results into a single array of squares
+    const allSquares = [];
     batchResults.forEach(batch => {
         if (batch && batch.data) {
             Object.keys(batch.data).forEach(queryKey => {
                 if (Array.isArray(batch.data[queryKey])) {
-                    batch.data[queryKey].forEach(square => {
-                        const tokenId = parseInt(square.tokenId);
-                        const stateTokenId = square.isOnState ? parseInt(square.stateId.stateTokenId) : tokenId;
-                        squaresMap.set(tokenId, {
-                            x: parseInt(square.x),
-                            y: parseInt(square.y),
-                            tokenId: stateTokenId,
-                            clickableURL: square.clickableURL,
-                            forSale: square.isOnState ? square.stateId.stateForSale : square.forSale,
-                            price: parseInt(square.isOnState ? square.stateId.statePrice : square.price),
-                            owner: square.isOnState ? square.stateId.stateOwner : square.owner,
-                            isOnState: square.isOnState,
-                            left: true,  // Set later
-                            top: true   // Set later
-                        });
-                    });
+                    batch.data[queryKey].forEach(square => allSquares.push(square));
                 }
             });
         }
     });
 
-    // Single pass to adjust left and top properties
+    // Populate the map with initial square data using original tokenId for indexing
+    allSquares.forEach(square => {
+        const tokenId = parseInt(square.tokenId);  // Always use the actual square tokenId for grid calculations
+        squaresMap.set(tokenId, {
+            x: parseInt(square.x),
+            y: parseInt(square.y),
+            tokenId: square.isOnState ? parseInt(square.stateId.stateTokenId) : tokenId,  // Display stateTokenId if applicable
+            clickableURL: square.clickableURL,
+            forSale: square.isOnState ? square.stateId.stateForSale : square.forSale,
+            price: parseInt(square.isOnState ? square.stateId.statePrice : square.price),
+            owner: square.isOnState ? square.stateId.stateOwner : square.owner,
+            isOnState: square.isOnState,
+            left: true,  // Initially assume true, adjust later
+            top: true   // Initially assume true, adjust later
+        });
+    });
+
+    // Adjust left and top properties based on neighboring squares using original tokenId
     squaresMap.forEach((square, tokenId) => {
-        const column = tokenId % gridWidth;
-        const row = Math.floor(tokenId / gridWidth);
-        if (column > 0) {  // More efficient than modulo operation each time
+        
+        // Adjusting the left property
+        if ((tokenId - 1) % gridWidth !== 0) { // Not the first column
+         
             const leftNeighbor = squaresMap.get(tokenId - 1);
-            if (leftNeighbor && leftNeighbor.tokenId === square.tokenId) {
+            if (leftNeighbor && leftNeighbor.tokenId === square.tokenId) {  // Use the displayed tokenId for checking
                 square.left = false;
             }
         }
-        if (row > 0) {
-            const topNeighbor = squaresMap.get(tokenId - gridWidth);
-            if (topNeighbor && topNeighbor.tokenId === square.tokenId) {
+
+        // Adjusting the top property
+        if (tokenId < (gridWidth-1)*gridWidth) { // Not the first row
+            const topNeighbor = squaresMap.get(tokenId + gridWidth);
+            if (topNeighbor && topNeighbor.tokenId === square.tokenId) {  // Use the displayed tokenId for checking
                 square.top = false;
             }
         }
     });
 
-    // Convert the map to the final output using "x,y" as the key
     squaresMap.forEach((value, key) => {
-        transformedTiles[`${value.x},${value.y}`] = value;
+        const coordinateKey = `${value.x},${value.y}`;  // Create a string key from the x and y properties
+        transformedTiles[coordinateKey] = value;
     });
 
     return transformedTiles;
 }
-
 
 
 
