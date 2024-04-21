@@ -63,18 +63,21 @@ const stateContract = new web3.eth.Contract(
   const padding = size * 0.05; // 10% of each cell size for padding
   const cellSize = size - 2 * padding; // Adjust cell size to account for padding
   
-  // Initialize SVG content with a black background rectangle
   let svgContent = `<rect x="0" y="0" width="512" height="512" fill="black" />`;
-  
-  for (let y = minY - 1; y <= maxY + 1; y++) {
+
+  // Loop through the grid to create the SVG content
+  for (let y = maxY + 1; y >= minY - 1; y--) {
     for (let x = minX - 1; x <= maxX + 1; x++) {
-      // Calculate the SVG x and y positions based on transformed coordinates with padding
+      // Calculate the SVG x position based on transformed coordinates with padding
       let svgX = (x - minX + 1) * size + offsetX + padding;
-      let svgY = (y - minY + 1) * size + offsetY + padding;
+  
+      // Invert the Y coordinate for SVG rendering
+      let invertedY = maxY + 1 - y;
+      let svgY = invertedY * size + offsetY + padding;
   
       // Determine fill color based on presence in the positions array or odd/even check
-      let fill = positions.some(pos => pos[0] === x && pos[1] === y) ? "#53eeef" : 
-                 (((x + y) % 2) === 0 ? "#252526" : "#100e13");
+      let fill = positions.some(pos => pos[0] === x && pos[1] === y) ? Colors.FILL : 
+                 ((x + y) % 2 === 0 ? Colors.EVEN : Colors.ODD);
   
       // Add the rect element for this cell with adjusted size
       svgContent += `<rect x="${svgX}" y="${svgY}" width="${cellSize}" height="${cellSize}" fill="${fill}" stroke="black" />`;

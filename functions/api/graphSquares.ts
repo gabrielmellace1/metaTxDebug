@@ -93,12 +93,22 @@ function transformSquaresData(batchResults: any[], gridWidth: number): Record<st
 
             squares.forEach((square, index) => {
                 const isOnState = square.isOnState;
-                const tokenId = isOnState ? parseInt(square.stateId.stateTokenId) : parseInt(square.tokenId);
 
+
+                let  tokenId,forSale,price;
+               
+                
                 let left = true;
                 let top = true;
 
                 if (isOnState) {
+
+                    tokenId = parseInt(square.stateId.stateTokenId);
+                    forSale = square.stateId.stateForSale;
+                    price = square.stateId.price;
+
+                    console.log(forSale);
+
                     // Check square to the left if not on the first column
                     if (index % gridWidth !== 0) {
                         const leftSquare = squares[index - 1];
@@ -124,6 +134,11 @@ function transformSquaresData(batchResults: any[], gridWidth: number): Record<st
                     }
                     
                 }
+                else {
+                    tokenId = parseInt(square.tokenId);
+                    forSale = square.forSale;
+                    price = square.price;
+                }
 
                 const key = `${square.x},${square.y}`;
                 transformedTiles[key] = {
@@ -131,8 +146,8 @@ function transformSquaresData(batchResults: any[], gridWidth: number): Record<st
                     y: parseInt(square.y),
                     tokenId,
                     clickableURL: square.clickableURL,
-                    forSale: square.forSale,
-                    price: parseInt(square.price),
+                    forSale: forSale,
+                    price: price,
                     owner: square.owner,
                     isOnState,
                     left,
