@@ -19,7 +19,7 @@ async function loadTiles(setAtlasLoaded: (loaded: boolean) => void) {
 
 
 
-let userWallet = "0x23"
+let userWallet = "0xEA5Fed1D0141F14DE11249577921b08783d6A360"
 
 
 let selected: Coord[] = []
