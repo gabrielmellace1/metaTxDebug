@@ -14,11 +14,11 @@ const CACHE_TTL = 300; // Time to live: 300 seconds (5 minutes)
 
 export async function onRequest(context: { env: Env }) {
     try {
-        // Try to get cached data
-        let cachedData = await context.env.SquaresKV.get<CacheData>(CACHE_KEY, "json");
-        if (cachedData && new Date().getTime() - cachedData.timestamp < CACHE_TTL * 1000) {
-            return json({ data: cachedData.data });  // Always wrap in { data: ... } for consistency
-        }
+        // // Try to get cached data
+        // let cachedData = await context.env.SquaresKV.get<CacheData>(CACHE_KEY, "json");
+        // if (cachedData && new Date().getTime() - cachedData.timestamp < CACHE_TTL * 1000) {
+        //     return json({ data: cachedData.data });  // Always wrap in { data: ... } for consistency
+        // }
 
         // Data needs refresh
         const queriesPerBatch = 125;
@@ -29,8 +29,8 @@ export async function onRequest(context: { env: Env }) {
         const batchResults = await fetchAllBatches(totalTokens, queriesPerBatch, batchSize, context);
         const transformedTiles = transformSquaresData(batchResults, gridWidth);
 
-        // Update cache with new data and timestamp
-        await context.env.SquaresKV.put(CACHE_KEY, JSON.stringify({ data: transformedTiles, timestamp: new Date().getTime() }), { expirationTtl: CACHE_TTL });
+        // // Update cache with new data and timestamp
+        // await context.env.SquaresKV.put(CACHE_KEY, JSON.stringify({ data: transformedTiles, timestamp: new Date().getTime() }), { expirationTtl: CACHE_TTL });
 
         return json({ data: transformedTiles }); // Ensure the returned data is wrapped in { data: ... } as well
     } catch (error) {
@@ -102,18 +102,27 @@ function transformSquaresData(batchResults: any[], gridWidth: number): Record<st
                     // Check square to the left if not on the first column
                     if (index % gridWidth !== 0) {
                         const leftSquare = squares[index - 1];
-                        if (leftSquare && leftSquare.isOnState && parseInt(leftSquare.tokenId) === tokenId) {
+                        console.log(`Index ${index}: Current square: tokenId=${tokenId}, x=${square.x}, y=${square.y}`);
+                        console.log(`Index ${index - 1}: Left square: tokenId=${parseInt(leftSquare.tokenId)}, x=${leftSquare.x}, y=${leftSquare.y}`);
+                
+                        if (leftSquare && leftSquare.isOnState && leftSquare.stateId && 
+                            parseInt(leftSquare.stateId.stateTokenId) === tokenId) {
                             left = false;
                         }
                     }
 
                     // Check square to the top if not on the first row
-                    if (index >= gridWidth) {
-                        const topSquare = squares[index - gridWidth];
-                        if (topSquare && topSquare.isOnState && parseInt(topSquare.tokenId) === tokenId) {
+                    
+                    if (index + gridWidth < squares.length) {
+                        const topSquare = squares[index + gridWidth];
+                        console.log(`Index ${index}: Current square: tokenId=${tokenId}, x=${square.x}, y=${square.y}`);
+                        console.log(`Index ${index + gridWidth}: Top square: tokenId=${parseInt(topSquare.tokenId)}, x=${topSquare.x}, y=${topSquare.y}`);
+                
+                        if (topSquare && topSquare.isOnState && parseInt(topSquare.stateId.stateTokenId) === tokenId) {
                             top = false;
                         }
                     }
+                    
                 }
 
                 const key = `${square.x},${square.y}`;
