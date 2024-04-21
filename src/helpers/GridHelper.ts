@@ -1,6 +1,28 @@
 // src/helpers/GridHelper.ts
 
 
+export const gridProps = {
+  x: 0,
+  y: 0,
+  className: '',
+  initialX: 0,
+  initialY: 0,
+  size: 14,
+  zoom: 1,
+  minSize: 7,
+  maxSize: 40,
+  minX: -150,
+  maxX: 650,
+  minY: -150,
+  maxY: 650,
+  panX: 0,
+  panY: 0,
+  padding: 4,
+  isDraggable: true,
+  withZoomControls: false,
+  layers: []
+}
+
 
 export const switchColor = (
   isOnState: boolean,
@@ -28,6 +50,7 @@ export const switchColor = (
 };
 
   
+
 
 
 

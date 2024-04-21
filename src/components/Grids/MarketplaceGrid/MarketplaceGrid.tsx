@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Coord, Layer, TileMap } from 'react-tile-map'
 import './MarketplaceGrid.css';
-import { COLOR_BY_TYPE, switchColor } from '../../../helpers/GridHelper';
+import { COLOR_BY_TYPE, gridProps, switchColor } from '../../../helpers/GridHelper';
 import { AtlasTile } from '../../../types/atlasTypes';
 import { useEffect, useState } from 'react';
 
@@ -81,6 +81,7 @@ const MarketplaceGrid: React.FC = () => {
     <div className="grid-container">
       {atlasLoaded ? (
          <TileMap
+         {...gridProps}
          className="atlas"
          layers={[atlasLayer, selectedStrokeLayer, selectedFillLayer]}
          onClick={(x, y) => {
