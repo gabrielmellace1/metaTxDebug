@@ -20,8 +20,8 @@ kv_namespaces = [
 [vars]
 baseUrl = "https://squares.town"
 rpcUrl =  "https://polygon-mainnet.infura.io/v3/615e0266e5284aeeb5863c6731dbf11e"
-stateContractAddress = "0x28BC83693931cae1Fe7Ed6248630BC894c161430"
-squaresContractAddress = "0x48E1621B012DAB1Bc181e464f849b14067BbE960"
+stateContractAddress = "0xA77aC08d191c2390f692e5d1Fa0B98c7e40F573f"
+squaresContractAddress = "0x9Dbd35E3c27d4494f2d87539De830cfd42037c5E"
 STATE_CONTRACT_ABI = """
 [
   {
