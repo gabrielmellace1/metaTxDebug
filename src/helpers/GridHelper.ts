@@ -18,7 +18,7 @@ export const COLOR_BY_TYPE: Record<number, string> = Object.freeze({
 export const gridProps = {
   x: 0,
   y: 0,
-  className: '',
+  className: 'react-tile-map',
   initialX: 0,
   initialY: 0,
   size: 14,
@@ -63,9 +63,6 @@ export const switchColor = (
   }
 };
 
-  
-
-
 
 export function tokenIdToPosition(tokenId: number ) {
     if (tokenId <= 0) {
@@ -79,4 +76,38 @@ export function tokenIdToPosition(tokenId: number ) {
 
 export function positionToTokenId(x: number, y: number) {
     return y * GRID_WIDTH + x + 1; // +1 for 1-based indexing
+}
+
+
+export async function fetchSquareIds(stateId: number) {
+  const query = `
+      query GetSquareIds($stateId: ID!) {
+          state(id: $stateId) {
+              squares(first: 1000) {
+                  id
+              }
+          }
+      }
+  `;
+
+  const response = await fetch('https://api.studio.thegraph.com/proxy/48884/squareblocks/version/latest', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_ACCESS_TOKEN', // Add this line if authentication is needed
+      },
+      body: JSON.stringify({
+          query,
+          variables: {
+              stateId: stateId
+          }
+      })
+  });
+
+  if (!response.ok) {
+      throw new Error('Network response was not ok');
+  }
+
+  const data = await response.json();
+  return data.data.state.squares.map((square: { id: any; }) => square.id);
 }

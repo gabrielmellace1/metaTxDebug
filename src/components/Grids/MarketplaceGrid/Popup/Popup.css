@@ -1,0 +1,47 @@
+.AtlasPopup {
+    position: absolute;
+    z-index: 100;
+    width: auto;
+    max-width: 320px;
+    padding: 15px 20px;
+    background: #000; /* Black background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* More pronounced shadow for contrast */
+    border-radius: 8px;
+    color: #fff; /* White text for readability */
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  
+  .AtlasPopup .square-name,
+  .AtlasPopup .owner,
+  .AtlasPopup .price {
+    margin-bottom: 10px;
+  }
+  
+  .AtlasPopup .name,
+  .AtlasPopup .coordinates {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+    font-weight: bold; /* Bold for keys */
+  }
+  
+  .AtlasPopup .coordinates {
+    font-size: 14px;
+    color: #ccc; /* Lighter grey for less emphasis */
+  }
+  
+  .AtlasPopup .owner,
+  .AtlasPopup .price {
+    font-size: 14px;
+    color: #fff; /* White for better visibility on black bg */
+  }
+  
+  .AtlasPopup .owner span,
+  .AtlasPopup .price span {
+    font-weight: bold;
+  }
+  
