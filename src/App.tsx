@@ -3,42 +3,46 @@ import './App.css';
 import Header from './components/Header/Header';
 
 // Lazy-loaded components
-const TownGrid = lazy(() => import('./components/Grids/TownGrid/TownGrid'));
+const TownGrid = lazy(() => import('./components/Town/TownComponent')); // Assuming TownGrid uses Phaser
 const MarketplaceGrid = lazy(() => import('./components/Grids/MarketplaceGrid/MarketplaceGrid'));
 const MyAssetsGrid = lazy(() => import('./components/Grids/MyAssetsGrid/MyAssetsGrid'));
+const Editor = lazy(() => import('./components/Editor/Editor'));
 
 function App() {
-  const [gridType, setGridType] = useState('town'); // Default grid type
+  const [gridType, setGridType] = useState<string>('town'); // Default grid type
 
   const handleHeaderClick = (type: string) => {
     setGridType(type);
   };
 
-  // Determine which grid component to render based on the current gridType
-  let GridComponent;
+  // Determine which grid or game component to render based on the current gridType
+  let ActiveComponent: React.ElementType;
   switch (gridType) {
     case 'town':
-      GridComponent = TownGrid;
+      ActiveComponent = TownGrid;
       break;
     case 'marketplace':
-      GridComponent = MarketplaceGrid;
+      ActiveComponent = MarketplaceGrid;
       break;
     case 'myAssets':
-      GridComponent = MyAssetsGrid;
+      ActiveComponent = MyAssetsGrid;
       break;
+    case 'editor':
+        ActiveComponent = Editor;
+        break;
     default:
-      GridComponent = TownGrid;
+      ActiveComponent = TownGrid; // Default or fallback
   }
 
-  // Render the application
   return (
     <div className="app">
       <Header onHeaderClick={handleHeaderClick} />
       <Suspense fallback={<div>Loading...</div>}>
-        <GridComponent />
+        <ActiveComponent />
       </Suspense>
     </div>
   );
 }
+
 
 export default App;

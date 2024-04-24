@@ -26,6 +26,7 @@ const Header: React.FC<{ onHeaderClick: (type: string) => void }> = ({ onHeaderC
             <button onClick={() => onHeaderClick('town')}>Town</button>
             <button onClick={() => onHeaderClick('marketplace')}>Marketplace</button>
             <button onClick={() => onHeaderClick('myAssets')}>My Assets</button>
+            <button onClick={() => onHeaderClick('editor')}>Editor</button>
             <div className="wallet-connection">
                 {account ? (
                     <span>Connected: {account}</span>

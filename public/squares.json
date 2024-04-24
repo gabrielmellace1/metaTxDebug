@@ -1,0 +1,34 @@
+[
+    {
+      "x": 0,
+      "y": 0,
+      "title": "Welcome Area",
+      "url": "https://example.com/welcome"
+    },
+    {
+      "x": 1,
+      "y": 0,
+      "title": "Information Center",
+      "url": "https://example.com/info"
+    },
+    {
+      "x": 2,
+      "y": 0,
+      "title": "Shop",
+      "url": "https://example.com/shop"
+    },
+    {
+      "x": 3,
+      "y": 0,
+      "title": "Gallery",
+      "url": "https://example.com/gallery"
+    },
+    {
+      "x": 0,
+      "y": 1,
+      "title": "Contact Us",
+      "url": "https://example.com/contact"
+    }
+    
+  ]
+  
