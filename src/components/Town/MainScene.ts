@@ -3,10 +3,12 @@ import Phaser from 'phaser';
 export default class MainScene extends Phaser.Scene {
     private bg!: Phaser.GameObjects.Image;
     private popup!: Phaser.GameObjects.Text;
+    private dragging = false;
+    private lastPointerPosition = new Phaser.Math.Vector2();
+    private dragDistanceThreshold = 5;
 
     constructor() {
         super({ key: 'MainScene' });
-        
     }
 
     preload(): void {
@@ -19,12 +21,11 @@ export default class MainScene extends Phaser.Scene {
         this.setupInputHandlers();
         this.createInteractiveSquares();
         this.createPopup();
-        this.input.setDefaultCursor('url(assets/cursor.png), default'); // Custom cursor
-        this.addGridGlareEffect()
-
+        this.input.setDefaultCursor('url(assets/cursor.png), default');
+        this.addGridGlareEffect();
         this.scale.on('resize', this.resizeGame, this);
     }
-    
+
     private setupBackground(): Phaser.GameObjects.Image {
         const bg = this.add.image(0, 0, 'background').setOrigin(0, 0).setInteractive();
         this.cameras.main.setBounds(0, 0, 5000, 5000);
@@ -40,53 +41,53 @@ export default class MainScene extends Phaser.Scene {
     }
 
     private setupDragging(): void {
-        let lastPointerPosition = new Phaser.Math.Vector2();
-        let dragging = false;
-
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             if (this.bg.getBounds().contains(pointer.x, pointer.y)) {
-                dragging = true;
-                lastPointerPosition.set(pointer.x, pointer.y);
+                this.dragging = true;
+                this.lastPointerPosition.set(pointer.x, pointer.y);
             }
         });
 
         this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-            if (dragging) {
-                const dx = pointer.x - lastPointerPosition.x;
-                const dy = pointer.y - lastPointerPosition.y;
+            if (this.dragging) {
+                const dx = pointer.x - this.lastPointerPosition.x;
+                const dy = pointer.y - this.lastPointerPosition.y;
                 this.cameras.main.scrollX -= dx;
                 this.cameras.main.scrollY -= dy;
-                lastPointerPosition.set(pointer.x, pointer.y);
+                this.lastPointerPosition.set(pointer.x, pointer.y);
             }
         });
 
-        this.input.on('pointerup', () => {
-            dragging = false;
+        this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+            if (!this.dragging ||
+                (Math.abs(pointer.downX - pointer.upX) < this.dragDistanceThreshold &&
+                 Math.abs(pointer.downY - pointer.upY) < this.dragDistanceThreshold)) {
+                const objects = this.input.hitTestPointer(pointer);
+                const interactiveObject = objects.find(obj => obj.getData('url'));
+                if (interactiveObject) {
+                    window.open(interactiveObject.getData('url'), '_blank');
+                }
+            }
+            this.dragging = false;
         });
     }
 
     private setupZooming(): void {
-        this.input.on('wheel', (pointer: Phaser.Input.Pointer, _: any, deltaX: number, deltaY: number) => {
-            pointer.event.preventDefault();  // Prevent default scrolling behavior
-    
-            const zoomAmount = deltaY * -0.005;  // Adjusted sensitivity for a smoother experience
+        this.input.on('wheel', (pointer: Phaser.Input.Pointer, _: any, _deltaX: number, deltaY: number) => {
+            pointer.event.preventDefault(); // Prevent default scrolling behavior
+            const zoomAmount = deltaY * -0.005; // Adjusted sensitivity for a smoother experience
             let newZoom = this.cameras.main.zoom + zoomAmount;
-    
-            // Calculate the minimum zoom to prevent the canvas from showing extra space around the content
-            const worldWidth = this.bg.displayWidth;  // Assuming 'bg' is your game world background with full size
+
+            const worldWidth = this.bg.displayWidth;
             const worldHeight = this.bg.displayHeight;
             const minZoomX = this.cameras.main.width / worldWidth;
             const minZoomY = this.cameras.main.height / worldHeight;
             const minZoom = Math.max(minZoomX, minZoomY);
-    
-            // Use Phaser's Clamp function to ensure the zoom level is within bounds
-            newZoom = Phaser.Math.Clamp(newZoom, minZoom, 2);  // Adjust max zoom level as needed
-    
-            // Smoothly transition to the new zoom level
-            this.cameras.main.zoomTo(newZoom, 300);  // 300 milliseconds for smooth transition
+
+            newZoom = Phaser.Math.Clamp(newZoom, minZoom, 2); // Adjust max zoom level as needed
+            this.cameras.main.zoomTo(newZoom, 300); // 300 milliseconds for smooth transition
         });
     }
-    
 
     private setupKeyboardNavigation(): void {
         this.input.keyboard?.on('keydown', (event: { key: any; }) => {
@@ -113,7 +114,6 @@ export default class MainScene extends Phaser.Scene {
         });
     }
 
-    //TODO: needs fix Y axis
     private createInteractiveSquares(): void {
         const cellSize = 10;
         const numRows = 500;
@@ -121,12 +121,8 @@ export default class MainScene extends Phaser.Scene {
         
         const squaresData = this.cache.json.get('squaresData') as Array<{ x: number, y: number, title: string, url: string }>;
         
-        console.log(`Creating squares, gridHeight: ${gridHeight}`);
-        
         squaresData.forEach(square => {
             const adjustedY = gridHeight - (square.y + 1) * cellSize;
-    
-            console.log(`Square at (${square.x}, ${square.y}) positioned at (${square.x * cellSize}, ${adjustedY})`);
     
             const squareGraphic = this.add.rectangle(
                 square.x * cellSize,
@@ -134,13 +130,11 @@ export default class MainScene extends Phaser.Scene {
                 cellSize,
                 cellSize,
                 0x0000ff
-            ).setOrigin(0, 0).setInteractive();
+            ).setOrigin(0, 0).setInteractive().setData('url', square.url);
         
             this.configureSquareInteraction(squareGraphic, square);
         });
     }
-    
-    
 
     private configureSquareInteraction(squareGraphic: Phaser.GameObjects.Rectangle, square: { x?: number; y?: number; title: any; url: any; }) {
         squareGraphic.on('pointerover', () => {
@@ -148,26 +142,12 @@ export default class MainScene extends Phaser.Scene {
             this.highlightSquare(squareGraphic);
             this.input.setDefaultCursor(square.url ? 'pointer' : 'not-allowed');
         });
-    
+
         squareGraphic.on('pointerout', () => {
             this.hidePopup();
             this.input.setDefaultCursor('default'); // Reset cursor to default when not hovering
         });
-    
-        squareGraphic.on('pointerdown', () => {
-            if (square.url) {
-                window.open(square.url, '_blank'); // Only open if URL exists
-            }
-        });
     }
-    
-    private calculateGridHeight(): number {
-        // This method should calculate the total height of the grid based on your game's layout or data
-        // For example, if your grid has 10 rows and each cell is 10 pixels high:
-        return 10 * 10; // Replace 10 with the actual number of rows if dynamic
-    }
-    
-    
 
     private highlightSquare(square: Phaser.GameObjects.Rectangle): void {
         const border = this.add.graphics();
@@ -204,8 +184,6 @@ export default class MainScene extends Phaser.Scene {
         const width = gameSize.width;
         const height = gameSize.height;
     
-        console.log(`Resizing to ${width}x${height}`);
-    
         this.scale.resize(width, height);
     
         this.cameras.main.setViewport(0, 0, width, height);
@@ -219,33 +197,8 @@ export default class MainScene extends Phaser.Scene {
     
         this.cameras.main.centerOn(this.bg.displayWidth / 2, this.bg.displayHeight / 2);
     }
-    
-    private addGridGlareEffect(): void {
-        // const width = this.scale.width;
-        // const height = this.scale.height;
-    
-        // // Create a graphics object and apply a gradient fill
-        // const glare = this.add.graphics();
-        // glare.fillGradientStyle(0xffffff, 0, 0xffffff, 0, 1, 0.1, 0, 0.1);
-        // glare.fillRect(-width / 2, -height, width * 2, height * 2); // Extended coverage
-    
-        // // Animation for the glare effect with variable speed and non-linear movement
-        // this.tweens.add({
-        //     targets: glare,
-        //     props: {
-        //         x: { value: `+=${width}`, duration: 3000, ease: 'Power2.easeInOut' },
-        //         y: { value: `+=${height}`, duration: 3000, ease: 'Power2.easeInOut' }
-        //     },
-        //     repeat: -1,
-        //     yoyo: true,
-        //     onStart: () => glare.alpha = Phaser.Math.FloatBetween(0.1, 0.5), // Randomize alpha on start
-        //     onYoyo: () => glare.x = Phaser.Math.FloatBetween(-width / 2, 0), // Change start x on each repeat
-        //     onRepeat: () => glare.alpha = Phaser.Math.FloatBetween(0.1, 0.5), // Change alpha on repeat
-        // });
-    }
-    
-    
-    
 
-    
+    private addGridGlareEffect(): void {
+        // Glare effect implementation is commented out for now
+    }
 }

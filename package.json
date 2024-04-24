@@ -11,7 +11,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.1.1",
+    "@chakra-ui/react": "^2.8.2",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
     "ethers": "^5.7.2",
+    "framer-motion": "^11.1.7",
     "impetus": "^0.8.8",
     "mouse-wheel": "^1.2.0",
     "phaser": "^3.80.1",

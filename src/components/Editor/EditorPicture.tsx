@@ -1,36 +1,22 @@
-import React, { useRef, useState, ChangeEvent } from 'react';
+import React, { useRef, useState } from 'react';
+import { Text ,Box, Slider, SliderTrack, SliderFilledTrack, SliderThumb, VStack, FormControl, FormLabel, Input, Button } from '@chakra-ui/react';
 import AvatarEditor from 'react-avatar-editor';
 import Dropzone from 'react-dropzone';
-import { ImageAvatarAttributes } from '../../types/ImageAvatarAttributes';
-import {
-  handleScale as originalHandleScale,
-  rotateScale as originalRotateScale,
-} from './EditorPictureHandlers';
 
 interface EditorPictureProps {
   setPreviewUrl: (url: string) => void;
   width: number;
   height: number;
+  ownedSquares:{ x: number; y: number }[];
 }
 
-const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, height }) => {
-  const editorRef = useRef<AvatarEditor | null>(null);
-  const [avatarAttributes, setAvatarAttributes] = useState<ImageAvatarAttributes>({
-    image: '/avatar.png',
-    width: width,
-    height: height,
-    border: 50,
-    borderRadius: 0,
-    color: [255, 255, 255, 0.6],
-    scale: 1.2,
-    rotate: 0,
-    disableCanvasRotation: true,
-    isTransparent: false,
-    showGrid: false,
-    disableBoundaryChecks: true,
-    allowZoomOut: true,
-    backgroundColor: undefined
-  });
+const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, height, ownedSquares }) => {
+  const editorRef = useRef<AvatarEditor>(null);
+  const [image, setImage] = useState('/avatar.png');
+  const [scale, setScale] = useState(1.2);
+  const [rotate, setRotate] = useState(0);
+  const [title, setTitle] = useState('');
+  const [url, setUrl] = useState('');
 
   const handleImageChange = () => {
     if (editorRef.current) {
@@ -43,60 +29,72 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
   const handleFileChange = (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      // Assert that e.target is not null with the non-null assertion operator (!)
-      const target = e.target!;
-      if (target.result) {
-        setAvatarAttributes(prev => ({ ...prev, image: target.result as string }));
+    reader.onload = e => {
+      const imageURL = e.target?.result?.toString();
+      if (imageURL) {
+        setImage(imageURL);
       }
     };
     reader.readAsDataURL(file);
   };
 
-
-  const handleScale = (e: ChangeEvent<HTMLInputElement>) => originalHandleScale(e, setAvatarAttributes);
-  const rotateScale = (e: ChangeEvent<HTMLInputElement>) => originalRotateScale(e, setAvatarAttributes);
- 
+  const displayCoordinates = () => {
+    return ownedSquares.map(square => `(${square.x}, ${square.y})`).join(', ');
+  };
 
   return (
-    <div style={{ maxWidth: '200px', float: 'left' }}>
-      <Dropzone onDrop={handleFileChange} noClick noKeyboard>
+    <VStack p={4} bg="gray.700" borderRadius="md" boxShadow="base" color="white" spacing={4}>
+      <Dropzone onDrop={handleFileChange}>
         {({ getRootProps, getInputProps }) => (
-          <div {...getRootProps({ className: 'dropzone' })}>
+          <div {...getRootProps()}>
             <input {...getInputProps()} />
             <AvatarEditor
               ref={editorRef}
-              {...avatarAttributes}
+              image={image}
+              width={width}
+              height={height}
+              border={50}
+              color={[255, 255, 255, 0.6]} // RGBA
+              scale={scale}
+              rotate={rotate}
               onImageChange={handleImageChange}
               onImageReady={handleImageChange}
             />
           </div>
         )}
       </Dropzone>
-      <br />
-      <h3>Props</h3>
-      Zoom: <input
-        name="scale"
-        type="range"
-        onChange={handleScale}
-        min={avatarAttributes.allowZoomOut ? '0.1' : '1'}
-        max="2"
-        step="0.01"
-        defaultValue="1"
-      />
-      <br />
-      Rotation:
-      <input
-        name="rotation"
-        type="range"
-        onChange={rotateScale}
-        min="0"
-        max="180"
-        step="1"
-        defaultValue="0"
-      />
-     
-    </div>
+      <Box width="full">
+        <Text fontSize="sm" mb="2">Zoom:</Text>
+        <Slider defaultValue={1.2} min={0.1} max={2} step={0.01} onChange={v => setScale(v)}>
+          <SliderTrack bg="blue.300">
+            <SliderFilledTrack bg="blue.600" />
+          </SliderTrack>
+          <SliderThumb boxSize={6} />
+        </Slider>
+      </Box>
+      <Box width="full">
+        <Text fontSize="sm" mb="2">Rotation:</Text>
+        <Slider defaultValue={0} min={0} max={360} step={1} onChange={v => setRotate(v)}>
+          <SliderTrack bg="blue.300">
+            <SliderFilledTrack bg="blue.600" />
+          </SliderTrack>
+          <SliderThumb boxSize={6} />
+        </Slider>
+      </Box>
+      <FormControl id="title" isRequired>
+        <FormLabel>Title:</FormLabel>
+        <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter title" />
+      </FormControl>
+      <FormControl id="url" isRequired>
+        <FormLabel>Clickable URL:</FormLabel>
+        <Input value={url} onChange={e => setUrl(e.target.value)} placeholder="Enter URL" />
+      </FormControl>
+      <Button colorScheme="blue">Upload</Button>
+      <Box p={4} w="full" bg="gray.600" borderRadius="md">
+        <Text fontSize="sm">Uploading to Coordinates:</Text>
+        <Text fontSize="xs">{displayCoordinates()}</Text>
+      </Box>
+    </VStack>
   );
 };
 

@@ -69,7 +69,7 @@ const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, ownedSquares,minX,m
 
   return (
     <div>
-      <canvas ref={canvasRef} width={5000} height={5000} style={{ border: '1px solid black', marginLeft: '10px' }} />
+      <canvas ref={canvasRef} width={1000} height={1000} style={{ border: '1px solid black', marginLeft: '10px' }} />
     </div>
   );
 };

@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import EditorGrid from './EditorGrid';
 import EditorPicture from './EditorPicture';
+import { Box, Flex } from '@chakra-ui/react';
 
 interface Square {
   x: number;
   y: number;
 }
 
-const ParentComponent: React.FC = () => {
+const EditorParent: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState('');
 
   const squareSize: number = 10; // Size of each square
-  const gridRows: number = 50; // Total number of squares vertically
-  const gridCols: number = 50; // Total number of squares horizontally
+  const gridRows: number = 100; // Total number of squares vertically
+  const gridCols: number = 100; // Total number of squares horizontally
 
 
   const ownedSquares: Square[] = [
@@ -46,17 +47,17 @@ const ParentComponent: React.FC = () => {
   const pictureHeight = (maxY - minY + 1) * squareSize; // 10 pixels per square
 
   return (
-    <div style={{ display: 'flex', width: '100%' }}>
-      <div style={{ flex: 1 }}>
-        <EditorPicture setPreviewUrl={setPreviewUrl} width={pictureWidth} height={pictureHeight}   />
-      </div>
-      <div style={{ flex: 1 }}>
-        <EditorGrid previewUrl={previewUrl} ownedSquares={ownedSquares} 
-        minX={minX} minY={minY} maxX={maxX} maxY={maxY} 
-        squareSize={squareSize} gridRows={gridRows} gridCols={gridCols} />
-      </div>
-    </div>
+    <Flex direction="column" align="center" m={4} p={5} bg="gray.900" color="white">
+      <Flex direction={{ base: 'column', md: 'row' }} w="full">
+        <Box flex="none" width={{ base: 'auto', md: '300px' }} bg="gray.700" p={4} borderRadius="md" boxShadow="xl">
+          <EditorPicture setPreviewUrl={setPreviewUrl} width={pictureWidth} height={pictureHeight} ownedSquares={ownedSquares} />
+        </Box>
+        <Box flex="1" ml={{ base: 0, md: 4 }} mt={{ base: 4, md: 0 }} bg="gray.700" p={4} borderRadius="md" boxShadow="xl">
+          <EditorGrid previewUrl={previewUrl} ownedSquares={ownedSquares} minX={minX} minY={minY} maxX={maxX} maxY={maxY} squareSize={squareSize} gridRows={gridRows} gridCols={gridCols} />
+        </Box>
+      </Flex>
+    </Flex>
   );
 };
 
-export default ParentComponent;
+export default EditorParent;

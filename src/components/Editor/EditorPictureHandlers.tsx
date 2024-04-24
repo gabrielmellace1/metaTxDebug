@@ -1,5 +1,4 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react';
-import AvatarEditor from 'react-avatar-editor';
 import { ImageAvatarAttributes } from '../../types/ImageAvatarAttributes';
 
 
