@@ -30,7 +30,9 @@ export default class MainScene extends Phaser.Scene {
         const bg = this.add.image(0, 0, 'background').setOrigin(0, 0).setInteractive();
         this.cameras.main.setBounds(0, 0, 5000, 5000);
         this.cameras.main.setZoom(1);
-        this.cameras.main.centerOn(0, 5000);
+        const randomX = Math.random() * 5000;  // 5000 should be replaced with the actual width if different
+        const randomY = Math.random() * 5000;  // 5000 should be replaced with the actual height if different
+        this.cameras.main.centerOn(randomX, randomY);
         return bg;
     }
 

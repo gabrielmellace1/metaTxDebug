@@ -5,6 +5,7 @@ import './MarketplaceGrid.css';
 import { COLOR_BY_TYPE, gridProps, switchColor } from '../../../helpers/GridHelper';
 import { AtlasTile } from '../../../types/atlasTypes';
 import Popup from './Popup/Popup';
+import Loading from '../../Utils/Loading';
 
 let atlas: Record<string, AtlasTile> | null = null;
 let selected: Coord[] = [];
@@ -160,7 +161,7 @@ const MarketplaceGrid: React.FC = () => {
           )}
         </>
       ) : (
-        <div>Loading atlas...</div>
+        <Loading />
       )}
     </div>
     );

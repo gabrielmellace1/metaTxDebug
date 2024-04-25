@@ -2,50 +2,44 @@ import { Suspense, lazy, useState } from "react";
 import "./App.css";
 import Header from "./components/Header/Header";
 import { AuthContextProvider } from "./context/auth.context";
-// Lazy-loaded components
-const TownGrid = lazy(() => import("./components/Town/TownComponent")); // Assuming TownGrid uses Phaser
-const MarketplaceGrid = lazy(
-  () => import("./components/Grids/MarketplaceGrid/MarketplaceGrid")
-);
-const MyAssetsGrid = lazy(
-  () => import("./components/Grids/MyAssetsGrid/MyAssetsGrid")
-);
+import WelcomeModal from "./components/Modals/WelcomeModal";
+import Loading from "./components/Utils/Loading";
+
+const TownGrid = lazy(() => import("./components/Town/TownComponent"));
+const MarketplaceGrid = lazy(() => import("./components/Grids/MarketplaceGrid/MarketplaceGrid"));
+const MyAssetsGrid = lazy(() => import("./components/Grids/MyAssetsGrid/MyAssetsGrid"));
 const Editor = lazy(() => import("./components/Editor/Editor"));
+const About = lazy(() => import("./components/About/About"));
 
 function App() {
-  const [gridType, setGridType] = useState<string>("town"); // Default grid type
+  const [gridType, setGridType] = useState<string>("town");
+  const [showAbout, setShowAbout] = useState(false);
 
   const handleHeaderClick = (type: string) => {
     setGridType(type);
   };
 
-  // Determine which grid or game component to render based on the current gridType
-  let ActiveComponent: React.ElementType;
+  const confirmModal = () => {
+    setShowAbout(true);
+  };
+
+  let ActiveComponent: React.ElementType = TownGrid; // Default
   switch (gridType) {
-    case "town":
-      ActiveComponent = TownGrid;
-      break;
-    case "marketplace":
-      ActiveComponent = MarketplaceGrid;
-      break;
-    case "myAssets":
-      ActiveComponent = MyAssetsGrid;
-      break;
-    case "editor":
-      ActiveComponent = Editor;
-      break;
-    default:
-      ActiveComponent = TownGrid; // Default or fallback
+    case "town": ActiveComponent = TownGrid; break;
+    case "marketplace": ActiveComponent = MarketplaceGrid; break;
+    case "myAssets": ActiveComponent = MyAssetsGrid; break;
+    case "editor": ActiveComponent = Editor; break;
   }
 
   return (
     <div className="app">
       <AuthContextProvider>
         <Header onHeaderClick={handleHeaderClick} />
-        <Suspense fallback={<div>Loading...</div>}>
-          <ActiveComponent />
+        <Suspense fallback={<Loading />}>
+          {showAbout ? <About /> : <ActiveComponent />}
         </Suspense>
       </AuthContextProvider>
+      <WelcomeModal onConfirm={confirmModal} />
     </div>
   );
 }
