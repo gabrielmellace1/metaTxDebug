@@ -1,4 +1,5 @@
-import { Suspense, lazy, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, lazy } from "react";
 import "./App.css";
 import Header from "./components/Header/Header";
 import { AuthContextProvider } from "./context/auth.context";
@@ -13,38 +14,26 @@ const Editor = lazy(() => import("./components/Editor/Editor"));
 const About = lazy(() => import("./components/About/About"));
 
 function App() {
-  const [gridType, setGridType] = useState<string>("town");
-  const [showAbout, setShowAbout] = useState(false);
-
-const handleHeaderClick = (type: string) => {
-  setGridType(type);
-  setShowAbout(false); // Add this line to hide the About section when other headers are clicked
-};
-
-
-  const confirmModal = () => {
-    setShowAbout(true);
-  };
-
-  let ActiveComponent: React.ElementType = TownGrid; // Default
-  switch (gridType) {
-    case "town": ActiveComponent = TownGrid; break;
-    case "marketplace": ActiveComponent = MarketplaceGrid; break;
-    case "myAssets": ActiveComponent = MyAssetsGrid; break;
-    case "editor": ActiveComponent = Editor; break;
-  }
-
   return (
     <div className="app">
       <AuthContextProvider>
         <MarketplaceContextProvider>
-          <Header onHeaderClick={handleHeaderClick} />
-          <Suspense fallback={<Loading />}>
-          {showAbout ? <About /> : <ActiveComponent />}
-          </Suspense>
+          <BrowserRouter>
+            <Header />
+            <Suspense fallback={<Loading />}>
+              <Routes>
+                <Route path="/" element={<Navigate replace to="/town" />} />
+                <Route path="/town" element={<TownGrid />} />
+                <Route path="/marketplace" element={<MarketplaceGrid />} />
+                <Route path="/my-assets" element={<MyAssetsGrid />} />
+                <Route path="/editor" element={<Editor />} />
+                <Route path="/about" element={<About />} />
+              </Routes>
+            </Suspense>
+            <WelcomeModal />
+          </BrowserRouter>
         </MarketplaceContextProvider>
       </AuthContextProvider>
-      <WelcomeModal onConfirm={confirmModal} />
     </div>
   );
 }

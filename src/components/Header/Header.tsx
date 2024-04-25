@@ -1,18 +1,10 @@
 import React from "react";
-import {
-  Box,
-  Button,
-  Flex,
-  Text,
-  useColorMode,
-  IconButton,
-} from "@chakra-ui/react";
+import { Box, Button, Flex, Text, useColorMode, IconButton, Link } from "@chakra-ui/react";
 import { SunIcon, MoonIcon } from "@chakra-ui/icons";
 import { useAuth } from "../../context/auth.context";
+import { Link as RouterLink } from "react-router-dom";  // Import RouterLink for navigation
 
-const Header: React.FC<{ onHeaderClick: (type: string) => void }> = ({
-  onHeaderClick,
-}) => {
+const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const { logout, login, isLoggedIn, userAddress } = useAuth();
 
@@ -27,30 +19,10 @@ const Header: React.FC<{ onHeaderClick: (type: string) => void }> = ({
       boxShadow="md"
     >
       <Box>
-        <Button
-          onClick={() => onHeaderClick("town")}
-          colorScheme="yellow"
-          mr={2}
-        >
-          Town
-        </Button>
-        <Button
-          onClick={() => onHeaderClick("marketplace")}
-          colorScheme="pink"
-          mr={2}
-        >
-          Marketplace
-        </Button>
-        <Button
-          onClick={() => onHeaderClick("myAssets")}
-          colorScheme="purple"
-          mr={2}
-        >
-          My Assets
-        </Button>
-        <Button onClick={() => onHeaderClick("editor")} colorScheme="orange">
-          Editor
-        </Button>
+        <Link as={RouterLink} to="/town" mr={2}><Button colorScheme="yellow">Town</Button></Link>
+        <Link as={RouterLink} to="/marketplace" mr={2}><Button colorScheme="pink">Marketplace</Button></Link>
+        <Link as={RouterLink} to="/my-assets" mr={2}><Button colorScheme="purple">My Assets</Button></Link>
+        <Link as={RouterLink} to="/editor"><Button colorScheme="orange">Editor</Button></Link>
       </Box>
       <Flex alignItems="center">
         <Text fontSize="md" color="white" mr={4}>
