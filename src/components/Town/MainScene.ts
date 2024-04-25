@@ -6,6 +6,7 @@ export default class MainScene extends Phaser.Scene {
     private dragging = false;
     private lastPointerPosition = new Phaser.Math.Vector2();
     private dragDistanceThreshold = 5;
+    private lastPinchDistance: number | null = null; // Add this line to declare the property
 
     constructor() {
         super({ key: 'MainScene' });
@@ -76,20 +77,51 @@ export default class MainScene extends Phaser.Scene {
 
     private setupZooming(): void {
         this.input.on('wheel', (pointer: Phaser.Input.Pointer, _: any, _deltaX: number, deltaY: number) => {
-            pointer.event.preventDefault(); // Prevent default scrolling behavior
-            const zoomAmount = deltaY * -0.005; // Adjusted sensitivity for a smoother experience
-            let newZoom = this.cameras.main.zoom + zoomAmount;
-
-            const worldWidth = this.bg.displayWidth;
-            const worldHeight = this.bg.displayHeight;
-            const minZoomX = this.cameras.main.width / worldWidth;
-            const minZoomY = this.cameras.main.height / worldHeight;
-            const minZoom = Math.max(minZoomX, minZoomY);
-
-            newZoom = Phaser.Math.Clamp(newZoom, minZoom, 2); // Adjust max zoom level as needed
-            this.cameras.main.zoomTo(newZoom, 300); // 300 milliseconds for smooth transition
+            pointer.event.preventDefault();
+            const zoomAmount = deltaY * -0.005;
+            this.adjustZoom(zoomAmount);
+        });
+    
+        // Handle pinch-to-zoom on touch devices
+        this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            if (pointer.event instanceof TouchEvent && pointer.event.touches.length > 1) {
+                this.dragging = false;  // Disable dragging when pinching
+            }
+        });
+    
+        this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+            if (pointer.event instanceof TouchEvent && pointer.event.touches.length === 2) {
+                let touch1 = pointer.event.touches[0];
+                let touch2 = pointer.event.touches[1];
+                let currentDistance = Phaser.Math.Distance.Between(touch1.pageX, touch1.pageY, touch2.pageX, touch2.pageY);
+    
+                if (this.lastPinchDistance) {
+                    let distanceDiff = currentDistance - this.lastPinchDistance;
+                    const zoomAmount = distanceDiff * 0.001;
+                    this.adjustZoom(zoomAmount);
+                }
+                this.lastPinchDistance = currentDistance;
+            }
+        });
+    
+        this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+            if (pointer.event instanceof TouchEvent && pointer.event.touches.length < 2) {
+                this.lastPinchDistance = null;
+            }
         });
     }
+    
+    private adjustZoom(zoomAmount: number): void {
+        let newZoom = this.cameras.main.zoom + zoomAmount;
+        const worldWidth = this.bg.displayWidth;
+        const worldHeight = this.bg.displayHeight;
+        const minZoomX = this.cameras.main.width / worldWidth;
+        const minZoomY = this.cameras.main.height / worldHeight;
+        const minZoom = Math.max(minZoomX, minZoomY);
+        newZoom = Phaser.Math.Clamp(newZoom, minZoom, 2);
+        this.cameras.main.zoomTo(newZoom, 300);
+    }
+    
 
     private setupKeyboardNavigation(): void {
         this.input.keyboard?.on('keydown', (event: { key: any; }) => {
