@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Coordinate Visualization with Labels</title>
+</head>
+<body>
+    <div id="svgContainer"></div>
+    <script>
+        // Define the color constants and grid properties
+        const Colors = {
+            EVEN: `#100e13`,
+            ODD: `#0c0b0e`,
+            FILL: `#53eeef`
+        };
+
+        // Input coordinate for the grid
+        const coordinate = { x: 0, y: 0 }; // Example coordinate; change to test different positions
+
+        // Grid properties
+        const gridSize = 500;
+        const sectionsPerSide = 3;
+        const sectionSize = gridSize / sectionsPerSide;
+
+        // Determine the SVG grid properties
+        const size = 512 / sectionsPerSide; // SVG grid size to fit within 512x512 SVG
+        const padding = size * 0.05;
+        const cellSize = size - 2 * padding;
+
+        // Determine which section the coordinate falls into
+        const sectionX = Math.floor(coordinate.x / sectionSize);
+        const sectionY = Math.floor(coordinate.y / sectionSize);
+
+        // SVG squares are indexed from bottom-left (0,0) to top-right (2,2)
+        const svgX = sectionX;
+        const svgY = sectionsPerSide - 1 - sectionY; // Invert Y to match SVG rendering
+
+        // Start the SVG content with a black background
+        let svgContent = `<rect x="0" y="0" width="512" height="512" fill="black" />`;
+
+        // Loop to create the grid cells
+        for (let y = 2; y >= 0; y--) {
+            for (let x = 0; x < 3; x++) {
+                // Calculate the position and padding
+                const posX = x * size + padding;
+                const posY = y * size + padding;
+
+                // Determine fill color based on the specific section or odd/even property
+                const isHighlighted = x === svgX && y === svgY;
+                let fill = isHighlighted ? Colors.FILL : ((x + y) % 2 === 0 ? Colors.EVEN : Colors.ODD);
+
+                // Add the rect element for this cell with adjusted size
+                svgContent += `<rect x="${posX}" y="${posY}" width="${cellSize}" height="${cellSize}" fill="${fill}" stroke="black" />`;
+            }
+        }
+
+        // Determine text position and color
+        const textFill = Colors.FILL; // Text color same as highlighted square
+        const textPosition = svgY > 1 ? 10 : 500; // Position text at the top if highlighted square is in the bottom two rows, else at the bottom
+        const coordinateText = `[${coordinate.x}, ${coordinate.y}]`;
+
+        // Add the text to the SVG
+        svgContent += `<text x="256" y="${textPosition}" fill="${textFill}" font-size="24" text-anchor="middle">${coordinateText}</text>`;
+
+        // Wrap the content in the <svg> element with fixed dimensions
+        svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">${svgContent}</svg>`;
+
+        // Render the SVG to the container
+        document.getElementById('svgContainer').innerHTML = svgContent;
+    </script>
+</body>
+</html>
