@@ -14,6 +14,7 @@ interface AuthContextInterface {
   userAddress?: string;
   isLoggedIn: boolean;
   signature?: string;
+  provider?: SafeEventEmitterProvider | null;
 }
 
 const AuthContext = createContext<AuthContextInterface>({
@@ -23,6 +24,7 @@ const AuthContext = createContext<AuthContextInterface>({
   userAddress: undefined,
   isLoggedIn: false,
   signature: undefined,
+  provider: null,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -275,6 +277,7 @@ export const AuthContextProvider = ({
         userAddress,
         isLoggedIn,
         signature,
+        provider,
       }}
     >
       {children}
