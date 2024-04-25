@@ -10,6 +10,7 @@ import {
 import { AtlasTile } from "../../../types/atlasTypes";
 import Popup from "./Popup/Popup";
 import { useAuth } from "../../../context/auth.context";
+import { useMarketplace } from "../../../context/marketplace.context";
 
 let atlas: Record<string, AtlasTile> | null = null;
 let selected: Coord[] = [];
@@ -42,6 +43,8 @@ const MarketplaceGrid: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const { userAddress } = useAuth();
+
+  const { fetchUserBalance } = useMarketplace();
 
   useEffect(() => {
     loadTiles(setAtlasLoaded).catch(console.error);
@@ -152,6 +155,9 @@ const MarketplaceGrid: React.FC = () => {
 
   return (
     <div className="grid-container">
+      <button type="button" onClick={() => fetchUserBalance(true)}>
+        Allow Bag
+      </button>
       {atlasLoaded ? (
         <>
           <TileMap
