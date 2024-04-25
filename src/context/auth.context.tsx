@@ -27,12 +27,14 @@ const AuthContext = createContext<AuthContextInterface>({
 
 export const useAuth = () => useContext(AuthContext);
 
-const clientId = process.env.NEXT_PUBLIC_REACT_APP_WEB3AUTH_CLIENT_ID || "";
+const clientId =
+  "BHdopYoGj2lbGUaZGHLbfov4nbX7nQTuR_-aCTn6WnMTkGPnIwvkIaxmyyfFlkxNPLJAe_l6JzFo88I6EXFMAwI";
 
 const polygonRpcProvider = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
   chainId: "0x89",
-  rpcTarget: process.env.NEXT_PUBLIC_REACT_APP_POLYGON_RPC_URL || "",
+  rpcTarget:
+    "https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c",
   displayName: "Polygon",
   blockExplorer: "https://polygonscan.com/",
   ticker: "MATIC",
@@ -126,6 +128,13 @@ export const AuthContextProvider = ({
   useEffect(() => {
     const execute = async () => {
       const signature = await getSignature();
+      if (provider) {
+        const etherProvider = new ethers.providers.Web3Provider(provider);
+        const signer = etherProvider.getSigner();
+        const address = await signer.getAddress();
+        setUserAddress(address);
+      }
+
       if (!signature) {
         setIsLoggedIn(false);
         await logout();
