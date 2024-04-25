@@ -17,7 +17,7 @@ let atlas: Record<string, AtlasTile> | null = null;
 let selected: Coord[] = [];
 let stateSelected = false;
 
-let userWallet = "0xea5fed1d0141f14de11249577921b08783d6a360";
+
 
 const getCoords = (x: number | string, y: number | string) => `${x},${y}`;
 
@@ -112,15 +112,15 @@ const MarketplaceGrid: React.FC = () => {
       const selTile = atlas?.[tileId]; // Correct usage of optional chaining
       if (!selTile) continue;
 
-      if (selTile.owner !== userWallet || !selTile.forSale) {
+      if (selTile.owner !== userAddress || !selTile.forSale) {
         canCancel = false; // Cannot cancel if any tile is not owned by the user or not for sale
       }
 
-      if (selTile.owner !== userWallet || selTile.forSale) {
+      if (selTile.owner !== userAddress || selTile.forSale) {
         canSell = false; // Cannot sell if any tile is not owned by the user
       }
 
-      if (selTile.owner === userWallet || !selTile.forSale) {
+      if (selTile.owner === userAddress || !selTile.forSale) {
         canBuy = false; // Cannot buy if any tile is owned by the user or not for sale
       }
     }

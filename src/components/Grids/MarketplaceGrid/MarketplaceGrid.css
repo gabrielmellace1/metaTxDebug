@@ -1,5 +1,6 @@
 .react-tile-map {
   position: relative;
+  background-color:black;
 }
 
 .react-tile-map-canvas.clickable {

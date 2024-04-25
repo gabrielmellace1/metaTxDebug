@@ -16,9 +16,11 @@ function App() {
   const [gridType, setGridType] = useState<string>("town");
   const [showAbout, setShowAbout] = useState(false);
 
-  const handleHeaderClick = (type: string) => {
-    setGridType(type);
-  };
+const handleHeaderClick = (type: string) => {
+  setGridType(type);
+  setShowAbout(false); // Add this line to hide the About section when other headers are clicked
+};
+
 
   const confirmModal = () => {
     setShowAbout(true);
@@ -37,8 +39,8 @@ function App() {
       <AuthContextProvider>
         <MarketplaceContextProvider>
           <Header onHeaderClick={handleHeaderClick} />
-          <Suspense fallback={<div>Loading...</div>}>
-            <ActiveComponent />
+          <Suspense fallback={<Loading />}>
+          {showAbout ? <About /> : <ActiveComponent />}
           </Suspense>
         </MarketplaceContextProvider>
       </AuthContextProvider>
