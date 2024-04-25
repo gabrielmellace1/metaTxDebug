@@ -2,6 +2,7 @@ import { Suspense, lazy, useState } from "react";
 import "./App.css";
 import Header from "./components/Header/Header";
 import { AuthContextProvider } from "./context/auth.context";
+import { MarketplaceContextProvider } from "./context/marketplace.context";
 // Lazy-loaded components
 const TownGrid = lazy(() => import("./components/Town/TownComponent")); // Assuming TownGrid uses Phaser
 const MarketplaceGrid = lazy(
@@ -41,10 +42,12 @@ function App() {
   return (
     <div className="app">
       <AuthContextProvider>
-        <Header onHeaderClick={handleHeaderClick} />
-        <Suspense fallback={<div>Loading...</div>}>
-          <ActiveComponent />
-        </Suspense>
+        <MarketplaceContextProvider>
+          <Header onHeaderClick={handleHeaderClick} />
+          <Suspense fallback={<div>Loading...</div>}>
+            <ActiveComponent />
+          </Suspense>
+        </MarketplaceContextProvider>
       </AuthContextProvider>
     </div>
   );
