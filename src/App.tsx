@@ -2,6 +2,7 @@ import { Suspense, lazy, useState } from "react";
 import "./App.css";
 import Header from "./components/Header/Header";
 import { AuthContextProvider } from "./context/auth.context";
+import { MarketplaceContextProvider } from "./context/marketplace.context";
 import WelcomeModal from "./components/Modals/WelcomeModal";
 import Loading from "./components/Utils/Loading";
 
@@ -34,10 +35,12 @@ function App() {
   return (
     <div className="app">
       <AuthContextProvider>
-        <Header onHeaderClick={handleHeaderClick} />
-        <Suspense fallback={<Loading />}>
-          {showAbout ? <About /> : <ActiveComponent />}
-        </Suspense>
+        <MarketplaceContextProvider>
+          <Header onHeaderClick={handleHeaderClick} />
+          <Suspense fallback={<div>Loading...</div>}>
+            <ActiveComponent />
+          </Suspense>
+        </MarketplaceContextProvider>
       </AuthContextProvider>
       <WelcomeModal onConfirm={confirmModal} />
     </div>
