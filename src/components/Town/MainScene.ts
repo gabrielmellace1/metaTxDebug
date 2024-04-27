@@ -86,19 +86,26 @@ export default class MainScene extends Phaser.Scene {
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             if (pointer.event instanceof TouchEvent && pointer.event.touches.length > 1) {
                 this.dragging = false;  // Disable dragging when pinching
+                const [touch1, touch2] = pointer.event.touches;
+                this.lastPinchDistance = Phaser.Math.Distance.Between(
+                    touch1.pageX, touch1.pageY, touch2.pageX, touch2.pageY
+                );
+                console.log('Pinch start distance:', this.lastPinchDistance);
             }
         });
     
         this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
             if (pointer.event instanceof TouchEvent && pointer.event.touches.length === 2) {
-                let touch1 = pointer.event.touches[0];
-                let touch2 = pointer.event.touches[1];
-                let currentDistance = Phaser.Math.Distance.Between(touch1.pageX, touch1.pageY, touch2.pageX, touch2.pageY);
+                const [touch1, touch2] = pointer.event.touches;
+                let currentDistance = Phaser.Math.Distance.Between(
+                    touch1.pageX, touch1.pageY, touch2.pageX, touch2.pageY
+                );
     
                 if (this.lastPinchDistance) {
                     let distanceDiff = currentDistance - this.lastPinchDistance;
                     const zoomAmount = distanceDiff * 0.001;
                     this.adjustZoom(zoomAmount);
+                    console.log('Pinching - Current Distance:', currentDistance, 'Zoom Amount:', zoomAmount);
                 }
                 this.lastPinchDistance = currentDistance;
             }
@@ -107,6 +114,7 @@ export default class MainScene extends Phaser.Scene {
         this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
             if (pointer.event instanceof TouchEvent && pointer.event.touches.length < 2) {
                 this.lastPinchDistance = null;
+                console.log('Pinch end');
             }
         });
     }
@@ -120,7 +128,9 @@ export default class MainScene extends Phaser.Scene {
         const minZoom = Math.max(minZoomX, minZoomY);
         newZoom = Phaser.Math.Clamp(newZoom, minZoom, 2);
         this.cameras.main.zoomTo(newZoom, 300);
+        console.log('Adjusted Zoom:', newZoom);
     }
+    
     
 
     private setupKeyboardNavigation(): void {

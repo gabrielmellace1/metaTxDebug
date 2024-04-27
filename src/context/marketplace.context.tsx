@@ -19,6 +19,8 @@ interface MarketplaceContextInterface {
   userBalance: number;
   DGMarketplace: any;
   fetchUserBalance: (shouldApprove: boolean) => Promise<boolean>;
+  getUserBalanceAndAllowance: () => Promise<{ balance: number; allowance: number }>;
+  fetchTransactionStatus: (txHash: string, setInfoModalHeader: Function, setInfoModalBody: Function) => Promise<any>;
 }
 
 const MarketplaceContext = createContext<MarketplaceContextInterface>({
@@ -27,6 +29,8 @@ const MarketplaceContext = createContext<MarketplaceContextInterface>({
   userBalance: 0,
   DGMarketplace: null,
   fetchUserBalance: () => Promise.resolve(false),
+  getUserBalanceAndAllowance: () => Promise.resolve({ balance: 0, allowance: 0 }),
+  fetchTransactionStatus: (txHash: string, setInfoModalHeader: Function, setInfoModalBody: Function) => Promise.resolve(null),
 });
 
 const createNotification = (title: string, message: string) => {
@@ -112,6 +116,35 @@ export const MarketplaceContextProvider = ({
     return false;
   };
 
+  const getUserBalanceAndAllowance = async (): Promise<{ balance: number; allowance: number }> => {
+    if (!userAddress) return { balance: 0, allowance: 0 };
+
+    const { balance, allowance } = await DGMarketplaceInstance.getIceAllowance(userAddress);
+    return { balance, allowance };
+  };
+
+  const fetchTransactionStatus = async (txHash: string, setInfoModalHeader: Function,
+     setInfoModalBody: Function) => {
+    try {
+      // Implement your logic to fetch transaction status using DGMarketplaceInstance (or another provider)
+      // ...
+      setInfoModalHeader("Processing status"); // Update modal header while fetching
+      setInfoModalBody("Please wait, waiting for transaction: "+txHash);
+  
+      const status = await DGMarketplaceInstance.getTransactionStatus(txHash); // Replace with your implementation
+      
+      
+      return status; // Return the retrieved transaction status object
+    } catch (error) {
+      console.error("Error fetching transaction status:", error);
+      setInfoModalHeader("Transaction Status Unknown");
+      setInfoModalBody("Unable to retrieve transaction status. Please try again later.");
+      throw error; // Re-throw the error for handling in BuyModal.tsx
+    } finally {
+      // Consider resetting modal info after a certain time if status retrieval takes too long
+    }
+  };
+
   return (
     <MarketplaceContext.Provider
       value={{
@@ -120,6 +153,8 @@ export const MarketplaceContextProvider = ({
         userAllowance,
         DGMarketplace: DGMarketplaceInstance,
         fetchUserBalance,
+        getUserBalanceAndAllowance,
+        fetchTransactionStatus
       }}
     >
       {children}

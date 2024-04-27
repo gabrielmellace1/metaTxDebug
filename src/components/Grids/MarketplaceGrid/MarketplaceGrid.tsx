@@ -13,9 +13,18 @@ import { useAuth } from "../../../context/auth.context";
 import { useMarketplace } from "../../../context/marketplace.context";
 import Loading from '../../Utils/Loading';
 
+// Change the type of stateSelected to boolean and remove the incorrect usage as a function
+interface MarketplaceGridProps {
+  userAddress: string | undefined;
+  setSelectedTiles: (tiles: AtlasTile[]) => void;
+  stateSelected: boolean;
+  setStateSelected: (state: boolean) => void;
+}
+
+
 let atlas: Record<string, AtlasTile> | null = null;
 let selected: Coord[] = [];
-let stateSelected = false;
+
 
 
 
@@ -37,13 +46,13 @@ const selectedStrokeLayer: Layer = (x, y) =>
 const selectedFillLayer: Layer = (x, y) =>
   isSelected(x, y) ? { color: "#ff9990", scale: 1.2 } : null;
 
-const MarketplaceGrid: React.FC = () => {
+const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelectedTiles,stateSelected,setStateSelected }) => {
   const [atlasLoaded, setAtlasLoaded] = useState(false);
   const [hoveredTile, setHoveredTile] = useState<AtlasTile | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  const { userAddress } = useAuth();
+ 
 
   const { fetchUserBalance } = useMarketplace();
 
@@ -73,7 +82,8 @@ const MarketplaceGrid: React.FC = () => {
     const tile = atlas ? atlas[id] : null;
 
     if (tile) {
-      if (!tile.forSale && tile.owner !== userAddress) {
+      if (!tile.forSale && tile.owner !== userAddress?.toLowerCase()) {
+        console.log(tile.owner+" "+userAddress);
         return;
       }
       if (tile.isOnState) {
@@ -87,11 +97,13 @@ const MarketplaceGrid: React.FC = () => {
             }
           });
         }
-        stateSelected = true;
+        
+        setStateSelected(true);
       } else {
         if (stateSelected) {
           selected = [];
-          stateSelected = false;
+          
+          setStateSelected(false);
         }
 
         if (isSelected(x, y)) {
@@ -102,37 +114,10 @@ const MarketplaceGrid: React.FC = () => {
       }
     }
 
-    // Determine actions based on the properties of the selected tiles
-    let canBuy = true,
-      canSell = true,
-      canCancel = true;
+   
+    setSelectedTiles(selected.map(coord => atlas ? atlas[getCoords(coord.x, coord.y)] : null).filter((tile): tile is AtlasTile => tile !== null));
 
-    for (const coord of selected) {
-      const tileId = getCoords(coord.x, coord.y);
-      const selTile = atlas?.[tileId]; // Correct usage of optional chaining
-      if (!selTile) continue;
-
-      if (selTile.owner !== userAddress || !selTile.forSale) {
-        canCancel = false; // Cannot cancel if any tile is not owned by the user or not for sale
-      }
-
-      if (selTile.owner !== userAddress || selTile.forSale) {
-        canSell = false; // Cannot sell if any tile is not owned by the user
-      }
-
-      if (selTile.owner === userAddress || !selTile.forSale) {
-        canBuy = false; // Cannot buy if any tile is owned by the user or not for sale
-      }
-    }
-
-    // Output the status of actions
-    console.log("Actions enabled/disabled:", {
-      Buy: canBuy ? "Enabled" : "Disabled",
-      Sell: canSell ? "Enabled" : "Disabled",
-      Cancel: canCancel ? "Enabled" : "Disabled",
-    });
-
-    console.log("Selected Tiles:", selected);
+    
   }
 
   const atlasLayer: Layer = React.useCallback(
