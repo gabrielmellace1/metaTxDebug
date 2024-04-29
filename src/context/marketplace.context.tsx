@@ -21,6 +21,7 @@ interface MarketplaceContextInterface {
   fetchUserBalance: (shouldApprove: boolean) => Promise<boolean>;
   getUserBalanceAndAllowance: () => Promise<{ balance: number; allowance: number }>;
   fetchTransactionStatus: (txHash: string, setInfoModalHeader: Function, setInfoModalBody: Function) => Promise<any>;
+  buyNFT:(userAddress:string,tokenAddress:string,tokenId:string,price:string) =>Promise<any>;
 }
 
 const MarketplaceContext = createContext<MarketplaceContextInterface>({
@@ -31,6 +32,7 @@ const MarketplaceContext = createContext<MarketplaceContextInterface>({
   fetchUserBalance: () => Promise.resolve(false),
   getUserBalanceAndAllowance: () => Promise.resolve({ balance: 0, allowance: 0 }),
   fetchTransactionStatus: (txHash: string, setInfoModalHeader: Function, setInfoModalBody: Function) => Promise.resolve(null),
+  buyNFT:(userAddress:string,tokenAddress:string,tokenId:string,price:string) => Promise.resolve(null),
 });
 
 const createNotification = (title: string, message: string) => {
@@ -145,6 +147,21 @@ export const MarketplaceContextProvider = ({
     }
   };
 
+  const buyNFT =  async (userAddress: string, tokenAddress: string, tokenId: string, price: string) => {
+    try {
+      if (!userAddress) {
+        throw new Error("User address not found");
+      }
+
+      const txHash = await DGMarketplaceInstance.buyItem(userAddress, tokenAddress, tokenId, price);
+      console.log(txHash);
+      return txHash;
+    } catch (error) {
+      console.error(error);
+      throw error; // Re-throw the error for handling in BuyModal.tsx
+    }
+  }
+
   return (
     <MarketplaceContext.Provider
       value={{
@@ -154,7 +171,8 @@ export const MarketplaceContextProvider = ({
         DGMarketplace: DGMarketplaceInstance,
         fetchUserBalance,
         getUserBalanceAndAllowance,
-        fetchTransactionStatus
+        fetchTransactionStatus,
+        buyNFT
       }}
     >
       {children}

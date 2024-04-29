@@ -2,13 +2,13 @@
 const GRID_WIDTH = 500; 
 export const COLOR_BY_TYPE: Record<number, string> = Object.freeze({
   0: '#5054d4', // my parcels 1
-  1: '#ff4053', // my parcels on sale 1
-  2: '#4043a9', // my estates 1
-  3: '#cc3342', // my estates on sale 1
+  1: '#d350d4', // my parcels on sale 1
+  2: '#5054d4', // my estates 1
+  3: '#d350d4', // my estates on sale 1
   4: '#716c7a', // Other parcels 1
   5: '#ff4053', // Other parcels on sale 1
   6: '#434049', // others states 1
-  7: '#cc3342', // other states on sale
+  7: '#ff4053', // other states on sale
   8: '#18141a', // background
   9: '#110e13', // loading odd
 
