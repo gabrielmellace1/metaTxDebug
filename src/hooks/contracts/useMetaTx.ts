@@ -1,17 +1,23 @@
-import { useContext } from 'react';
+
 import { ethers } from 'ethers';
 import { useAuth } from '../../context/auth.context'; // Adjust the import path to your AuthContext
 import { getContractConfig } from './contractConfigs';
 
 
-const useBuyItem = () => {
+const metaTx = () => {
     const { provider, userAddress } = useAuth();
 
-    const buyItem = async (configName: string, functionName: string, params: any[]) => {
-        if (!provider || !userAddress) {
-            console.error("Provider or user address not found");
-            return;
-        }
+    var POLProvider= new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
+    var POLSigner = POLProvider.getSigner(userAddress);
+
+    if (!provider || !userAddress) {
+        console.error("Provider or user address not found");
+        return async () => { throw new Error("Provider or user address not found"); };
+    }
+    const ETHprovider = new ethers.providers.Web3Provider(provider);
+
+    const sendMetaTX = async (configName: string, functionName: string, params: any[]) => {
+       
 
         const config = getContractConfig(configName);
         if (!config) {
@@ -21,15 +27,20 @@ const useBuyItem = () => {
 
         try {
 
-            // ETH conf
-            const ETHSigner = new ethers.providers.Web3Provider(provider).getSigner();
+            console.log(provider);
+
+            
+            
+            console.log(ETHprovider);
+            
+            const ETHSigner = ETHprovider.getSigner();
+
+
 
             // Polygon confg
-            var POLProvider= new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
-            var POLSigner = POLProvider.getSigner(userAddress);
-
-            console.log(POLSigner);
             
+
+
             // Load contract
             const contract = new ethers.Contract(config.address, config.abi, POLSigner);
             // Get nonce
@@ -55,16 +66,16 @@ const useBuyItem = () => {
                 primaryType: "MetaTransaction",
                 message: message,
             });
+            console.log(dataToSign);
 
             // Requesting a signature
             // This one works for metamask, but not for web3auth
              const signature = await ETHSigner._signTypedData(config.domain, config.types, message);
 
-            //const signature = await requestUserSignature(dataToSign, 'metamask');
+            
+           //const signature = await requestUserSignature(ETHprovider,dataToSign, 'metamask');
 
-
-
-            console.log('Signature:', signature);
+          
 
 
 
@@ -88,17 +99,43 @@ const useBuyItem = () => {
             const data = await response.json();
             console.log("Received response:", data);
 
-
-            return signature; // Here you would normally handle the relay
+            return data.txHash;
         } catch (error) {
             console.error("Error processing the buy item transaction:", error);
             throw error;
         }
     };
 
-    return buyItem;
+    return sendMetaTX;
 };
 
+
+// async function requestUserSignature(provider: ethers.providers.Web3Provider, dataToSign: string, walletType: string) {
+//     let signature;
+
+//     console.log(`Requesting user signature with walletType: ${walletType}`);
+//     console.log("Data to sign:", dataToSign);
+
+//     if (walletType === "metamask") {
+//         // Assuming provider is passed as an instance of ethers.providers.Web3Provider
+//         const signer = provider.getSigner();
+//         const account = await signer.getAddress();
+
+//         try {
+//             // MetaMask requires the domain and types separately from the message
+//             signature = await provider.send('eth_signTypedData_v4', [
+//                 account, // Address obtained from the signer
+//                 JSON.parse(dataToSign) // Ensure dataToSign is correctly formatted per EIP-712
+//             ]);
+//             console.log("Signature received:", signature);
+//         } catch (error) {
+//             console.error("Error signing data:", error);
+//         }
+//     }
+//     // Handle other wallet types similarly
+
+//     return signature;
+// }
 
 async function post(url: any, body: any) {
     return fetch(`${url}`, {
@@ -111,46 +148,9 @@ async function post(url: any, body: any) {
 }
 
 
-
-// async function  requestUserSignature(dataToSign: any, walletType: any) {
-//     let status;
-
-//     console.log(`Requesting user signature with walletType: ${walletType}`);
-//           console.log("Data to sign:", dataToSign);
-
-
-//     switch (walletType) {
-//         case "metamask":
-//           console.log(userAddress);
-//           console.log(dataToSign);
-//             status = await window.ethereum.request({
-//                 method: "eth_signTypedData_v3",
-//                 params: [userAddress, dataToSign],
-//                 jsonrpc: "2.0",
-//                 id: 999999999999,
-//             });
-//             break;
-//         case "web3auth":
-//             // const etherProvider = new ethers.providers.Web3Provider(
-//             //     this.walletProvider
-//             // );
-//             // const signer = etherProvider.getSigner();
-//             // status = await signer.provider.send("eth_signTypedData_v4", [
-//             //     userWallet,
-//             //     dataToSign,
-//             // ]);
-//             break;
-//         default:
-//             break;
-//     }
-
-//     console.log("Signature status:", status);
-//     return status;
-// }
-
 function getExecuteMetaTransactionData(
     account: any,
-    fullSignature: string,
+    fullSignature: any,
     functionSignature: any
 ) {
     const signature = fullSignature.replace("0x", "");
@@ -213,4 +213,4 @@ function  padEnd(src: string | any[], length: number) {
     return src;
 }
 
-export default useBuyItem;
+export default metaTx;

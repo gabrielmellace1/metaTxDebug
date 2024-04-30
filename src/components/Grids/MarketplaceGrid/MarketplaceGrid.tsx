@@ -9,8 +9,6 @@ import {
 } from "../../../helpers/GridHelper";
 import { AtlasTile } from "../../../types/atlasTypes";
 import Popup from "./Popup/Popup";
-import { useAuth } from "../../../context/auth.context";
-import { useMarketplace } from "../../../context/marketplace.context";
 import Loading from '../../Utils/Loading';
 
 // Change the type of stateSelected to boolean and remove the incorrect usage as a function
@@ -53,8 +51,6 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelect
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
  
-
-  const { fetchUserBalance } = useMarketplace();
 
   useEffect(() => {
     loadTiles(setAtlasLoaded).catch(console.error);
@@ -141,9 +137,6 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelect
 
   return (
     <div className="grid-container">
-      <button type="button" onClick={() => fetchUserBalance(true)}>
-        Allow Bag
-      </button>
       {atlasLoaded ? (
         <>
           <TileMap

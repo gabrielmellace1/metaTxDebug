@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, Button } from '@chakra-ui/react';
-import { ModalProps } from '@chakra-ui/react'; // Import ModalProps
+
 
 type InformationModalProps = {
   isOpen: boolean;

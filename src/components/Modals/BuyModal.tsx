@@ -1,29 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, Box, HStack, VStack, Text, RadioGroup, Radio, Button } from '@chakra-ui/react';
-import { useMarketplace } from '../../context/marketplace.context';
+import React, {  useState } from 'react';
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, VStack, Text, RadioGroup, Radio, Button } from '@chakra-ui/react';
+
 import { ethers } from 'ethers';
 import InformationModal from './InformationModal';
 import ConfirmModal from './ConfirmModal';
-import { DGMarketplaceInstance } from 'dg-marketplace-sdk';
-import { useAuth } from '../../context/auth.context';
-
+import useBAG from '../../hooks/contracts/useBag';
+import { addresses } from '../../hooks/contracts/contractConfigs';
+import useMetaTx from '../../hooks/contracts/useMetaTx';
+import useTxChecker from '../../hooks/contracts/useTxChecker';
+import useMarketplace from '../../hooks/contracts/useMarketplace';
 
 type BuyModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  totalCost:number;
+  itemCosts:number[];
   tokenIds:string[];
   stateSelected:boolean;
 };
 
-const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,totalCost,tokenIds,stateSelected }) => {
+const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,stateSelected }) => {
 
 
-    let { userAddress } = useAuth();
-     
+    
+    const bag = useBAG();
+    const metaTx = useMetaTx();
+    const txChecker = useTxChecker();
+    const marketplace = useMarketplace();
+
+    let nftAddress = stateSelected? addresses.state:addresses.square;
+
   const [selectedOption, setSelectedOption] = useState('1'); // Initial selected option
-  const { getUserBalanceAndAllowance, approveIce,fetchTransactionStatus,buyNFT } = useMarketplace();
-
 
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [infoModalHeader,setInfoModalHeader] = useState("");
@@ -44,42 +50,38 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,totalCost,tokenIds,
   const handleBuyClick = async () => {
         switch(selectedOption) {
             case '1':
-                const { balance, allowance } = await getUserBalanceAndAllowance();
-                const balanceInWei = ethers.utils.parseEther(balance.toString()).toBigInt();
-                console.log(totalCost);
-                
+                const balance = await bag?.getBalance(); 
+                const allowance = await bag?.getAllowance(addresses.marketplace); 
+                const totalCost = itemCosts.reduce((a, b) => a + b, 0);
 
-                if (balanceInWei < totalCost) {
+                if (balance < totalCost) {
                     setInfoModalHeader("Insufficient balance")
                     setInfoModalBody("Oops, looks like you don't have enough balance to complete this purchase.")
                     setShowInfoModal(true);
-
+                    return;
                 }
                 else {
+                    if (allowance >= totalCost) {
 
-                    if (allowance >= totalCost*999999999999999999999999999999999999999999999999999999999) {
-                        
+                     
+                      if(marketplace && await marketplace.areOrdersActive(nftAddress,tokenIds)) {
                         setConfirmPurchaseHeader("Confirm purchase?");
                         setConfirmPurchaseBody("You are about to buy squares for a total of "+ethers.utils.formatEther(totalCost.toString())+" BAG");
-                        console.log(totalCost);
                         setConfirmPurchase(true);
-
-
+                      }
+                      else {
+                        setInfoModalHeader("Oh no!")
+                        setInfoModalBody("Oh no! It looks like some of the elements you have selected are no longer available")
+                        setShowInfoModal(true);
+                        return;
+                      }
                       } else {
-      
                           setConfirmModalHeader("Spending authorization required");
                           setConfirmModalBody("In order to perform the purchase, you need to authorize the marketplace to spend your BAG tokens and receive your square NFTs");
                           setShowConfirmModal(true);
-                          
-                          
-                          console.log("Allowance not enough");
                           return;
                       }
-
-                } 
-
-                
-                
+                }        
 
             break;
 
@@ -92,24 +94,28 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,totalCost,tokenIds,
 
   const handleAllowanceConfirm = async () => { // Function to handle user confirmation
     try {
-      const tx = await approveIce();
-      
+      const tx = await metaTx('bag','approve',[ '0x63eBcB9c8e9A40dBA33676CAF0A9837Efa17CB56',"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]);
+      console.log("Tx is:"+tx);
+
       setInfoModalHeader("Processing authorization");
       setInfoModalBody("The transaction is being processed, one moment please. Tx hash: " + tx);
       setShowConfirmModal(false); // Close confirmation modal
       setShowInfoModal(true); // Open informative modal
 
       try {
-        const status = await fetchTransactionStatus(tx,setInfoModalHeader,setInfoModalBody); // Use the context function
+        if(tx){
+          const status = await txChecker.checkTransactionStatus(tx,setInfoModalHeader,setInfoModalBody); // Use the context function
         
 
-        if (status?.status) {
-          setInfoModalHeader("Authorization succesfull");
-          setInfoModalBody("The authorization has been process sucesfully");
-        } else {
-          setInfoModalHeader("Upps, authorization failed");
-          setInfoModalBody("There was an error processing the authorization");
+          if (status?.status) {
+            setInfoModalHeader("Authorization succesfull");
+            setInfoModalBody("The authorization has been process sucesfully");
+          } else {
+            setInfoModalHeader("Upps, authorization failed");
+            setInfoModalBody("There was an error processing the authorization");
+          }
         }
+        
       } catch (error) {
         console.error("Error getting transaction status:", error);
         setInfoModalHeader("Transaction Status Unknown");
@@ -128,22 +134,26 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,totalCost,tokenIds,
 
   
   const handleBuyConfirm = async () => {
+
     try {
-
-
-        let nftAddress = stateSelected? "0xA77aC08d191c2390f692e5d1Fa0B98c7e40F573f":"0x9Dbd35E3c27d4494f2d87539De830cfd42037c5E";
+       
         
-        if(userAddress) {
-            const tx = await buyNFT(userAddress,nftAddress,tokenIds[0],totalCost.toString());
-            setInfoModalHeader("Processing purchase");
-            setInfoModalBody("The purchase is being processed, one moment please. Tx hash: " + tx);
+
+          const itemCostsString = itemCosts.map(num => num.toString());
+
+          const tx = await  metaTx('marketplace','buy',[ nftAddress,tokenIds,itemCostsString]);
+          
+           
             setShowConfirmModal(false); // Close confirmation modal
             setShowInfoModal(true); // Open informative modal
-    
-            try {
-            const status = await fetchTransactionStatus(tx,setInfoModalHeader,setInfoModalBody); // Use the context function
+            setInfoModalHeader("Processing purchase");
+            setInfoModalBody("The purchase is being processed, one moment please. Tx hash: " + tx);
             
     
+            try {
+
+            const status = await txChecker.checkTransactionStatus(tx,setInfoModalHeader,setInfoModalBody); // Use the context function
+
             if (status?.status) {
                 setInfoModalHeader("Purchase succesfull");
                 setInfoModalBody("The purchase has been process succesfully");
@@ -159,16 +169,15 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,totalCost,tokenIds,
             // Reset txHash after checking status
             
             }
-        }
         
         
-        
-  
-  
       } catch (error) {
-        console.error("Error approving BAG:", error);
+        console.error("There was an error processing your purchase", error);
         // Handle error appropriately, e.g., show error message to user
       }
+
+
+
   };
 
   return (

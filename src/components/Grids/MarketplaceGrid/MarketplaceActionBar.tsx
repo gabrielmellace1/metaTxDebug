@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Box, VStack, HStack, Text, Button, Flex } from '@chakra-ui/react';
 import { AtlasTile } from '../../../types/atlasTypes';
 import BuyModal from '../../Modals/BuyModal';
+import SellModal from '../../Modals/SellModal';
+import CancelModal from '../../Modals/CancelModal';
 
 type MarketplaceActionBarProps = {
   userAddress: string | undefined;
@@ -14,20 +16,23 @@ type MarketplaceActionBarProps = {
 const MarketplaceActionBar: React.FC<MarketplaceActionBarProps> = ({userAddress, selectedTiles,
   stateSelected }) => {
     
+    
 
   const [canBuy, setCanBuy] = useState(true);
   const [canSell, setCanSell] = useState(true);
   const [canCancel, setCanCancel] = useState(true);
-  const [totalCost, setTotalCost] = useState(0);
+  const [itemCosts, setItemCosts] = useState<number[]>([]);
   const [tokenIds, setTokenIds] = useState<string[]>([]); // Initialize tokenIds as an empty array
   const [buyModalOpen, setBuyModalOpen] = useState(false);
+  const [sellModalOpen, setSellModalOpen] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
   useEffect(() => {
     if (selectedTiles.length === 0) {
       setCanBuy(false);
       setCanSell(false);
       setCanCancel(false);
-      setTotalCost(0);
+      setItemCosts([]);
       setTokenIds([]);
       return; // Early return for empty selection
     }
@@ -40,10 +45,13 @@ const MarketplaceActionBar: React.FC<MarketplaceActionBarProps> = ({userAddress,
     if(selectedTiles.length > 0) {
       if(selectedTiles[0].isOnState) {
      
-        setTotalCost(selectedTiles[0].price || 0); // Use 0 if price is undefined
+        const firstCost = selectedTiles[0].price || 0;
+      setItemCosts([firstCost]);
+
         setTokenIds([selectedTiles[0].tokenId?.toString() || '']); // Convert tokenId to string (if defined)
       }else {
-        setTotalCost(selectedTiles.reduce((acc, tile) => acc + (tile.price || 0), 0));
+        const costs = selectedTiles.map(tile => tile.price || 0);
+        setItemCosts(costs);
         setTokenIds(selectedTiles.map((tile) => tile.tokenId?.toString() || ''));
       }
       selectedTiles.forEach(tile => {
@@ -80,7 +88,7 @@ const MarketplaceActionBar: React.FC<MarketplaceActionBarProps> = ({userAddress,
         </VStack>
         <VStack spacing="0">
           <Text fontSize="lg" fontWeight="bold">Amount in BAG</Text>
-          <Text fontSize="md">{totalCost}</Text>
+          <Text fontSize="md">{itemCosts.reduce((a, b) => a + b, 0)}</Text>
         </VStack>
       </HStack>
       <Box>
@@ -91,13 +99,29 @@ const MarketplaceActionBar: React.FC<MarketplaceActionBarProps> = ({userAddress,
           <BuyModal
             isOpen={buyModalOpen}
             onClose={() => setBuyModalOpen(false)}
-            totalCost={totalCost}
+            itemCosts={itemCosts}
             tokenIds={tokenIds}
             stateSelected={stateSelected}
           />
         )}
-        <Button colorScheme="green" mr="2" isDisabled={!canSell}>Sell</Button>
-        <Button colorScheme="red" isDisabled={!canCancel}>Cancel </Button>
+        {sellModalOpen && (
+          <SellModal
+            isOpen={sellModalOpen}
+            onClose={() => setSellModalOpen(false)}
+            tokenIds={tokenIds}
+            stateSelected={stateSelected}
+          />
+        )}
+        {cancelModalOpen && (
+          <CancelModal
+            isOpen={cancelModalOpen}
+            onClose={() => setCancelModalOpen(false)}
+            tokenIds={tokenIds}
+            stateSelected={stateSelected}
+          />
+        )}
+        <Button colorScheme="green" mr="2" isDisabled={!canSell} onClick={() => setSellModalOpen(true)}>Sell</Button>
+        <Button colorScheme="red" isDisabled={!canCancel} onClick={() => setCancelModalOpen(true)}>Cancel </Button>
       </Box>
     </Flex>
   );

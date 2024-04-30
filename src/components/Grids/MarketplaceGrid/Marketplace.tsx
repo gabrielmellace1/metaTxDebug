@@ -1,6 +1,6 @@
 // Import Chakra UI components
 import React, { useState } from 'react';
-import { Box, Flex, Text, Button } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import MarketplaceGrid from './MarketplaceGrid';
 import MarketplaceActionBar from './MarketplaceActionBar';
 import { AtlasTile } from '../../../types/atlasTypes';
