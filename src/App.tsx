@@ -9,7 +9,7 @@ import Loading from "./components/Utils/Loading";
 
 const TownGrid = lazy(() => import("./components/Town/TownComponent"));
 const Marketplace = lazy(() => import("./components/Grids/MarketplaceGrid/Marketplace"));
-const MyAssetsGrid = lazy(() => import("./components/Grids/MyAssetsGrid/MyAssetsGrid"));
+const MyAssets = lazy(() => import("./components/Grids/MyAssetsGrid/MyAssets"));
 const Editor = lazy(() => import("./components/Editor/Editor"));
 const About = lazy(() => import("./components/About/About"));
 
@@ -24,7 +24,7 @@ function App() {
                 <Route path="/" element={<Navigate replace to="/town" />} />
                 <Route path="/town" element={<TownGrid />} />
                 <Route path="/marketplace" element={<Marketplace />} />
-                <Route path="/my-assets" element={<MyAssetsGrid />} />
+                <Route path="/my-assets" element={<MyAssets />} />
                 <Route path="/editor" element={<Editor />} />
                 <Route path="/about" element={<About />} />
               </Routes>

@@ -20,7 +20,7 @@ type CancelModalProps = {
 
 const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, tokenIds,stateSelected }) => {
   
-  console.log("asd");
+ 
 
   const metaTx = useMetaTx();
   const txChecker = useTxChecker();
@@ -42,9 +42,16 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, tokenIds,sta
     }
     try {
 
-      const idsToSend = stateSelected ? [tokenIds[0]] : tokenIds;
+     
+
+      if(!await marketplace.areOrdersActive(nftAddress,tokenIds)) {
+        setInfoModalHeader("Cancelation failed");
+        setInfoModalBody("One or more of the items you have selected are no longer for sale");
+        setShowInfoModal(true); // Open informative modal
+        return;
+      }
       try {
-        const tx = await metaTx('marketplace','cancel',[ nftAddress,idsToSend]);
+        const tx = await metaTx('marketplace','cancel',[ nftAddress,tokenIds]);
         console.log("Tx is:"+tx);
         setInfoModalHeader("Processing cancel");
         setInfoModalBody("The transaction is being processed, one moment please. Tx hash: " + tx);

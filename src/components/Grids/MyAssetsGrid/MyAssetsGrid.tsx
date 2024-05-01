@@ -1,123 +1,164 @@
-import * as React from 'react'
-import { Coord, Layer, TileMap } from 'react-tile-map'
-import './MyAssetsGrid.css';
+import * as React from "react";
+import { useState, useEffect } from "react";
+import { Coord, Layer, TileMap } from "react-tile-map";
+import "./MyAssetsGrid.css";
+import {
+  COLOR_BY_TYPE,
+  gridProps,
+  switchColor,
+} from "../../../helpers/GridHelper";
+import { AtlasTile } from "../../../types/atlasTypes";
+import Popup from "../Popup/Popup";
+import Loading from '../../Utils/Loading';
 
-
-
-
-type AtlasTile = {
-  x: number
-  y: number
-  type: number
-  district_id?: number
-  estate_id?: number
-  left?: number
-  top?: number
-  topLeft?: number
-  price?: number
+// Change the type of stateSelected to boolean and remove the incorrect usage as a function
+interface MyAssetsGridProps {
+  userAddress: string | undefined;
+  setSelectedTiles: (tiles: AtlasTile[]) => void;
+  stateSelected: boolean;
+  setStateSelected: (state: boolean) => void;
 }
 
-let atlas: Record<string, AtlasTile> | null = null
 
-async function loadTiles() {
-  const resp = await fetch('https://api.decentraland.org/v1/tiles')
-  const json = await resp.json()
-  atlas = json.data as Record<string, AtlasTile>
+let atlas: Record<string, AtlasTile> | null = null;
+let selected: Coord[] = [];
+
+
+
+
+const getCoords = (x: number | string, y: number | string) => `${x},${y}`;
+
+async function loadTiles(setAtlasLoaded: (loaded: boolean) => void) {
+  const resp = await fetch("https://squares.town/api/graphSquares");
+  const json = await resp.json();
+  atlas = json.data as Record<string, AtlasTile>;
+  setAtlasLoaded(true);
 }
-
-loadTiles().catch(console.error)
-
-export const COLOR_BY_TYPE: Record<number, string> = Object.freeze({
-  0: '#ff9990', // my parcels
-  1: '#ff4053', // my parcels on sale
-  2: '#ff9990', // my estates
-  3: '#ff4053', // my estates on sale
-  4: '#ffbd33', // parcels/estates where I have permissions
-  5: '#5054D4', // districts
-  6: '#563db8', // contributions
-  7: '#716C7A', // roads
-  8: '#70AC76', // plazas
-  9: '#3D3A46', // owned parcel/estate
-  10: '#3D3A46', // parcels on sale (we show them as owned parcels)
-  11: '#09080A', // unowned pacel/estate
-  12: '#18141a', // background
-  13: '#110e13', // loading odd
-  14: '#0d0b0e' // loading even
-})
-
-let selected: Coord[] = []
 
 function isSelected(x: number, y: number) {
-  return selected.some(coord => coord.x === x && coord.y === y)
+  return selected.some((coord) => coord.x === x && coord.y === y);
 }
 
-const atlasLayer: Layer = (x, y) => {
-  const id = x + ',' + y
-  if (atlas !== null && id in atlas) {
-    const tile = atlas[id]
-    const color = COLOR_BY_TYPE[tile.type]
+const selectedStrokeLayer: Layer = (x, y) =>
+  isSelected(x, y) ? { color: "#ff0044", scale: 1.4 } : null;
+const selectedFillLayer: Layer = (x, y) =>
+  isSelected(x, y) ? { color: "#ff9990", scale: 1.2 } : null;
 
-    const top = false
-    const left = false
-    const topLeft = !!tile.topLeft
+const MyAssetsGrid: React.FC<MyAssetsGridProps> = ({userAddress, setSelectedTiles,stateSelected,setStateSelected }) => {
+  const [atlasLoaded, setAtlasLoaded] = useState(false);
+  const [hoveredTile, setHoveredTile] = useState<AtlasTile | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-    return {
-      color,
-      top,
-      left,
-      topLeft
+ 
+
+  useEffect(() => {
+    loadTiles(setAtlasLoaded).catch(console.error);
+
+    const updateMousePosition = (event: MouseEvent) => {
+      setMousePosition({ x: event.clientX, y: event.clientY });
+    };
+
+    window.addEventListener("mousemove", updateMousePosition);
+
+    return () => {
+      window.removeEventListener("mousemove", updateMousePosition);
+    };
+  }, []);
+
+  const handleHover = (x: string | number, y: string | number) => {
+    const id = getCoords(x, y);
+    const tile = atlas ? atlas[id] : null;
+    setHoveredTile(tile);
+    setShowPopup(tile !== null);
+  };
+
+  async function handleClick(x: number, y: number) {
+    const id = getCoords(x, y);
+    const tile = atlas ? atlas[id] : null;
+
+    if (tile) {
+      if (!tile.forSale && tile.owner !== userAddress?.toLowerCase()) {
+        console.log(tile.owner+" "+userAddress);
+        return;
+      }
+      if (tile.isOnState) {
+        selected = [{ x, y }];
+        if (atlas) {
+          // Find other tiles with the same tokenId
+          Object.entries(atlas).forEach(([key, value]) => {
+            if (value.tokenId === tile.tokenId && key !== id) {
+              const coords = key.split(",").map(Number);
+              selected.push({ x: coords[0], y: coords[1] });
+            }
+          });
+        }
+        
+        setStateSelected(true);
+      } else {
+        if (stateSelected) {
+          selected = [];
+          
+          setStateSelected(false);
+        }
+
+        if (isSelected(x, y)) {
+          selected = selected.filter((coord) => coord.x !== x || coord.y !== y);
+        } else {
+          selected.push({ x, y });
+        }
+      }
     }
-  } else {
-    return {
-      color: (x + y) % 2 === 0 ? COLOR_BY_TYPE[12] : COLOR_BY_TYPE[13]
-    }
+
+   
+    setSelectedTiles(selected.map(coord => atlas ? atlas[getCoords(coord.x, coord.y)] : null).filter((tile): tile is AtlasTile => tile !== null));
+
+    
   }
-}
 
-const onSaleLayer: Layer = (x, y) => {
-  const id = x + ',' + y
-  if (atlas && id in atlas && atlas[id].price) {
-    const color = '#00d3ff'
-    const top = !!atlas[id].top
-    const left = !!atlas[id].left
-    const topLeft = !!atlas[id].topLeft
-    return {
-      color,
-      top,
-      left,
-      topLeft
-    }
-  }
-  return null
-}
+  const atlasLayer: Layer = React.useCallback(
+    (x, y) => {
+      const id = getCoords(x, y);
+      if (atlas && id in atlas) {
+        const tile = atlas[id];
+        const color =
+          COLOR_BY_TYPE[
+            switchColor(tile.isOnState, tile.forSale, tile.owner, userAddress)
+          ];
+        return { color, top: !tile.top, left: !tile.left, topLeft: true };
+      } else {
+        return {
+          color: (x + y) % 2 === 0 ? COLOR_BY_TYPE[8] : COLOR_BY_TYPE[9],
+        };
+      }
+    },
+    [userAddress]
+  );
 
-const selectedStrokeLayer: Layer = (x, y) => {
-  return isSelected(x, y) ? { color: '#ff0044', scale: 1.4 } : null
-}
-
-const selectedFillLayer: Layer = (x, y) => {
-  return isSelected(x, y) ? { color: '#ff9990', scale: 1.2 } : null
-}
-
-
-
-
-const MarketplaceGrid: React.FC = () => {
   return (
     <div className="grid-container">
-    <TileMap
-    className="atlas"
-    layers={[atlasLayer, onSaleLayer, selectedStrokeLayer, selectedFillLayer]}
-    onClick={(x, y) => {
-      if (isSelected(x, y)) {
-        selected = selected.filter(coord => coord.x !== x || coord.y !== y)
-      } else {
-        selected.push({ x, y })
-      }
-    }}
-  />
-  </div>
+      {atlasLoaded ? (
+        <>
+          <TileMap
+            {...gridProps}
+            className="atlas"
+            layers={[atlasLayer, selectedStrokeLayer, selectedFillLayer]}
+            onClick={(x, y) => handleClick(x, y)}
+            onHover={handleHover}
+          />
+          {showPopup && hoveredTile && (
+            <Popup
+              x={mousePosition.x - 150}
+              y={mousePosition.y - 350}
+              tile={hoveredTile}
+            />
+          )}
+        </>
+      ) : (
+        <Loading />
+      )}
+    </div>
   );
 };
 
-export default MarketplaceGrid;
+export default MyAssetsGrid;

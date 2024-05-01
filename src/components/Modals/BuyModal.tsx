@@ -13,7 +13,7 @@ import useMarketplace from '../../hooks/contracts/useMarketplace';
 type BuyModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  itemCosts:number[];
+  itemCosts:ethers.BigNumber[];
   tokenIds:string[];
   stateSelected:boolean;
 };
@@ -28,6 +28,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,
     const marketplace = useMarketplace();
 
     let nftAddress = stateSelected? addresses.state:addresses.square;
+    
 
   const [selectedOption, setSelectedOption] = useState('1'); // Initial selected option
 
@@ -51,17 +52,23 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,
         switch(selectedOption) {
             case '1':
                 const balance = await bag?.getBalance(); 
-                const allowance = await bag?.getAllowance(addresses.marketplace); 
-                const totalCost = itemCosts.reduce((a, b) => a + b, 0);
+                console.log(tokenIds);
 
-                if (balance < totalCost) {
+                const allowance = await bag?.getAllowance(addresses.marketplace); 
+                const totalCost = itemCosts.reduce(
+                  (accumulator, currentCost) => accumulator.add(currentCost),
+                  ethers.BigNumber.from("0")
+                );
+                console.log("Total cost" + totalCost);
+
+                if (totalCost.gt(balance)) {
                     setInfoModalHeader("Insufficient balance")
                     setInfoModalBody("Oops, looks like you don't have enough balance to complete this purchase.")
                     setShowInfoModal(true);
                     return;
                 }
                 else {
-                    if (allowance >= totalCost) {
+                    if (totalCost.lt(allowance)) {
 
                      
                       if(marketplace && await marketplace.areOrdersActive(nftAddress,tokenIds)) {
@@ -137,8 +144,6 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,
 
     try {
        
-        
-
           const itemCostsString = itemCosts.map(num => num.toString());
 
           const tx = await  metaTx('marketplace','buy',[ nftAddress,tokenIds,itemCostsString]);

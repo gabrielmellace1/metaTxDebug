@@ -1,57 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { Box, VStack, HStack, Text, Button, Flex } from '@chakra-ui/react';
-import { AtlasToken } from '../../../types/atlasTypes';
+import { AtlasTile } from '../../../types/atlasTypes';
 import BuyModal from '../../Modals/BuyModal';
 import SellModal from '../../Modals/SellModal';
 import CancelModal from '../../Modals/CancelModal';
-import { ethers } from 'ethers';
 
-type MarketplaceActionBarProps = {
+type MyAssetsActionBarProps = {
   userAddress: string | undefined;
-  selectedTiles: AtlasToken[] ;
+  selectedTiles: AtlasTile[] ;
   stateSelected: boolean;
 };
 
 
 
-const MarketplaceActionBar: React.FC<MarketplaceActionBarProps> = ({userAddress, selectedTiles,
+const MyAssetsActionBar: React.FC<MyAssetsActionBarProps> = ({userAddress, selectedTiles,
   stateSelected }) => {
     
     
-
-  const [canBuy, setCanBuy] = useState(true);
+  const [canGroup, setCanGroup] = useState(true);
+  const [canUnGroup, setCanUnGroup] = useState(true);
+  const [canSubmitContent, setCanSubmitContent] = useState(true);
   const [canSell, setCanSell] = useState(true);
   const [canCancel, setCanCancel] = useState(true);
-  const [itemCosts, setItemCosts] = useState<ethers.BigNumber[]>([]);
   const [tokenIds, setTokenIds] = useState<string[]>([]); // Initialize tokenIds as an empty array
-  const [buyModalOpen, setBuyModalOpen] = useState(false);
+
+ 
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
   useEffect(() => {
     if (selectedTiles.length === 0) {
-      setCanBuy(false);
+      setCanGroup(false);
+      setCanUnGroup(false);
+      setCanSubmitContent(false);
       setCanSell(false);
       setCanCancel(false);
-      setItemCosts([]);
       setTokenIds([]);
       return; // Early return for empty selection
     }
     
-   
-      setCanBuy(true);
       setCanSell(true);
       setCanCancel(true);
 
     if(selectedTiles.length > 0) {
-      
-      setItemCosts(selectedTiles.map(tile => ethers.BigNumber.from(tile.price?.toString() || "0")));
-      
+      if(selectedTiles[0].isOnState) {
+     
+        const firstCost = selectedTiles[0].price || 0;
+      setItemCosts([firstCost]);
 
-      setTokenIds(selectedTiles.map((tile) => tile.tokenId?.toString() || ''));
-
-   
-      
+        setTokenIds([selectedTiles[0].tokenId?.toString() || '']); // Convert tokenId to string (if defined)
+      }else {
+        const costs = selectedTiles.map(tile => tile.price || 0);
+        setItemCosts(costs);
+        setTokenIds(selectedTiles.map((tile) => tile.tokenId?.toString() || ''));
+      }
       selectedTiles.forEach(tile => {
         if (tile.owner !== userAddress || !tile.forSale) {
           setCanCancel(false);
@@ -86,7 +88,7 @@ const MarketplaceActionBar: React.FC<MarketplaceActionBarProps> = ({userAddress,
         </VStack>
         <VStack spacing="0">
           <Text fontSize="lg" fontWeight="bold">Amount in BAG</Text>
-          <Text fontSize="md">{ethers.utils.formatEther(itemCosts.reduce((a, b) => a.add(b), ethers.BigNumber.from(0)))}</Text>
+          <Text fontSize="md">{itemCosts.reduce((a, b) => a + b, 0)}</Text>
         </VStack>
       </HStack>
       <Box>
@@ -125,4 +127,4 @@ const MarketplaceActionBar: React.FC<MarketplaceActionBarProps> = ({userAddress,
   );
 };
 
-export default MarketplaceActionBar;
+export default MyAssetsActionBar;

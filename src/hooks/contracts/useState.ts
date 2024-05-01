@@ -18,6 +18,9 @@ const useStateContract = () => {
 
     const isApprovedForAll = async ( operator: any) => {
         try {
+            console.log("Approved for: userAddress "+userAddress);
+            let approved = await contract.isApprovedForAll(userAddress, operator);
+            console.log(approved);
             return await contract.isApprovedForAll(userAddress, operator);
         } catch (error) {
             console.error(`Error checking if operator ${operator} is approved for all by ${userAddress}:`, error);

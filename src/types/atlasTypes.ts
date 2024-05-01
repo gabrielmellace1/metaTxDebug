@@ -12,3 +12,9 @@
  };
 
 
+ export type AtlasToken = {
+    tokenId: number;
+    forSale: boolean;
+    price?: number | null;
+    owner: string;
+  };

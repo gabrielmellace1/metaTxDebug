@@ -27,9 +27,7 @@ const useMarketplace = () => {
 
     const areOrdersActive = async (nftAddress: any, tokenIds: any[]) => {
         try {
-            const promises = tokenIds.map(tokenId => contract.getOrderActive(nftAddress, tokenId));
-            const results = await Promise.all(promises);
-            return results.every(isActive => isActive);
+            return await contract.areOrdersActive(nftAddress, tokenIds);
         } catch (error) {
             console.error("Error checking orders active status:", error);
             return false;

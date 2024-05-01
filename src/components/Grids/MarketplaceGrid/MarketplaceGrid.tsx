@@ -5,16 +5,16 @@ import "./MarketplaceGrid.css";
 import {
   COLOR_BY_TYPE,
   gridProps,
-  switchColor,
+  switchColor
 } from "../../../helpers/GridHelper";
-import { AtlasTile } from "../../../types/atlasTypes";
-import Popup from "./Popup/Popup";
+import { AtlasTile,AtlasToken } from "../../../types/atlasTypes";
+import Popup from "../Popup/Popup";
 import Loading from '../../Utils/Loading';
 
 // Change the type of stateSelected to boolean and remove the incorrect usage as a function
 interface MarketplaceGridProps {
   userAddress: string | undefined;
-  setSelectedTiles: (tiles: AtlasTile[]) => void;
+  setSelectedTiles: (tiles: AtlasToken[]) => void;
   stateSelected: boolean;
   setStateSelected: (state: boolean) => void;
 }
@@ -22,7 +22,7 @@ interface MarketplaceGridProps {
 
 let atlas: Record<string, AtlasTile> | null = null;
 let selected: Coord[] = [];
-
+let tokenIdsSelected: AtlasToken[] = [];
 
 
 
@@ -44,13 +44,17 @@ const selectedStrokeLayer: Layer = (x, y) =>
 const selectedFillLayer: Layer = (x, y) =>
   isSelected(x, y) ? { color: "#ff9990", scale: 1.2 } : null;
 
+
+  
+
+
+
 const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelectedTiles,stateSelected,setStateSelected }) => {
   const [atlasLoaded, setAtlasLoaded] = useState(false);
   const [hoveredTile, setHoveredTile] = useState<AtlasTile | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
- 
+  
 
   useEffect(() => {
     loadTiles(setAtlasLoaded).catch(console.error);
@@ -73,48 +77,73 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelect
     setShowPopup(tile !== null);
   };
 
+
+
   async function handleClick(x: number, y: number) {
     const id = getCoords(x, y);
     const tile = atlas ? atlas[id] : null;
-
+  
     if (tile) {
       if (!tile.forSale && tile.owner !== userAddress?.toLowerCase()) {
-        console.log(tile.owner+" "+userAddress);
+        console.log(tile.owner + " " + userAddress);
         return;
       }
+  
       if (tile.isOnState) {
-        selected = [{ x, y }];
+        if (!stateSelected) {
+          tokenIdsSelected = [];
+          selected = [];
+          
+        }
+  
+        const existingTokenIndex = tokenIdsSelected.findIndex(t => t.tokenId === tile.tokenId);
+        if (existingTokenIndex > -1) {
+          tokenIdsSelected.splice(existingTokenIndex, 1);
+          selected = [];
+        } else {
+          tokenIdsSelected.push({ tokenId: tile.tokenId, forSale: tile.forSale, price: tile.price, owner: tile.owner });
+          selected = [{ x, y }];
+        }
+  
         if (atlas) {
           // Find other tiles with the same tokenId
           Object.entries(atlas).forEach(([key, value]) => {
-            if (value.tokenId === tile.tokenId && key !== id) {
+            if (tokenIdsSelected.some(t => t.tokenId === value.tokenId) && key !== id) {
               const coords = key.split(",").map(Number);
               selected.push({ x: coords[0], y: coords[1] });
             }
           });
         }
-        
+  
         setStateSelected(true);
       } else {
+  
         if (stateSelected) {
+          tokenIdsSelected = [];
           selected = [];
-          
           setStateSelected(false);
         }
-
+  
         if (isSelected(x, y)) {
           selected = selected.filter((coord) => coord.x !== x || coord.y !== y);
+          const index = tokenIdsSelected.findIndex(t => t.tokenId === tile.tokenId);
+          if (index > -1) tokenIdsSelected.splice(index, 1);
         } else {
+          tokenIdsSelected.push({ tokenId: tile.tokenId, forSale: tile.forSale, price: tile.price, owner: tile.owner });
           selected.push({ x, y });
         }
+        setStateSelected(false);
       }
     }
-
-   
-    setSelectedTiles(selected.map(coord => atlas ? atlas[getCoords(coord.x, coord.y)] : null).filter((tile): tile is AtlasTile => tile !== null));
+  
+    
+    
+    setSelectedTiles([...tokenIdsSelected.map(tile => ({ ...tile }))]);
 
     
   }
+  
+  
 
   const atlasLayer: Layer = React.useCallback(
     (x, y) => {

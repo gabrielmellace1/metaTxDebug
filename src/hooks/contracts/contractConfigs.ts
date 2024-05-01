@@ -656,6 +656,30 @@ const configs: ContractConfigs = {
               "type": "address"
             },
             {
+              "internalType": "uint256[]",
+              "name": "_tokenIds",
+              "type": "uint256[]"
+            }
+          ],
+          "name": "areOrdersActive",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "_nftAddress",
+              "type": "address"
+            },
+            {
               "internalType": "uint256",
               "name": "_tokenId",
               "type": "uint256"

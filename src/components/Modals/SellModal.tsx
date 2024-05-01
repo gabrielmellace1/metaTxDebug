@@ -31,8 +31,8 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds,stateSe
 
   let nftAddress = stateSelected? addresses.state:addresses.square;
   const displayText = stateSelected 
-        ? "Please enter the price for your state" 
-        : "Please enter the price for each of your selected squares, this price is the price for each of your individual squares";
+        ? "Please enter the price for your states, the price is for each element" 
+        : "Please enter the price for your squares,the price is for each element";
 
   const [showApproveSell, setApproveSell] = useState(false);
   const [approveHeader, setApproveHeader] = useState("");
@@ -53,16 +53,27 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds,stateSe
     }
     try {
 
-      const isApproved = stateSelected? await state?.isApprovedForAll(addresses.marketplace) : await square?.isApprovedForAll(addresses.marketplace) ;
+      let isApproved = stateSelected? await state?.isApprovedForAll(addresses.marketplace) : await square?.isApprovedForAll(addresses.marketplace) ;
 
     if(isApproved) {
         const priceInWei = ethers.utils.parseUnits(price, "ether").toString(); // Convert ETH to wei
-      const idsToSend = stateSelected ? [tokenIds[0]] : tokenIds;
-      const pricesToSend = stateSelected ? [priceInWei] : new Array(tokenIds.length).fill(priceInWei).map(String); // Create an array of strings
+     
+      const pricesToSend = new Array(tokenIds.length).fill(priceInWei).map(String); // Create an array of strings
+
+
+      console.log(await marketplace.areOrdersActive(nftAddress,tokenIds));
+      if(await marketplace.areOrdersActive(nftAddress,tokenIds)) {
+  
+        setInfoModalHeader("Sell failed");
+        setInfoModalBody("One or more of the items you have selected are already for sale");
+        setShowInfoModal(true); // Open informative modal
+        return;
+      }
+
 
       try {
         
-        const tx = await metaTx('marketplace','sell',[ nftAddress,idsToSend,pricesToSend]);
+        const tx = await metaTx('marketplace','sell',[ nftAddress,tokenIds,pricesToSend]);
         console.log("Tx is:"+tx);
   
         setInfoModalHeader("Processing sell");
@@ -116,7 +127,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds,stateSe
     const activeContract = stateSelected? 'state':'square';
 
     try {
-        const tx = await metaTx(activeContract,'setApprovalForAll',[ addresses.marketplace,true]);
+        const tx = await metaTx(activeContract,'setApprovalForAll',[ addresses.marketplace,1]);
         console.log("Tx is:"+tx);
   
         setInfoModalHeader("Processing authorization");
