@@ -8,7 +8,7 @@ import {
   switchColor,
 } from "../../../helpers/GridHelper";
 import { AtlasTile } from "../../../types/atlasTypes";
-import Popup from "../Popup/Popup";
+import Popup from "../Popup(Not Used)/Popup";
 import Loading from '../../Utils/Loading';
 
 // Change the type of stateSelected to boolean and remove the incorrect usage as a function

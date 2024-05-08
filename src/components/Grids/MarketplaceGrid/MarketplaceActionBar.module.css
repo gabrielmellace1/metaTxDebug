@@ -1,0 +1,18 @@
+.actionBar {
+    background-color: rgba(0, 0, 0, 0.7); /* Black with opacity for consistency */
+    padding: 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out; /* Smooth transition for showing and hiding */
+    display: flex; /* Ensuring the flex layout is maintained */
+    justify-content: space-between; /* Maintain the spacing between items */
+    align-items: center; /* Vertical alignment */
+    width: 100%; /* Full width for better control and visibility */
+    opacity: 1; /* Default visible state */
+}
+
+.hidden {
+    opacity: 0;
+    height: 0;
+    overflow: hidden; /* Hide contents when not visible */
+    padding: 0 10px; /* Remove vertical padding but keep horizontal for a smoother transition */
+}

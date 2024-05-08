@@ -5,6 +5,7 @@ import BuyModal from '../../Modals/BuyModal';
 import SellModal from '../../Modals/SellModal';
 import CancelModal from '../../Modals/CancelModal';
 import { ethers } from 'ethers';
+import styles from './MarketplaceActionBar.module.css';
 
 type MarketplaceActionBarProps = {
   userAddress: string | undefined;
@@ -72,57 +73,59 @@ const MarketplaceActionBar: React.FC<MarketplaceActionBarProps> = ({userAddress,
 }, [selectedTiles, userAddress]); 
 
 
-
-  return (
-    <Flex justifyContent="space-between" p="4" bg="black.100" align="center">
-      <HStack spacing="8">
-        <VStack spacing="0">
-          <Text fontSize="lg" fontWeight="bold">Squares Selected</Text>
-          <Text fontSize="md">{tokenIds}</Text>
-        </VStack>
-        <VStack spacing="0">
-          <Text fontSize="lg" fontWeight="bold">State Selected</Text>
-          <Text fontSize="md">{stateSelected.toString()}</Text>
-        </VStack>
-        <VStack spacing="0">
-          <Text fontSize="lg" fontWeight="bold">Amount in BAG</Text>
+return (
+  <Flex p="4" bg="black.100" align="center" className={styles.actionBar} w="100%">
+    {/* Flex container to align items to the right */}
+    <Flex ml="auto" alignItems="center">
+      {/* Conditional rendering for "Amount in BAG" */}
+      {canBuy && (
+        <HStack spacing="4" mr="8"> {/* Right margin to ensure spacing between text and buttons */}
+          <Text fontSize="lg" fontWeight="bold">Amount in BAG:</Text>
           <Text fontSize="md">{ethers.utils.formatEther(itemCosts.reduce((a, b) => a.add(b), ethers.BigNumber.from(0)))}</Text>
-        </VStack>
+        </HStack>
+      )}
+
+      {/* Button group */}
+      <HStack spacing="4">
+        <Button colorScheme="blue" isDisabled={!canBuy} onClick={() => setBuyModalOpen(true)}>Buy</Button>
+        <Button colorScheme="green" isDisabled={!canSell} onClick={() => setSellModalOpen(true)}>Sell</Button>
+        <Button colorScheme="red" isDisabled={!canCancel} onClick={() => setCancelModalOpen(true)}>Cancel</Button>
       </HStack>
-      <Box>
-      <Button colorScheme="blue" mr="2" isDisabled={!canBuy} onClick={() => setBuyModalOpen(true)}>
-          Buy
-        </Button>
-        {buyModalOpen && (
-          <BuyModal
-            isOpen={buyModalOpen}
-            onClose={() => setBuyModalOpen(false)}
-            itemCosts={itemCosts}
-            tokenIds={tokenIds}
-            stateSelected={stateSelected}
-          />
-        )}
-        {sellModalOpen && (
-          <SellModal
-            isOpen={sellModalOpen}
-            onClose={() => setSellModalOpen(false)}
-            tokenIds={tokenIds}
-            stateSelected={stateSelected}
-          />
-        )}
-        {cancelModalOpen && (
-          <CancelModal
-            isOpen={cancelModalOpen}
-            onClose={() => setCancelModalOpen(false)}
-            tokenIds={tokenIds}
-            stateSelected={stateSelected}
-          />
-        )}
-        <Button colorScheme="green" mr="2" isDisabled={!canSell} onClick={() => setSellModalOpen(true)}>Sell</Button>
-        <Button colorScheme="red" isDisabled={!canCancel} onClick={() => setCancelModalOpen(true)}>Cancel </Button>
-      </Box>
     </Flex>
-  );
+
+    {/* Modals */}
+    {buyModalOpen && (
+      <BuyModal
+        isOpen={buyModalOpen}
+        onClose={() => setBuyModalOpen(false)}
+        itemCosts={itemCosts}
+        tokenIds={tokenIds}
+        stateSelected={stateSelected}
+      />
+    )}
+    {sellModalOpen && (
+      <SellModal
+        isOpen={sellModalOpen}
+        onClose={() => setSellModalOpen(false)}
+        tokenIds={tokenIds}
+        stateSelected={stateSelected}
+      />
+    )}
+    {cancelModalOpen && (
+      <CancelModal
+        isOpen={cancelModalOpen}
+        onClose={() => setCancelModalOpen(false)}
+        tokenIds={tokenIds}
+        stateSelected={stateSelected}
+      />
+    )}
+  </Flex>
+);
+
+
+
+
+
 };
 
 export default MarketplaceActionBar;

@@ -8,8 +8,9 @@ import {
   switchColor
 } from "../../../helpers/GridHelper";
 import { AtlasTile,AtlasToken } from "../../../types/atlasTypes";
-import Popup from "../Popup/Popup";
 import Loading from '../../Utils/Loading';
+import { Box, Flex, VStack,Text } from "@chakra-ui/react";
+import InfoSidebar from "./InfoSidebar";
 
 // Change the type of stateSelected to boolean and remove the incorrect usage as a function
 interface MarketplaceGridProps {
@@ -52,29 +53,18 @@ const selectedFillLayer: Layer = (x, y) =>
 const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelectedTiles,stateSelected,setStateSelected }) => {
   const [atlasLoaded, setAtlasLoaded] = useState(false);
   const [hoveredTile, setHoveredTile] = useState<AtlasTile | null>(null);
-  const [showPopup, setShowPopup] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
   
 
   useEffect(() => {
     loadTiles(setAtlasLoaded).catch(console.error);
 
-    const updateMousePosition = (event: MouseEvent) => {
-      setMousePosition({ x: event.clientX, y: event.clientY });
-    };
-
-    window.addEventListener("mousemove", updateMousePosition);
-
-    return () => {
-      window.removeEventListener("mousemove", updateMousePosition);
-    };
   }, []);
 
-  const handleHover = (x: string | number, y: string | number) => {
-    const id = getCoords(x, y);
+  const handleHover = (x: number, y: number) => {
+    const id = `${x},${y}`;
     const tile = atlas ? atlas[id] : null;
     setHoveredTile(tile);
-    setShowPopup(tile !== null);
   };
 
 
@@ -165,7 +155,7 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelect
   );
 
   return (
-    <div className="grid-container">
+    <Flex direction="column" position="relative" className="grid-container" w="100%" h="100%"> {/* Ensured Flex takes full width and height */}
       {atlasLoaded ? (
         <>
           <TileMap
@@ -175,18 +165,15 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelect
             onClick={(x, y) => handleClick(x, y)}
             onHover={handleHover}
           />
-          {showPopup && hoveredTile && (
-            <Popup
-              x={mousePosition.x - 150}
-              y={mousePosition.y - 350}
-              tile={hoveredTile}
-            />
-          )}
+          
+          <InfoSidebar tile={hoveredTile} />
         </>
       ) : (
-        <Loading />
+        <Flex align="center" justify="center" w="100%" h="100%">
+          <Loading />
+        </Flex>
       )}
-    </div>
+    </Flex>
   );
 };
 

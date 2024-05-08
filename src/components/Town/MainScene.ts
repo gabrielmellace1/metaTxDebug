@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     private setupBackground(): Phaser.GameObjects.Image {
         const bg = this.add.image(0, 0, 'background').setOrigin(0, 0).setInteractive();
         this.cameras.main.setBounds(0, 0, 5000, 5000);
-        this.cameras.main.setZoom(1);
+        this.cameras.main.setZoom(0.512);
         const randomX = Math.random() * 5000;  // 5000 should be replaced with the actual width if different
         const randomY = Math.random() * 5000;  // 5000 should be replaced with the actual height if different
         this.cameras.main.centerOn(randomX, randomY);
@@ -118,6 +118,11 @@ export default class MainScene extends Phaser.Scene {
             }
         });
     }
+
+    public scaleZoom(zoomIncrement: number) {
+        this.adjustZoom(zoomIncrement);
+    }
+    
     
     private adjustZoom(zoomAmount: number): void {
         let newZoom = this.cameras.main.zoom + zoomAmount;
