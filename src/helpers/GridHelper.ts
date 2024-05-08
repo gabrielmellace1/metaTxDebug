@@ -42,21 +42,37 @@ export const switchColor = (
   isOnState: boolean,
   forSale: boolean,
   owner: string,
-  userAccount: string | null | undefined
+  userAccount: string | null | undefined,
+  highlightOnlyOwned: boolean
 ): number => {
   // Normalize the case by converting both addresses to lowercase before comparison
   const normalizedOwner = owner.toLowerCase();
   const normalizedUserAccount = userAccount ? userAccount.toLowerCase() : '';
 
+
   if (isOnState) {
       if (forSale) {
-          return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 3 : 7;
+
+        if(!highlightOnlyOwned) {
+
+            return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 3 : 7;
+        }
+        else {
+
+            return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 3 : 6;
+        }
+          
       } else {
           return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 2 : 6;
       }
   } else {
       if (forSale) {
+        if(!highlightOnlyOwned) {
           return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 1 : 5;
+        }
+        else {
+            return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 1 : 6;
+        }
       } else {
           return normalizedUserAccount && normalizedUserAccount === normalizedOwner ? 0 : 4;
       }

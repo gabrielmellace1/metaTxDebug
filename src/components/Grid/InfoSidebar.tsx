@@ -3,6 +3,12 @@ import { Box, VStack, Text } from "@chakra-ui/react";
 import styles from './InfoSidebar.module.css';
 import { ethers } from 'ethers';
 
+interface ColorReference {
+  color: string;
+  text: string;
+}
+
+
 interface InfoSidebarProps {
   tile: {
     x: number;
@@ -12,9 +18,10 @@ interface InfoSidebarProps {
     price?: number;
     isOnState: boolean;
   } | null;
+  colorReferences: ColorReference[];
 }
 
-const InfoSidebar: React.FC<InfoSidebarProps> = ({ tile }) => {
+const InfoSidebar: React.FC<InfoSidebarProps> = ({ tile, colorReferences }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   const toggleCollapse = () => {
@@ -29,18 +36,12 @@ const InfoSidebar: React.FC<InfoSidebarProps> = ({ tile }) => {
       {!collapsed && (
         <VStack align="start" spacing={4}>
           <Text className={styles.title}>Color reference:</Text>
-          <div className={styles.flexRow}>
-            <Box className={styles.smallSquare} style={{ backgroundColor: 'red' }}></Box>
-            <Text className={styles.detail}>On sale</Text>
-          </div>
-          <div className={styles.flexRow}>
-            <Box className={styles.smallSquare} style={{ backgroundColor: 'blue' }}></Box>
-            <Text className={styles.detail}>Your assets</Text>
-          </div>
-          <div className={styles.flexRow}>
-            <Box className={styles.smallSquare} style={{ backgroundColor: 'pink' }}></Box>
-            <Text className={styles.detail}>Your assets for sale</Text>
-          </div>
+          {colorReferences.map((ref, index) => (
+  <div key={index} className={styles.flexRow}>
+    <Box className={styles.smallSquare} style={{ backgroundColor: ref.color }}></Box>
+    <Text className={styles.detail}>{ref.text}</Text>
+  </div>
+))}
           <Text className={styles.title}>Details:</Text>
           {tile ? (
             <>

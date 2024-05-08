@@ -22,7 +22,6 @@ const Header = () => {
         <Link as={RouterLink} to="/town" mr={2}><Button colorScheme="yellow">Town</Button></Link>
         <Link as={RouterLink} to="/marketplace" mr={2}><Button colorScheme="pink">Marketplace</Button></Link>
         <Link as={RouterLink} to="/my-assets" mr={2}><Button colorScheme="purple">My Assets</Button></Link>
-        <Link as={RouterLink} to="/editor"><Button colorScheme="orange">Editor</Button></Link>
       </Box>
       <Flex alignItems="center">
         <Text fontSize="md" color="white" mr={4}>

@@ -7,11 +7,11 @@ import { AuthContextProvider } from "./context/auth.context";
 import WelcomeModal from "./components/Modals/WelcomeModal";
 import Loading from "./components/Utils/Loading";
 
-const TownGrid = lazy(() => import("./components/Town/TownComponent"));
-const Marketplace = lazy(() => import("./components/Grids/MarketplaceGrid/Marketplace"));
-const MyAssets = lazy(() => import("./components/Grids/MyAssetsGrid/MyAssets"));
-const Editor = lazy(() => import("./components/Editor/Editor"));
-const About = lazy(() => import("./components/About/About"));
+const TownGrid = lazy(() => import("./Pages/Town/TownComponent"));
+const Marketplace = lazy(() => import("./Pages/Marketplace/Marketplace"));
+const MyAssets = lazy(() => import("./Pages/MyAssets/MyAssets"));
+const Editor = lazy(() => import("./Pages/Editor/Editor"));
+const About = lazy(() => import("./Pages/About/About"));
 
 function App() {
   return (

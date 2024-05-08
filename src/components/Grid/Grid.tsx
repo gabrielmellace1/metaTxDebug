@@ -1,23 +1,25 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Coord, Layer, TileMap } from "react-tile-map";
-import "./MarketplaceGrid.css";
+import "./Grid.css";
 import {
   COLOR_BY_TYPE,
   gridProps,
   switchColor
-} from "../../../helpers/GridHelper";
-import { AtlasTile,AtlasToken } from "../../../types/atlasTypes";
-import Loading from '../../Utils/Loading';
+} from "../../helpers/GridHelper";
+import { AtlasTile,AtlasToken } from "../../types/atlasTypes";
+import Loading from '../Utils/Loading';
 import { Box, Flex, VStack,Text } from "@chakra-ui/react";
 import InfoSidebar from "./InfoSidebar";
 
 // Change the type of stateSelected to boolean and remove the incorrect usage as a function
-interface MarketplaceGridProps {
+interface GridProps {
   userAddress: string | undefined;
   setSelectedTiles: (tiles: AtlasToken[]) => void;
   stateSelected: boolean;
   setStateSelected: (state: boolean) => void;
+  highlightOnlyOwned:boolean;
+  colorReferences: { color: string; text: string }[];
 }
 
 
@@ -50,7 +52,7 @@ const selectedFillLayer: Layer = (x, y) =>
 
 
 
-const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelectedTiles,stateSelected,setStateSelected }) => {
+const Grid: React.FC<GridProps> = ({userAddress, setSelectedTiles,stateSelected,setStateSelected, highlightOnlyOwned,colorReferences}) => {
   const [atlasLoaded, setAtlasLoaded] = useState(false);
   const [hoveredTile, setHoveredTile] = useState<AtlasTile | null>(null);
 
@@ -74,7 +76,7 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelect
     const tile = atlas ? atlas[id] : null;
   
     if (tile) {
-      if (!tile.forSale && tile.owner !== userAddress?.toLowerCase()) {
+      if (!tile.forSale && tile.owner !== userAddress?.toLowerCase() || highlightOnlyOwned && tile.owner !== userAddress?.toLowerCase() ) {
         console.log(tile.owner + " " + userAddress);
         return;
       }
@@ -98,7 +100,7 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelect
         if (atlas) {
           // Find other tiles with the same tokenId
           Object.entries(atlas).forEach(([key, value]) => {
-            if (tokenIdsSelected.some(t => t.tokenId === value.tokenId) && key !== id) {
+            if (tokenIdsSelected.some(t => t.tokenId === value.tokenId) && key !== id && value.isOnState) {
               const coords = key.split(",").map(Number);
               selected.push({ x: coords[0], y: coords[1] });
             }
@@ -142,7 +144,7 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelect
         const tile = atlas[id];
         const color =
           COLOR_BY_TYPE[
-            switchColor(tile.isOnState, tile.forSale, tile.owner, userAddress)
+            switchColor(tile.isOnState, tile.forSale, tile.owner, userAddress,highlightOnlyOwned)
           ];
         return { color, top: !tile.top, left: !tile.left, topLeft: true };
       } else {
@@ -166,7 +168,7 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelect
             onHover={handleHover}
           />
           
-          <InfoSidebar tile={hoveredTile} />
+          <InfoSidebar tile={hoveredTile} colorReferences={colorReferences} />
         </>
       ) : (
         <Flex align="center" justify="center" w="100%" h="100%">
@@ -177,4 +179,4 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({userAddress, setSelect
   );
 };
 
-export default MarketplaceGrid;
+export default Grid;

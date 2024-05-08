@@ -28,8 +28,21 @@ const useStateContract = () => {
         }
     };
 
+    const getStateSquares = async (stateId: number) => {
+        try {
+            console.log(`Fetching squares for state ID: ${stateId}`);
+            const squareIds = await contract.getStateSquares(stateId);
+            const squareIdsNumbers = squareIds.map((id: { toNumber: () => any; }) => id.toNumber()); // Convert each BigNumber to a number
+            console.log(`Square IDs for state ${stateId}:`, squareIdsNumbers);
+            return squareIdsNumbers;
+        } catch (error) {
+            console.error(`Error fetching squares for state ID ${stateId}:`, error);
+            return [];
+        }
+    };
+
     return {
-        isApprovedForAll
+        isApprovedForAll,getStateSquares
     };
 };
 

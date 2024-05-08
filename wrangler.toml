@@ -1,5 +1,3 @@
-name = "transactionparser"
-type = "javascript" # Or "webpack" if you're using that
 
 
 
