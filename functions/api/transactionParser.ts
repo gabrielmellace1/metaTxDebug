@@ -16,6 +16,8 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
         let lastTransactionParsed = queryResult.results.length > 0 ? parseInt(queryResult.results[0].counter as string) : 0;
         const query = getTransactionsQuery(lastTransactionParsed);
         const jsonResponse = await fetchFromGraph<GraphTransactionsResponse>(query,{ env });
+        return json({ jsonResponse });
+
         const transactions = jsonResponse.data.transactions;
         let lastProcessedTransaction = lastTransactionParsed;
         let failures = [];
