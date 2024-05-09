@@ -65,7 +65,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
       </Dropzone>
       <Box width="full">
         <Text fontSize="sm" mb="2">Zoom:</Text>
-        <Slider defaultValue={1.2} min={0.1} max={2} step={0.01} onChange={v => setScale(v)}>
+        <Slider defaultValue={1.2} min={0.1} max={10} step={0.01} onChange={v => setScale(v)}>
           <SliderTrack bg="blue.300">
             <SliderFilledTrack bg="blue.600" />
           </SliderTrack>

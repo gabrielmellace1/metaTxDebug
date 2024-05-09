@@ -1,21 +1,7 @@
 import React, { useRef, useEffect } from 'react';
+import { EditorGridProps, Square } from '../../types/allTypes';
 
-interface Square {
-  x: number;
-  y: number;
-}
 
-interface EditorGridProps {
-  previewUrl: string;
-  ownedSquares: Square[];
-  minX:number;
-  minY:number;
-  maxX:number;
-  maxY:number;
-  squareSize:number;
-  gridRows:number;
-  gridCols:number;
-}
 
 const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, ownedSquares,minX,minY,maxX,maxY,squareSize,gridRows,gridCols }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,9 +10,12 @@ const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, ownedSquares,minX,m
 
   const width = maxX - minX + 1;
   const height = maxY - minY + 1;
+
+  
   const normalizedSquares = ownedSquares.map(sq => ({
       x: sq.x - minX,
       y: sq.y - minY
+      
   }));
 
   const drawGrid = (ctx: CanvasRenderingContext2D) => {
@@ -40,15 +29,17 @@ const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, ownedSquares,minX,m
 
   const drawSquareImage = (image: HTMLImageElement, square: Square, ctx: CanvasRenderingContext2D) => {
     const offsetX = square.x * squareSize;
-    const offsetY = square.y * squareSize;
-    const srcWidth = image.width / width;
-    const srcHeight = image.height / height;
-    const srcX = (square.x * srcWidth);
-    const srcY = (square.y * srcHeight);
-
-    ctx.clearRect(offsetX, offsetY, squareSize, squareSize); // Clear just this square area before drawing the new image
+    const offsetY = (height - 1 - square.y) * squareSize; // Invert Y coordinate
+    const srcWidth = image.width / width; // Width of one slice
+    const srcHeight = image.height / height; // Height of one slice
+    const srcX = square.x * srcWidth; // X position to start slice
+    const srcY = (height - 1 - square.y) * srcHeight; // Y position to start slice (adjust if necessary)
+  
+    ctx.clearRect(offsetX, offsetY, squareSize, squareSize); // Clear the area
     ctx.drawImage(image, srcX, srcY, srcWidth, srcHeight, offsetX, offsetY, squareSize, squareSize);
   };
+  
+  
 
   useEffect(() => {
     if (canvasRef.current && previewUrl) {

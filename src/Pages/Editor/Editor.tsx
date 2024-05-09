@@ -61,16 +61,18 @@ const EditorParent: React.FC = () => {
 
   return (
     <Flex direction="column" align="center" m={4} p={5} bg="gray.900" color="white">
-      <Flex direction={{ base: 'column', md: 'row' }} w="full">
-        <Box flex="none" width={{ base: 'auto', md: '300px' }} bg="gray.700" p={4} borderRadius="md" boxShadow="xl">
+      <Flex direction="row" w="full">
+        <Box flex={{ base: 1, md: "none" }} maxWidth={{ base: "100%", md: "300px" }} bg="gray.700" p={4} borderRadius="md" boxShadow="xl">
           <EditorPicture setPreviewUrl={setPreviewUrl} width={pictureWidth} height={pictureHeight} ownedSquares={squaresCoordinates} />
         </Box>
-        <Box flex="1" ml={{ base: 0, md: 4 }} mt={{ base: 4, md: 0 }} bg="gray.700" p={4} borderRadius="md" boxShadow="xl">
+        <Box flex={1} ml={{ base: 5, md: 4 }} mt={{ base: 0, md: 0 }} bg="gray.700" p={4} borderRadius="md" boxShadow="xl">
           <EditorGrid previewUrl={previewUrl} ownedSquares={squaresCoordinates} minX={minX} minY={minY} maxX={maxX} maxY={maxY} squareSize={squareSize} gridRows={gridRows} gridCols={gridCols} />
         </Box>
       </Flex>
     </Flex>
   );
+  
+  
 };
 
 export default EditorParent;
