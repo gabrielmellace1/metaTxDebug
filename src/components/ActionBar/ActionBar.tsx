@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, VStack, HStack, Text, Button, Flex } from '@chakra-ui/react';
+import { HStack, Text, Button, Flex } from '@chakra-ui/react';
 import { AtlasToken } from '../../types/atlasTypes';
 import BuyModal from '../Modals/BuyModal';
 import SellModal from '../Modals/SellModal';
@@ -7,10 +7,8 @@ import CancelModal from '../Modals/CancelModal';
 import { ethers } from 'ethers';
 import styles from './ActionBar.module.css';
 import ConfirmModal from '../Modals/ConfirmModal';
-import useSquare from '../../hooks/contracts/useSquare';
 import useMetaTx from '../../hooks/contracts/useMetaTx';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
-import useStateContract from '../../hooks/contracts/useState';
 import InformationModal from '../Modals/InformationModal';
 import TransferModal from '../Modals/TransferModal';
 import {  useNavigate } from 'react-router-dom';

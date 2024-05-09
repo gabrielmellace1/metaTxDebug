@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Directory to IPFS</title>
+</head>
+<body>
+    <h1>Upload Directory to IPFS</h1>
+    <input type="file" id="fileInput" webkitdirectory directory multiple>
+    <button onclick="uploadDirectory()">Upload Directory</button>
+    <p id="status"></p>
+
+    <script>
+        async function uploadDirectory() {
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('status');
+
+            if (fileInput.files.length === 0) {
+                alert('Please select a directory to upload.');
+                return;
+            }
+
+            const formData = new FormData();
+            Array.from(fileInput.files).forEach(file => {
+                // The `webkitRelativePath` property holds the path relative to the directory
+                formData.append('file', file, file.webkitRelativePath);
+            });
+
+            try {
+                status.innerText = 'Uploading...';
+                const response = await fetch('http://localhost:5001/api/v0/add?wrap-with-directory=true', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) {
+                    throw new Error('Server responded with ' + response.status);
+                }
+                const result = await response.json();
+                status.innerText = 'Directory uploaded! IPFS Hash: ' + result.Hash;
+            } catch (error) {
+                console.error('Error uploading directory:', error);
+                status.innerText = 'Error uploading directory: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

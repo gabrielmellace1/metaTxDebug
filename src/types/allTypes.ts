@@ -3,23 +3,9 @@ export interface Square {
     y: number;
   }
 
-  export  interface EditorGridProps {
-    previewUrl: string;
-    ownedSquares: Square[];
-    minX:number;
-    minY:number;
-    maxX:number;
-    maxY:number;
-    squareSize:number;
-    gridRows:number;
-    gridCols:number;
-  }
-
-
   // export  interface EditorGridProps {
   //   previewUrl: string;
-  //   editorSquares: EditorSquare[];
-  //   setEditorSquares: React.Dispatch<React.SetStateAction<EditorSquare[]>>;
+  //   ownedSquares: Square[];
   //   minX:number;
   //   minY:number;
   //   maxX:number;
@@ -28,6 +14,20 @@ export interface Square {
   //   gridRows:number;
   //   gridCols:number;
   // }
+
+
+  export  interface EditorGridProps {
+   previewUrl: string;
+   editorSquares: EditorSquare[];
+    setEditorSquares: React.Dispatch<React.SetStateAction<EditorSquare[]>>;
+    minX:number;
+  minY:number;
+   maxX:number;
+   maxY:number;
+   squareSize:number;
+   gridRows:number;
+  gridCols:number;
+  }
 
   export interface EditorSquare {
     originalSquare: Square;

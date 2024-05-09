@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload and Pin to IPFS</title>
+</head>
+<body>
+    <h1>Upload and Pin File to IPFS</h1>
+    <input type="file" id="fileInput">
+    <button onclick="uploadAndPinFile()">Upload and Pin</button>
+    <p id="status"></p>
+
+    <script>
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch('http://185.182.187.84:5001/api/v0/add', {
+                method: 'POST',
+                body: formData
+            });
+            if (!response.ok) {
+                throw new Error('Server responded with ' + response.status);
+            }
+            return await response.json();
+        }
+
+        async function pinFileOnIPFS(hash) {
+            const response = await fetch(`http://185.182.187.84:5001/api/v0/pin/add?arg=${hash}`, {
+                method: 'POST'
+            });
+            if (!response.ok) {
+                throw new Error('Failed to pin: ' + response.status);
+            }
+            return await response.json();
+        }
+
+        async function uploadAndPinFile() {
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('status');
+
+            if (fileInput.files.length === 0) {
+                alert('Please select a file to upload.');
+                return;
+            }
+
+            try {
+                const file = fileInput.files[0];
+                status.innerText = 'Uploading...';
+                const uploadResult = await uploadFile(file);
+                status.innerText = 'File uploaded! IPFS Hash: ' + uploadResult.Hash;
+
+                status.innerText += '\n Pinning...';
+                const pinResult = await pinFileOnIPFS(uploadResult.Hash);
+                status.innerText += ' File pinned successfully!';
+            } catch (error) {
+                console.error('Error:', error);
+                status.innerText = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

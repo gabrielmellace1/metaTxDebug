@@ -1,9 +1,9 @@
 import React, { useRef, useEffect } from 'react';
-import { EditorGridProps, Square } from '../../types/allTypes';
+import { EditorGridProps, EditorSquare } from '../../types/allTypes';
 
 
 
-const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, ownedSquares,minX,minY,maxX,maxY,squareSize,gridRows,gridCols }) => {
+const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, editorSquares, setEditorSquares,minX,minY,maxX,maxY,squareSize,gridRows,gridCols }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
 
@@ -12,11 +12,6 @@ const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, ownedSquares,minX,m
   const height = maxY - minY + 1;
 
   
-  const normalizedSquares = ownedSquares.map(sq => ({
-      x: sq.x - minX,
-      y: sq.y - minY
-      
-  }));
 
   const drawGrid = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, 500 * squareSize, 500 * squareSize); // Clear the canvas
@@ -27,37 +22,79 @@ const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, ownedSquares,minX,m
     }
   };
 
-  const drawSquareImage = (image: HTMLImageElement, square: Square, ctx: CanvasRenderingContext2D) => {
-    const offsetX = square.x * squareSize;
-    const offsetY = (height - 1 - square.y) * squareSize; // Invert Y coordinate
-    const srcWidth = image.width / width; // Width of one slice
-    const srcHeight = image.height / height; // Height of one slice
-    const srcX = square.x * srcWidth; // X position to start slice
-    const srcY = (height - 1 - square.y) * srcHeight; // Y position to start slice (adjust if necessary)
+  const drawSquareImage = (image: HTMLImageElement, square: EditorSquare, ctx: CanvasRenderingContext2D) => {
+    if (!square.normalizedSquare) return; // Early return if normalizedSquare is undefined
   
-    ctx.clearRect(offsetX, offsetY, squareSize, squareSize); // Clear the area
+    const offsetX = square.normalizedSquare.x * squareSize;
+    const offsetY = (height - 1 - square.normalizedSquare.y) * squareSize;
+    const srcWidth = image.width / width;
+    const srcHeight = image.height / height;
+    const srcX = square.normalizedSquare.x * srcWidth;
+    const srcY = (height - 1 - square.normalizedSquare.y) * srcHeight;
+  
+    ctx.clearRect(offsetX, offsetY, squareSize, squareSize);
     ctx.drawImage(image, srcX, srcY, srcWidth, srcHeight, offsetX, offsetY, squareSize, squareSize);
+    captureSquareBlob(ctx, offsetX, offsetY, square);  // Pass the full 'square' object
   };
   
   
+  const captureSquareBlob = (ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number, square: EditorSquare) => {
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    if (!tempCtx) return;
+  
+    tempCanvas.width = squareSize;
+    tempCanvas.height = squareSize;
+  
+    // Draw the specific square from the main canvas to the temporary canvas
+    tempCtx.drawImage(ctx.canvas, offsetX, offsetY, squareSize, squareSize, 0, 0, squareSize, squareSize);
+  
+    // Create blob from the temporary canvas
+    tempCanvas.toBlob((blob) => {
+      if (blob) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          
+  
+          // Update state with new blob and base64 data
+          setEditorSquares(prevSquares => prevSquares.map(sq => {
+            if (sq.tokenId === square.tokenId) {
+              const base64String = (reader.result as string) ?? '';
+              return { ...sq, blob: blob, base64: base64String };
+            }
+            return sq;
+          }));
+        };
+        reader.readAsDataURL(blob);  // Start reading the blob as base64
+      }
+    }, 'image/png');
+  };
+  
 
   useEffect(() => {
-    if (canvasRef.current && previewUrl) {
+    if (canvasRef.current) {
       const ctx = canvasRef.current.getContext('2d');
-      if (ctx) {
+      if (ctx && previewUrl) { // Check if ctx is not null
         const image = new Image();
         image.onload = () => {
           ctx.clearRect(0, 0, 500 * squareSize, 500 * squareSize);
           drawGrid(ctx);
-          normalizedSquares.forEach(square => {
-            drawSquareImage(image, square, ctx);
+          editorSquares.forEach(square => {
+            drawSquareImage(image, square, ctx); // Pass the whole 'square' object
           });
         };
         image.src = previewUrl;
       }
     }
-  }, [previewUrl, ownedSquares]); // Re-run effect when previewUrl or ownedSquares changes
+  }, [previewUrl]);
+  
 
+  /* Debug 
+  useEffect(() => {
+    console.log("Updated editorSquares:", editorSquares);
+  }, [editorSquares]);
+*/
   return (
     <div>
       <canvas ref={canvasRef} width={1000} height={1000} style={{ border: '1px solid black', marginLeft: '10px' }} />

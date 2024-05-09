@@ -104,7 +104,7 @@ const metaTx = () => {
 
             console.log(serverPayload);
 
-            const response = await post("https://dgtxserver.dcl.guru/v1/transactions", serverPayload);
+            const response = await post("https://meta-tx-server.dglive.org/v1/transactions", serverPayload);
             const data = await response.json();
             console.log("Received response:", data);
 

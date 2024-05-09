@@ -9,7 +9,7 @@ import {
 } from "../../helpers/GridHelper";
 import { AtlasTile,AtlasToken } from "../../types/atlasTypes";
 import Loading from '../Utils/Loading';
-import { Box, Flex, VStack,Text } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 import InfoSidebar from "./InfoSidebar";
 
 // Change the type of stateSelected to boolean and remove the incorrect usage as a function
