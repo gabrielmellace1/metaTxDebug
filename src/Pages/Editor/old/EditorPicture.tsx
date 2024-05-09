@@ -1,13 +1,16 @@
 import React, { useRef, useState } from 'react';
-import { Text ,Box, Slider, SliderTrack, SliderFilledTrack, SliderThumb, VStack, FormControl, FormLabel, Input, Button } from '@chakra-ui/react';
+import { Text, Box, Slider, SliderTrack, SliderFilledTrack, SliderThumb, VStack, FormControl, FormLabel, Input, Button } from '@chakra-ui/react';
 import AvatarEditor from 'react-avatar-editor';
 import Dropzone from 'react-dropzone';
+import { EditorSquare } from '../../types/allTypes';
+
+
 
 interface EditorPictureProps {
   setPreviewUrl: (url: string) => void;
   width: number;
   height: number;
-  ownedSquares:{ x: number; y: number }[];
+  ownedSquares: EditorSquare[];
 }
 
 const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, height, ownedSquares }) => {
@@ -38,9 +41,10 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
     reader.readAsDataURL(file);
   };
 
-  const displayCoordinates = () => {
-    return ownedSquares.map(square => `(${square.x}, ${square.y})`).join(', ');
-  };
+const displayCoordinates = () => {
+  return ownedSquares?.map(square => `(${square.originalSquare.x}, ${square.originalSquare.y})`).join(', ') || 'No coordinates';
+};
+
 
   return (
     <VStack p={4} bg="gray.700" borderRadius="md" boxShadow="base" color="white" spacing={4}>

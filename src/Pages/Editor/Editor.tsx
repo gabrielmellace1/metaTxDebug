@@ -20,6 +20,7 @@ const EditorParent: React.FC = () => {
   const state = useStateContract();
   
   useEffect(() => {
+    console.log("aaaaa");
     const fetchSquareTokenIds = async () => {
       if (!tokenIds || tokenIds.length === 0) {
         console.error("Token IDs are not provided.");
@@ -45,7 +46,7 @@ const EditorParent: React.FC = () => {
     };
 
     fetchSquareTokenIds();
-  }, [stateSelected, tokenIds]);
+  }, []);
 
   const squareSize: number = 10; // Size of each square
   const gridRows: number = 100; // Total number of squares vertically

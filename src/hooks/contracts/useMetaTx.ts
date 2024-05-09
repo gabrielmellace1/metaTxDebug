@@ -2,19 +2,28 @@
 import { ethers } from 'ethers';
 import { useAuth } from '../../context/auth.context'; // Adjust the import path to your AuthContext
 import { getContractConfig } from './contractConfigs';
+import { useMemo } from 'react';
 
 
 const metaTx = () => {
     const { provider, userAddress } = useAuth();
 
-    var POLProvider= new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
+    const POLProvider = useMemo(() => {
+        return new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
+      }, []);
+
     var POLSigner = POLProvider.getSigner(userAddress);
 
     if (!provider || !userAddress) {
-        console.error("Provider or user address not found");
+        console.warn("Provider or user address not found");
         return async () => { throw new Error("Provider or user address not found"); };
     }
+    
     const ETHprovider = new ethers.providers.Web3Provider(provider);
+
+    
+
+
 
     const sendMetaTX = async (configName: string, functionName: string, params: any[]) => {
        

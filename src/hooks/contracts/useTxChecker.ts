@@ -1,7 +1,13 @@
 import { ethers } from 'ethers';
+import { useMemo } from 'react';
 
 const useTxChecker = () => {
-    const polygonProvider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
+    
+
+    const polygonProvider = useMemo(() => {
+        return new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
+      }, []);
+
 
     const checkTransactionStatus = async (txHash: string, setInfoModalHeader: Function, setInfoModalBody: Function) => {
         try {

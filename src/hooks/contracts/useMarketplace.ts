@@ -1,24 +1,30 @@
 
 import { ethers } from 'ethers';
 import { getContractConfig } from './contractConfigs';
+import { useMemo } from 'react';
 
 const useMarketplace = () => {
    
 
-    const provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
-    
-    const marketplaceConfig = getContractConfig("marketplace");
-    if (!marketplaceConfig) {
-        console.error('Marketplace contract configuration not found');
-        return;
-    }
+    const provider = useMemo(() => {
+        return new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
+      }, []);
 
-    const contract = new ethers.Contract(marketplaceConfig.address, marketplaceConfig.abi, provider);
+      
+    
+      const contract = useMemo(() => {
+        const config = getContractConfig("marketplace");
+        if (!config) {
+            console.error('Marketplace contract configuration not found');
+            return null;
+        }
+        return new ethers.Contract(config.address, config.abi, provider);
+    }, [provider]); 
 
     
     const getOrderActive = async (_nftAddress: any, _tokenId: any) => {
         try {
-            return await contract.getOrderActive(_nftAddress, _tokenId);
+            return await contract?.getOrderActive(_nftAddress, _tokenId);
         } catch (error) {
             console.error("Error getting order active status:", error);
             return false;
@@ -27,7 +33,7 @@ const useMarketplace = () => {
 
     const areOrdersActive = async (nftAddress: any, tokenIds: any[]) => {
         try {
-            return await contract.areOrdersActive(nftAddress, tokenIds);
+            return await contract?.areOrdersActive(nftAddress, tokenIds);
         } catch (error) {
             console.error("Error checking orders active status:", error);
             return false;
