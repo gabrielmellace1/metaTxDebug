@@ -15,8 +15,10 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
         const queryResult = await env.squareblocksdb.prepare("SELECT counter FROM counters WHERE counterName = 'lastTransactionParsed'").all();
         let lastTransactionParsed = queryResult.results.length > 0 ? parseInt(queryResult.results[0].counter as string) : 0;
         const query = getTransactionsQuery(lastTransactionParsed);
-        const jsonResponse = await fetchFromGraph<GraphTransactionsResponse>(query,{ env });
-        return json({ jsonResponse });
+        
+        
+        const jsonResponse = await fetchFromGraph<GraphTransactionsResponse>(query,{ env },false);
+      
 
         const transactions = jsonResponse.data.transactions;
         let lastProcessedTransaction = lastTransactionParsed;

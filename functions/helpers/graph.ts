@@ -17,36 +17,19 @@ export const getTransactionsQuery = (lastTransactionParsed: number): string => {
   });
 };
 
-export const getSquaresQuery = (cursor:number = 0): string => {
-  return JSON.stringify({
-    query: `{
-      squares(first: 1000, orderDirection: asc, orderBy: tokenId, skip: ${cursor}) {
-        x
-        y
-        tokenId
-        clickableURL
-        forSale
-        price
-        owner 
-        isOnState
-        stateId {
-          stateForSale: forSale
-          stateOwner: owner
-          statePrice: price
-          stateTokenId: tokenId
-        }
-      }
-    }`
-  });
-};
+
 
 // Assuming `context` is the way you access environment variables
-export const fetchFromGraph = async <T>(query: string, context: { env: Env }): Promise<T> => {
+export const fetchFromGraph = async <T>(query: string, context: { env: Env }, addaptJson: boolean = true): Promise<T> => {
+
+  
 
   const response = await fetch(context.env.graphUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query })
+    body: addaptJson? JSON.stringify({ query }) : query
+
+
   });
 
   if (!response.ok) {
