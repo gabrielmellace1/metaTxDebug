@@ -75,7 +75,8 @@ const metaTx = () => {
                 primaryType: "MetaTransaction",
                 message: message,
             });
-           // console.log(dataToSign);
+            
+           console.log(dataToSign);
 
             // Requesting a signature
             // This one works for metamask, but not for web3auth
