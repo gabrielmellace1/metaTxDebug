@@ -1,8 +1,8 @@
 export const addresses = {
   marketplace: '0x63eBcB9c8e9A40dBA33676CAF0A9837Efa17CB56',
   bag: '0x73b29199a8e4C146E893EB95f18dAc41738a88c6',
-  square: '0x9Dbd35E3c27d4494f2d87539De830cfd42037c5E',
-  state: '0xA77aC08d191c2390f692e5d1Fa0B98c7e40F573f'
+  square: '0xeb3b84249c02AdAfCD64320186B31c843e787Be1',
+  state: '0x376A1Da1b7b9bA0AbaAD0970D2c3F4D9f482dEf2'
  
 };
 
@@ -1342,32 +1342,7 @@ const configs: ContractConfigs = {
         "anonymous": false,
         "inputs": [
           {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
             "indexed": false,
-            "internalType": "string",
-            "name": "squareImageCID",
-            "type": "string"
-          },
-          {
-            "indexed": false,
-            "internalType": "string",
-            "name": "clickableURL",
-            "type": "string"
-          }
-        ],
-        "name": "SquareImageUpdated",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
             "internalType": "uint256[]",
             "name": "tokenIds",
             "type": "uint256[]"
@@ -1382,6 +1357,12 @@ const configs: ContractConfigs = {
             "indexed": false,
             "internalType": "string",
             "name": "clickableURL",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "internalType": "string",
+            "name": "title",
             "type": "string"
           }
         ],
@@ -1487,6 +1468,24 @@ const configs: ContractConfigs = {
           }
         ],
         "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "tokenIds",
+            "type": "uint256[]"
+          }
+        ],
+        "name": "batchTransferFrom",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
       },
       {
@@ -1610,6 +1609,19 @@ const configs: ContractConfigs = {
         "type": "function"
       },
       {
+        "inputs": [],
+        "name": "marketplaceAddress",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
         "inputs": [
           {
             "internalType": "address",
@@ -1623,13 +1635,7 @@ const configs: ContractConfigs = {
           }
         ],
         "name": "mintMultipleSquares",
-        "outputs": [
-          {
-            "internalType": "uint256[]",
-            "name": "",
-            "type": "uint256[]"
-          }
-        ],
+        "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
       },
@@ -1823,6 +1829,11 @@ const configs: ContractConfigs = {
             "internalType": "string",
             "name": "clickableURL",
             "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
           }
         ],
         "name": "setMultipleSquareImages",
@@ -1852,29 +1863,6 @@ const configs: ContractConfigs = {
         "inputs": [
           {
             "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "squareImageCID",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "clickableURL",
-            "type": "string"
-          }
-        ],
-        "name": "setSquareImage",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
             "name": "stateId",
             "type": "uint256"
           },
@@ -1891,6 +1879,11 @@ const configs: ContractConfigs = {
           {
             "internalType": "string",
             "name": "clickableURL",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
             "type": "string"
           }
         ],
@@ -2163,7 +2156,7 @@ const configs: ContractConfigs = {
         "anonymous": false,
         "inputs": [
           {
-            "indexed": true,
+            "indexed": false,
             "internalType": "uint256",
             "name": "stateId",
             "type": "uint256"
@@ -2182,7 +2175,7 @@ const configs: ContractConfigs = {
         "anonymous": false,
         "inputs": [
           {
-            "indexed": true,
+            "indexed": false,
             "internalType": "uint256",
             "name": "stateId",
             "type": "uint256"
@@ -2257,6 +2250,24 @@ const configs: ContractConfigs = {
           }
         ],
         "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "tokenIds",
+            "type": "uint256[]"
+          }
+        ],
+        "name": "batchTransferFrom",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
       },
       {
@@ -2387,6 +2398,19 @@ const configs: ContractConfigs = {
             "internalType": "bool",
             "name": "",
             "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "marketplaceAddress",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
           }
         ],
         "stateMutability": "view",

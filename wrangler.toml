@@ -18,19 +18,29 @@ kv_namespaces = [
 [vars]
 baseUrl = "https://squares.town"
 rpcUrl =  "https://polygon-mainnet.infura.io/v3/615e0266e5284aeeb5863c6731dbf11e"
-stateContractAddress = "0xA77aC08d191c2390f692e5d1Fa0B98c7e40F573f"
-squaresContractAddress = "0x9Dbd35E3c27d4494f2d87539De830cfd42037c5E"
+stateContractAddress = "0x376A1Da1b7b9bA0AbaAD0970D2c3F4D9f482dEf2"
+squaresContractAddress = "0xeb3b84249c02AdAfCD64320186B31c843e787Be1"
 STATE_CONTRACT_ABI = """
 [
   {
-    "constant": true,
-    "inputs": [{"name": "stateId", "type": "uint256"}],
-    "name": "getStateSquares",
-    "outputs": [{"name": "", "type": "uint256[]"}],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  }
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "stateId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getStateSquares",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
 ]
 """
 projectName="Squares Town"

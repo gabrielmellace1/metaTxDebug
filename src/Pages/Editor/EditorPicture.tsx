@@ -1,4 +1,4 @@
-import React, {  useRef, useState } from 'react';
+import React, {  useEffect, useRef, useState } from 'react';
 import { Text, Box, Slider, SliderTrack, SliderFilledTrack, SliderThumb, VStack, FormControl, FormLabel, Input, Button } from '@chakra-ui/react';
 import AvatarEditor from 'react-avatar-editor';
 import Dropzone from 'react-dropzone';
@@ -58,7 +58,11 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
       }));
       setEditorSquares(updatedSquares);
 
-      const tokenIds = updatedSquares.map(sq => sq.tokenId.toString());
+      console.log("Updated Squares"+updatedSquares);
+
+      const tokenIds = updatedSquares.map(sq => sq.tokenId);
+      console.log("tokenIds " + tokenIds);
+
       const hashes =     updatedSquares.map(sq => sq.hashId);
       const stateId = updatedSquares[0].stateId;
       // Title & URL
@@ -116,6 +120,10 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
     setIsLoading(false);
 
   };
+
+  useEffect(() => {
+    console.log("Updated editorSquares:", editorSquares);
+  }, [editorSquares]);
 
   const handleImageChange = () => {
     if (editorRef.current) {
