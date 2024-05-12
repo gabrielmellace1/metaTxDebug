@@ -41,7 +41,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
         formData.append("file", blob, `square-${square.tokenId}.png`);
       }
 
-      const response = await axios.post('http://185.182.187.84:5001/api/v0/add?pin=true', formData);
+      const response = await axios.post('https://ipfs.squares.town/api/v0/add?pin=true', formData);
       return response.data.Hash;
     } catch (error) {
       console.error('Error uploading to IPFS:', error);
