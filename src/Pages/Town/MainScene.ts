@@ -13,7 +13,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     preload(): void {
-        this.load.image('background', 'cryptowall.png');
+        this.load.image('background', 'https://pub-7259634f7e994e1e8a46cf6cfaea5881.r2.dev/cryptowall.png');
         this.load.json('squaresData', 'squares.json');
     }
 
@@ -178,8 +178,10 @@ export default class MainScene extends Phaser.Scene {
                 adjustedY,
                 cellSize,
                 cellSize,
-                0x0000ff
+                0x00FF00, // Color
+                0          // Alpha for transparency
             ).setOrigin(0, 0).setInteractive().setData('url', square.url);
+            
         
             this.configureSquareInteraction(squareGraphic, square);
         });
