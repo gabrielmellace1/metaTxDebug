@@ -8,6 +8,7 @@ import useMetaTx from '../../hooks/contracts/useMetaTx';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import InformationModal from '../../components/Modals/InformationModal';
 
+
 interface EditorPictureProps {
   setPreviewUrl: (url: string) => void;
   width: number;
@@ -31,16 +32,8 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
   const [infoModalHeader,setInfoModalHeader] = useState("");
   const [infoModalBody,setInfoModalBody] = useState("");
 
-  const uploadToIPFS = async (square: EditorSquare) => {
+  const uploadToIPFS = async (formData: EditorSquare | FormData) => {
     try {
-      const formData = new FormData();
-      if (square.blob) {
-        formData.append("file", square.blob, `square-${square.tokenId}.png`);
-      } else if (square.base64) {
-        const blob = await fetch(square.base64).then(res => res.blob());
-        formData.append("file", blob, `square-${square.tokenId}.png`);
-      }
-
       const response = await axios.post('https://ipfs.squares.town/api/v0/add?pin=true', formData);
       return response.data.Hash;
     } catch (error) {
@@ -53,30 +46,42 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
     setIsLoading(true);
     try {
       const updatedSquares = await Promise.all(editorSquares.map(async (square) => {
-        const hash = await uploadToIPFS(square);
+        const formData = new FormData();
+        if(square.blob)
+        formData.append("file", square.blob, `square-${square.tokenId}.png`);
+        const hash = await uploadToIPFS(formData);
         return { ...square, hashId: hash };
       }));
       setEditorSquares(updatedSquares);
+      
+      const tokenIdToHash = updatedSquares.reduce((acc, cur) => ({ ...acc, [cur.tokenId]: cur.hashId }), {});
+      const jsonBlob = new Blob([JSON.stringify(tokenIdToHash)], { type: 'application/json' });
+      const formData = new FormData();
+      formData.append("file", jsonBlob, "tokenIdToHash.json");
+      const jsonHash = await uploadToIPFS(formData);
 
+      console.log(jsonHash);
+      
       console.log("Updated Squares"+updatedSquares);
 
       const tokenIds = updatedSquares.map(sq => sq.tokenId);
       console.log("tokenIds " + tokenIds);
 
-      const hashes =     updatedSquares.map(sq => sq.hashId);
+      //const hashes =     updatedSquares.map(sq => sq.hashId);
       const stateId = updatedSquares[0].stateId;
       // Title & URL
 
+      
 
       let params: any[] = [];
       let funcName = "";
 
       if(stateId!=0) {
-         params = [stateId,tokenIds,hashes,url];
+         params = [stateId,tokenIds,jsonHash,url,title];
          funcName = "setSquareImagesForState";
       }
       else {
-         params = [tokenIds,hashes,url,title];
+         params = [tokenIds,jsonHash,url,title];
          funcName = "setMultipleSquareImages";
       }
 

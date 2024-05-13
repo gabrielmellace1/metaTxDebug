@@ -7,15 +7,35 @@ export default class MainScene extends Phaser.Scene {
     private lastPointerPosition = new Phaser.Math.Vector2();
     private dragDistanceThreshold = 5;
     private lastPinchDistance: number | null = null; // Add this line to declare the property
+    private imageUrl: string;
 
-    constructor() {
+    constructor(imageUrl: string) {
         super({ key: 'MainScene' });
+        this.imageUrl = imageUrl
     }
 
     preload(): void {
-        this.load.image('background', 'https://pub-7259634f7e994e1e8a46cf6cfaea5881.r2.dev/cryptowall.png');
         this.load.json('squaresData', 'squares.json');
+    
+        // Create a unique URL for the image each time to avoid caching issues
+        //const cacheBuster = new Date().getTime();
+        //const url = 'https://pub-7259634f7e994e1e8a46cf6cfaea5881.r2.dev/cryptowall.png?t=' + cacheBuster;
+    
+        // Directly load the image with the updated query string
+        this.load.image('background', this.imageUrl);
+    
+        // Start the loader explicitly if necessary
+        this.load.start();
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     create(): void {
         this.bg = this.setupBackground();

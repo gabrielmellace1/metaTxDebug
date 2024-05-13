@@ -18,8 +18,8 @@ kv_namespaces = [
 [vars]
 baseUrl = "https://squares.town"
 rpcUrl =  "https://polygon-mainnet.infura.io/v3/615e0266e5284aeeb5863c6731dbf11e"
-stateContractAddress = "0x2CEc094a25372d865b7e6f58e7cdF02bcb0D548D"
-squaresContractAddress = "0x4f8283660754E751E4243Fb1B34D40b4D8A7C01b"
+stateContractAddress = "0x26721AfAc4E8a508BBa7086556048Cb47289Fd85"
+squaresContractAddress = "0x24d46cE4aC42b4103a18dFd7F7467311e7Cc95d1"
 STATE_CONTRACT_ABI = """
 [
   {
@@ -45,5 +45,5 @@ STATE_CONTRACT_ABI = """
 """
 projectName="Squares Town"
 graphUrl="https://api.studio.thegraph.com/proxy/48884/squareblocks/version/latest"
-PIXEL_SERVICE_URL="https://pixelservice.vercel.app"
+PIXEL_SERVICE_URL="https://pixelservice.squares.town"
 compatibility_flags = ["nodejs_compat"]

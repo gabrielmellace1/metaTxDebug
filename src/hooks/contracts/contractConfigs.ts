@@ -1,8 +1,8 @@
 export const addresses = {
   marketplace: '0x63eBcB9c8e9A40dBA33676CAF0A9837Efa17CB56',
   bag: '0x73b29199a8e4C146E893EB95f18dAc41738a88c6',
-  square: '0x4f8283660754E751E4243Fb1B34D40b4D8A7C01b',
-  state: '0x2CEc094a25372d865b7e6f58e7cdF02bcb0D548D'
+  square: '0x24d46cE4aC42b4103a18dFd7F7467311e7Cc95d1',
+  state: '0x26721AfAc4E8a508BBa7086556048Cb47289Fd85'
  
 };
 
@@ -1349,9 +1349,9 @@ const configs: ContractConfigs = {
           },
           {
             "indexed": false,
-            "internalType": "string[]",
+            "internalType": "string",
             "name": "squareImageCID",
-            "type": "string[]"
+            "type": "string"
           },
           {
             "indexed": false,
@@ -1821,9 +1821,9 @@ const configs: ContractConfigs = {
             "type": "uint256[]"
           },
           {
-            "internalType": "string[]",
+            "internalType": "string",
             "name": "squareImageCIDs",
-            "type": "string[]"
+            "type": "string"
           },
           {
             "internalType": "string",
@@ -1872,9 +1872,9 @@ const configs: ContractConfigs = {
             "type": "uint256[]"
           },
           {
-            "internalType": "string[]",
+            "internalType": "string",
             "name": "squareImageCIDs",
-            "type": "string[]"
+            "type": "string"
           },
           {
             "internalType": "string",

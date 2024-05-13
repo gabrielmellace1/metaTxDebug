@@ -43,17 +43,41 @@ class TownComponent extends Component<Props,State> {
       }
     }
   };
-
-  initializeGame = (width: number, height: number) => {
+  
+  async checkForNewImage() {
+    const baseUrl = 'https://pub-7259634f7e994e1e8a46cf6cfaea5881.r2.dev/cryptowall.png';
+    const etag = localStorage.getItem('backgroundETag') || '';
+  
+    try {
+      const response = await fetch(baseUrl, { method: 'HEAD' });
+      const newEtag = response.headers.get('ETag');
+  
+      if (newEtag !== etag && newEtag) {
+        localStorage.setItem('backgroundETag', newEtag);
+        // Use the ETag as a part of the query string for cache busting
+        return `${baseUrl}?etag=${newEtag}`;
+      }
+      // Return the URL with the current ETag if it exists, otherwise use the base URL
+      return etag ? `${baseUrl}?etag=${etag}` : baseUrl;
+    } catch (error) {
+      console.error('Error checking image ETag:', error);
+      // Fallback to the most recent known version if the check fails
+      return etag ? `${baseUrl}?etag=${etag}` : baseUrl;
+    }
+  }
+  
+  
+  initializeGame = async (width: number, height: number) => {
+    const imageUrl = await this.checkForNewImage(); // Get the proper URL with or without a cache-buster
+  
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
       parent: 'phaser-game-container',
-      width: width,
-      height: height,
-      scene: [MainScene]
+      width,
+      height,
+      scene: [new MainScene(imageUrl)] // Passing imageUrl to the scene
     };
-
-    // Initialize the Phaser game with the dynamically calculated dimensions
+  
     this.game = new Phaser.Game(config);
   };
 
