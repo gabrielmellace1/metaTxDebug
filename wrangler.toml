@@ -45,5 +45,5 @@ STATE_CONTRACT_ABI = """
 """
 projectName="Squares Town"
 graphUrl="https://api.studio.thegraph.com/proxy/48884/squareblocks/version/latest"
-PIXEL_SERVICE_URL="https://pixelservice.squares.town"
+PIXEL_SERVICE_URL="https://pixelservice.vercel.app"
 compatibility_flags = ["nodejs_compat"]
