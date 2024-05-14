@@ -56,6 +56,7 @@ async function fetchAllBatches(totalTokens: number, queriesPerBatch: number, bat
                     x
                     y
                     clickableURL
+                    title
                     forSale
                     price
                     owner
@@ -103,6 +104,7 @@ function transformSquaresData(batchResults: any[], gridWidth: number): Record<st
                     const newTile = {
                         x, y, tokenId: stateTokenId,
                         clickableURL: square.clickableURL,
+                        title:square.title,
                         forSale: square.isOnState ? square.stateId.stateForSale : square.forSale,
                         price: parseInt(square.isOnState ? square.stateId.statePrice : square.price),
                         owner: square.isOnState ? square.stateId.stateOwner : square.owner,

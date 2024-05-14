@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { MetamaskAdapter } from "@web3auth/metamask-adapter";
 import { OPENLOGIN_NETWORK } from "@web3auth/openlogin-adapter";
+import { twitterPixelEvent } from "../helpers/funcHelper";
 
 interface AuthContextInterface {
   login: () => Promise<void>;
@@ -109,6 +110,9 @@ export const AuthContextProvider = ({
   const [signature, setSignature] = useState<any | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+
+
+
   const initWeb3Auth = async () => {
     try {
       await _web3auth.initModal(web3AuthModalParameters);
@@ -149,6 +153,12 @@ export const AuthContextProvider = ({
   }, [provider]);
 
   useEffect(() => {
+
+    if (window.ethereum && window.ethereum.isMetaMask) {
+      setIsMetamask(true);
+      twitterPixelEvent('tw-om2cf-om2vj'); // Trigger Twitter event if MetaMask is detected
+    }
+
     initWeb3Auth();
   }, []);
 
@@ -168,6 +178,7 @@ export const AuthContextProvider = ({
         setIsMetamask(true);
       }
       setUser(user);
+      twitterPixelEvent('tw-om2cf-om2uj');
     } catch (error) {
       console.log(error);
     }

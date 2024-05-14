@@ -16,7 +16,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     preload(): void {
-        this.load.json('squaresData', 'squares.json');
+        
     
         // Create a unique URL for the image each time to avoid caching issues
         //const cacheBuster = new Date().getTime();
@@ -177,26 +177,32 @@ export default class MainScene extends Phaser.Scene {
         });
     }
 
-    private createInteractiveSquares(): void {
+    private async fetchSquaresData(): Promise<any> {
+        const response = await fetch('https://squares.town/api/graphSquares');
+        const data = await response.json();
+        return data.data;
+    }
+
+    private async createInteractiveSquares(): Promise<void> {
         const cellSize = 10;
         const numRows = 500;
         const gridHeight = numRows * cellSize;
-        
-        const squaresData = this.cache.json.get('squaresData') as Array<{ x: number, y: number, title: string, url: string }>;
-        
-        squaresData.forEach(square => {
+
+        const squaresData = await this.fetchSquaresData();
+
+        Object.keys(squaresData).forEach(key => {
+            const square = squaresData[key];
             const adjustedY = gridHeight - (square.y + 1) * cellSize;
-    
+
             const squareGraphic = this.add.rectangle(
                 square.x * cellSize,
                 adjustedY,
                 cellSize,
                 cellSize,
-                0x00FF00, // Color
-                0          // Alpha for transparency
-            ).setOrigin(0, 0).setInteractive().setData('url', square.url);
-            
-        
+                0x00FF00,
+                0
+            ).setOrigin(0, 0).setInteractive().setData('url', square.clickableURL);
+
             this.configureSquareInteraction(squareGraphic, square);
         });
     }

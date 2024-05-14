@@ -31,12 +31,14 @@ const Header = () => {
       alignItems="center"
       boxShadow="md"
     >
-      <Box>
+      <Box display="flex" alignItems="center">
         <Link as={RouterLink} to="/town" mr={2}><Button colorScheme="yellow">Town</Button></Link>
         <Link as={RouterLink} to="/marketplace" mr={2}><Button colorScheme="pink">Marketplace</Button></Link>
         <Link as={RouterLink} to="/my-assets" mr={2}><Button colorScheme="purple">My Assets</Button></Link>
-        <a href="https://twitter.com/SquaresTown" className="twitter-follow-button" data-show-count="false">Follow @SquaresTown</a>
-       
+        <Link as={RouterLink} to="/about" mr={2}><Button colorScheme="blue">About</Button></Link>
+        <Box as="span" ml={2}>
+        <a href="https://twitter.com/SquaresTown"  className="twitter-follow-button" data-show-count="false">Follow @SquaresTown</a>
+        </Box>
       </Box>
       <Flex alignItems="center">
         <Text fontSize="md" color="white" mr={4}>

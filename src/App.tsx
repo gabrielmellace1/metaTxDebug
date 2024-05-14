@@ -5,6 +5,7 @@ import Header from "./components/Header/Header";
 import { AuthContextProvider } from "./context/auth.context";
 
 import WelcomeModal from "./components/Modals/WelcomeModal";
+import ShareModal from "./components/Modals/ShareModal";
 import Loading from "./components/Utils/Loading";
 import ToastProvider from './components/Notifications/ToastProvider';
 
@@ -32,6 +33,7 @@ function App() {
               </Routes>
             </Suspense>
             <WelcomeModal />
+            <ShareModal />
             </ToastProvider>
           </BrowserRouter>
       </AuthContextProvider>

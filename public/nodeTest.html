@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+</head>
+<body>
+    <h2>Fetch Blocks and Check ERC721 Transfer Events</h2>
+    <button onclick="fetchBlocks()">Fetch Blocks</button>
+    <pre id="result"></pre>
+
+    <script>
+        // Connect to the Polygon network
+        const web3 = new Web3('https://polygon-rpc.com');
+
+        async function fetchBlocks() {
+            const startBlockNumber = 25236831; // Starting block number
+            const endBlockNumber = 25236835; // Ending block number (inclusive)
+            try {
+                const transferEvents = [];
+
+                // Use eth_getLogs to fetch logs for the block range
+                const logs = await web3.eth.getPastLogs({
+                    fromBlock: startBlockNumber,
+                    toBlock: endBlockNumber,
+                    topics: [web3.utils.sha3('Transfer(address,address,uint256)')]
+                });
+
+                logs.forEach(log => {
+                    // Ensure this is an ERC721 transfer by checking the length of topics
+                    if (log.topics.length === 4) {
+                        transferEvents.push({
+                            txHash: log.transactionHash,
+                            from: '0x' + log.topics[1].slice(26),
+                            to: '0x' + log.topics[2].slice(26),
+                            tokenId: web3.utils.hexToNumberString(log.topics[3])
+                        });
+                    }
+                });
+
+                document.getElementById('result').textContent = JSON.stringify(transferEvents, null, 2);
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+            }
+        }
+    </script>
+</body>
+</html>

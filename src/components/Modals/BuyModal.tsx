@@ -9,6 +9,7 @@ import { addresses } from '../../hooks/contracts/contractConfigs';
 import useMetaTx from '../../hooks/contracts/useMetaTx';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import useMarketplace from '../../hooks/contracts/useMarketplace';
+import { twitterPixelEvent } from '../../helpers/funcHelper';
 
 type BuyModalProps = {
   isOpen: boolean;
@@ -48,6 +49,8 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,
 
   const handleOptionChange = (value: string) => setSelectedOption(value);
 
+
+
   const handleBuyClick = async () => {
         switch(selectedOption) {
             case '1':
@@ -70,6 +73,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,
                 else {
                     if (totalCost.lt(allowance)) {
 
+                      
                      
                       if(marketplace && await marketplace.areOrdersActive(nftAddress,tokenIds)) {
                         setConfirmPurchaseHeader("Confirm purchase?");
@@ -162,6 +166,14 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,
             if (status?.status) {
                 setInfoModalHeader("Purchase succesfull");
                 setInfoModalBody("The purchase has been process succesfully");
+
+                const totalCostValue = ethers.utils.formatEther(itemCosts.reduce(
+                  (acc, cost) => acc.add(cost),
+                  ethers.BigNumber.from("0")
+                ).toString());
+      
+                twitterPixelEvent('tw-om2cf-om2cg', { value: totalCostValue });
+
             } else {
                 setInfoModalHeader("Upps, purchase failed");
                 setInfoModalBody("There was an error processing the purchase");

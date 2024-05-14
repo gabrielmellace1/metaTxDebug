@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import Phaser from 'phaser';
 import MainScene from './MainScene';
+import { toast } from 'react-toastify';
 
 type Props = {};
 
@@ -29,6 +30,17 @@ class TownComponent extends Component<Props,State> {
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
     this.handleLayoutCompletion();
+
+    toast('🦄 TownComponent loaded!', {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
   }
 
   handleLayoutCompletion = () => {
