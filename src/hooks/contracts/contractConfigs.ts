@@ -2734,6 +2734,6 @@ const configs: ContractConfigs = {
 };
 
 // Function to retrieve a contract configuration by name
-export function getContractConfig(name: string): ContractConfig | undefined {
+export function getContractConfig(name: string): ContractConfig  {
   return configs[name];
 }

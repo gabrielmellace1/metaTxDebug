@@ -3,10 +3,23 @@ import { Box, Button, Flex, Text, useColorMode, IconButton, Link } from "@chakra
 import { SunIcon, MoonIcon } from "@chakra-ui/icons";
 import { useAuth } from "../../context/auth.context";
 import { Link as RouterLink } from "react-router-dom";  // Import RouterLink for navigation
+import { useEffect } from "react";
 
 const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const { logout, login, isLoggedIn, userAddress } = useAuth();
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://platform.twitter.com/widgets.js";
+    script.async = true;
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
 
   return (
     <Flex
@@ -22,6 +35,8 @@ const Header = () => {
         <Link as={RouterLink} to="/town" mr={2}><Button colorScheme="yellow">Town</Button></Link>
         <Link as={RouterLink} to="/marketplace" mr={2}><Button colorScheme="pink">Marketplace</Button></Link>
         <Link as={RouterLink} to="/my-assets" mr={2}><Button colorScheme="purple">My Assets</Button></Link>
+        <a href="https://twitter.com/SquaresTown" className="twitter-follow-button" data-show-count="false">Follow @SquaresTown</a>
+       
       </Box>
       <Flex alignItems="center">
         <Text fontSize="md" color="white" mr={4}>

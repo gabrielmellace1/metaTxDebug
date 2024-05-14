@@ -6,6 +6,7 @@ import { AuthContextProvider } from "./context/auth.context";
 
 import WelcomeModal from "./components/Modals/WelcomeModal";
 import Loading from "./components/Utils/Loading";
+import ToastProvider from './components/Notifications/ToastProvider';
 
 const TownGrid = lazy(() => import("./Pages/Town/TownComponent"));
 const Marketplace = lazy(() => import("./Pages/Marketplace/Marketplace"));
@@ -18,6 +19,7 @@ function App() {
     <div className="app">
       <AuthContextProvider>
           <BrowserRouter>
+          <ToastProvider>
             <Header />
             <Suspense fallback={<Loading />}>
               <Routes>
@@ -30,6 +32,7 @@ function App() {
               </Routes>
             </Suspense>
             <WelcomeModal />
+            </ToastProvider>
           </BrowserRouter>
       </AuthContextProvider>
     </div>

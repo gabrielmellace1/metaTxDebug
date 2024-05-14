@@ -27,10 +27,19 @@ class TownComponent extends Component<Props,State> {
 
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
-    this.handleResize(); // Set the initial size based on the current viewport
+    this.handleResize();
+    this.handleLayoutCompletion();
   }
 
+  handleLayoutCompletion = () => {
+    // This might be a timeout or a real check to see if certain elements are rendered
+    setTimeout(() => {
+      this.handleResize(); // Initialize resizing once everything is ready
+    }, 1000); // Adjust timing based on actual layout load time
+  };
+
   handleResize = () => {
+    console.log("Resizing");
     if (this.gameContainerRef.current) {
       const rect = this.gameContainerRef.current.getBoundingClientRect();
       this.gameContainerRef.current.style.height = `calc(${window.innerHeight}px - ${rect.top}px)`; // Calculate the height dynamically
@@ -41,7 +50,12 @@ class TownComponent extends Component<Props,State> {
       } else {
         this.initializeGame(rect.width, window.innerHeight - rect.top);
       }
+
+     
+
     }
+
+
   };
   
   async checkForNewImage() {

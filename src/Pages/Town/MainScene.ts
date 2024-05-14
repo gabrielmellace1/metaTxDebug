@@ -9,6 +9,7 @@ export default class MainScene extends Phaser.Scene {
     private lastPinchDistance: number | null = null; // Add this line to declare the property
     private imageUrl: string;
 
+
     constructor(imageUrl: string) {
         super({ key: 'MainScene' });
         this.imageUrl = imageUrl
@@ -28,14 +29,6 @@ export default class MainScene extends Phaser.Scene {
         this.load.start();
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
 
     create(): void {
         this.bg = this.setupBackground();
@@ -44,7 +37,8 @@ export default class MainScene extends Phaser.Scene {
         this.createPopup();
         this.input.setDefaultCursor('url(assets/cursor.png), default');
         this.addGridGlareEffect();
-        this.scale.on('resize', this.resizeGame, this);
+        
+
     }
 
     private setupBackground(): Phaser.GameObjects.Image {
@@ -251,9 +245,9 @@ export default class MainScene extends Phaser.Scene {
         this.popup.setVisible(false);
     }
 
-    private resizeGame(gameSize: Phaser.Structs.Size): void {
-        const width = gameSize.width;
-        const height = gameSize.height;
+    public resizeGame(width: number,height: number): void {
+        console.log("resizeGame called");
+        
     
         this.scale.resize(width, height);
     
