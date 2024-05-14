@@ -3,7 +3,7 @@ export type AtlasTile = {
     y: number;
     tokenId: number;
     clickableURL?: string;
-    title?:string;
+    title:string;
     forSale: boolean;
     price?: number;
     owner: string;
