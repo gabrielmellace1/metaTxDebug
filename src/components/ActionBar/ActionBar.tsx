@@ -7,11 +7,12 @@ import CancelModal from '../Modals/CancelModal';
 import { ethers } from 'ethers';
 import styles from './ActionBar.module.css';
 import ConfirmModal from '../Modals/ConfirmModal';
-import useMetaTx from '../../hooks/contracts/useMetaTx';
+//import useMetaTx from '../../hooks/contracts/useMetaTx';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import InformationModal from '../Modals/InformationModal';
 import TransferModal from '../Modals/TransferModal';
 import {  useNavigate } from 'react-router-dom';
+import useTx from '../../hooks/contracts/useTx';
 
 
 type ActionBarProps = {
@@ -38,7 +39,9 @@ const ActionBar: React.FC<ActionBarProps> = ({userAddress, selectedTiles,
 
     const navigate = useNavigate();
     
-    const metaTx = useMetaTx();
+   // const metaTx = useMetaTx();
+    const txHook = useTx();
+    
     const txChecker = useTxChecker();
     
   // Action buttons
@@ -176,7 +179,7 @@ const ActionBar: React.FC<ActionBarProps> = ({userAddress, selectedTiles,
 
 const handleGroupConfirm = async () => { // Function to handle user confirmation
   try {
-    const tx = await metaTx('state','mintState',[ tokenIds]);
+    const tx = await txHook('state','mintState',[ tokenIds]);
 
     console.log("Tx is:"+tx);
 
@@ -217,7 +220,7 @@ const handleGroupConfirm = async () => { // Function to handle user confirmation
 
 const handleUnGroupConfirm = async () => { // Function to handle user confirmation
   try {
-    const tx = await metaTx('state','deleteState',[ tokenIds[0]]);
+    const tx = await txHook('state','deleteState',[ tokenIds[0]]);
 
     console.log("Tx is:"+tx);
 

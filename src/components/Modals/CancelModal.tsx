@@ -5,11 +5,12 @@ import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseBu
 import InformationModal from './InformationModal';
 
 
-import useMetaTx from '../../hooks/contracts/useMetaTx';
+//import useMetaTx from '../../hooks/contracts/useMetaTx';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import useMarketplace from '../../hooks/contracts/useMarketplace';
 
 import { addresses } from '../../hooks/contracts/contractConfigs';
+import useTx from '../../hooks/contracts/useTx';
 
 type CancelModalProps = {
     isOpen: boolean;
@@ -22,7 +23,8 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, tokenIds,sta
   
  
 
-  const metaTx = useMetaTx();
+  //const metaTx = useMetaTx();
+  const txHook = useTx();
   const txChecker = useTxChecker();
   const marketplace = useMarketplace();
 
@@ -51,7 +53,7 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, tokenIds,sta
         return;
       }
       try {
-        const tx = await metaTx('marketplace','cancel',[ nftAddress,tokenIds]);
+        const tx = await txHook('marketplace','cancel',[ nftAddress,tokenIds]);
         console.log("Tx is:"+tx);
         setInfoModalHeader("Processing cancel");
         setInfoModalBody("The transaction is being processed, one moment please. Tx hash: " + tx);

@@ -3,8 +3,9 @@ import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseBu
 
 
 import InformationModal from './InformationModal';
-import useMetaTx from '../../hooks/contracts/useMetaTx';
+//import useMetaTx from '../../hooks/contracts/useMetaTx';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
+import useTx from '../../hooks/contracts/useTx';
 
 
 type TransferModalProps = {
@@ -16,7 +17,9 @@ type TransferModalProps = {
 
 const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose, tokenIds,stateSelected }) => {
   
-  const metaTx = useMetaTx();
+  //const metaTx = useMetaTx();
+  const txHook = useTx();
+  
   const txChecker = useTxChecker();
 
   let contract = stateSelected? 'state':'square';
@@ -37,7 +40,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose, tokenIds
    
       try {
         
-        const tx = await metaTx(contract,'batchTransferFrom',[ address,tokenIds]);
+        const tx = await txHook(contract,'batchTransferFrom',[ address,tokenIds]);
         console.log("Tx is:"+tx);
   
         setInfoModalHeader("Processing transfer");

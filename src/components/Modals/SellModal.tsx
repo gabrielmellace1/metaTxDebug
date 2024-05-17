@@ -5,12 +5,13 @@ import { ethers } from 'ethers';
 import InformationModal from './InformationModal';
 import ConfirmModal from './ConfirmModal';
 
-import useMetaTx from '../../hooks/contracts/useMetaTx';
+//import useMetaTx from '../../hooks/contracts/useMetaTx';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import useMarketplace from '../../hooks/contracts/useMarketplace';
 import useSquare from '../../hooks/contracts/useSquare';
 import useStateContract from '../../hooks/contracts/useState';
 import { addresses } from '../../hooks/contracts/contractConfigs';
+import useTx from '../../hooks/contracts/useTx';
 
 type SellModalProps = {
     isOpen: boolean;
@@ -23,7 +24,8 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds,stateSe
   
   console.log("asd");
 
-  const metaTx = useMetaTx();
+  //const metaTx = useMetaTx();
+  const txHook = useTx();
   const txChecker = useTxChecker();
   const marketplace = useMarketplace();
   const square = useSquare();
@@ -73,7 +75,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds,stateSe
 
       try {
         
-        const tx = await metaTx('marketplace','sell',[ nftAddress,tokenIds,pricesToSend]);
+        const tx = await txHook('marketplace','sell',[ nftAddress,tokenIds,pricesToSend]);
         console.log("Tx is:"+tx);
   
         setInfoModalHeader("Processing sell");
@@ -127,7 +129,9 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds,stateSe
     const activeContract = stateSelected? 'state':'square';
 
     try {
-        const tx = await metaTx(activeContract,'setApprovalForAll',[ addresses.marketplace,1]);
+
+      console.log(addresses.marketplace);
+        const tx = await txHook(activeContract,'setApprovalForAll',[ addresses.marketplace,1]);
         console.log("Tx is:"+tx);
   
         setInfoModalHeader("Processing authorization");
@@ -161,6 +165,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds,stateSe
   
       } catch (error) {
         console.error("Error making the approval, please try again:", error);
+
         // Handle error appropriately, e.g., show error message to user
       }
   };

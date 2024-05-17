@@ -6,10 +6,11 @@ import InformationModal from './InformationModal';
 import ConfirmModal from './ConfirmModal';
 import useBAG from '../../hooks/contracts/useBag';
 import { addresses } from '../../hooks/contracts/contractConfigs';
-import useMetaTx from '../../hooks/contracts/useMetaTx';
+//import useMetaTx from '../../hooks/contracts/useMetaTx';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import useMarketplace from '../../hooks/contracts/useMarketplace';
 import { twitterPixelEvent } from '../../helpers/funcHelper';
+import useTx from '../../hooks/contracts/useTx';
 
 type BuyModalProps = {
   isOpen: boolean;
@@ -24,7 +25,8 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,
 
     
     const bag = useBAG();
-    const metaTx = useMetaTx();
+    //const metaTx = useMetaTx();
+    const txHook = useTx();
     const txChecker = useTxChecker();
     const marketplace = useMarketplace();
 
@@ -57,12 +59,14 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,
                 const balance = await bag?.getBalance(); 
                 console.log(tokenIds);
 
+                console.log(addresses.marketplace);
                 const allowance = await bag?.getAllowance(addresses.marketplace); 
                 const totalCost = itemCosts.reduce(
                   (accumulator, currentCost) => accumulator.add(currentCost),
                   ethers.BigNumber.from("0")
                 );
                 console.log("Total cost" + totalCost);
+                console.log(allowance);
 
                 if (totalCost.gt(balance)) {
                     setInfoModalHeader("Insufficient balance")
@@ -105,7 +109,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,
 
   const handleAllowanceConfirm = async () => { // Function to handle user confirmation
     try {
-      const tx = await metaTx('bag','approve',[ '0x63eBcB9c8e9A40dBA33676CAF0A9837Efa17CB56',"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]);
+      const tx = await txHook('bag','approve',[ addresses.marketplace,"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]);
       console.log("Tx is:"+tx);
 
       setInfoModalHeader("Processing authorization");
@@ -150,7 +154,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose,itemCosts,tokenIds,
        
           const itemCostsString = itemCosts.map(num => num.toString());
 
-          const tx = await  metaTx('marketplace','buy',[ nftAddress,tokenIds,itemCostsString]);
+          const tx = await  txHook('marketplace','buy',[ nftAddress,tokenIds,itemCostsString]);
           
            
             setShowConfirmModal(false); // Close confirmation modal

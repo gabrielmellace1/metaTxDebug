@@ -4,9 +4,10 @@ import AvatarEditor from 'react-avatar-editor';
 import Dropzone from 'react-dropzone';
 import axios from 'axios';
 import { EditorSquare } from '../../types/allTypes';
-import useMetaTx from '../../hooks/contracts/useMetaTx';
+//import useMetaTx from '../../hooks/contracts/useMetaTx';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import InformationModal from '../../components/Modals/InformationModal';
+import useTx from '../../hooks/contracts/useTx';
 
 
 interface EditorPictureProps {
@@ -26,7 +27,9 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
 
-  const metaTx = useMetaTx();
+  //const metaTx = useMetaTx();
+  const txHook = useTx();
+  
   const txChecker = useTxChecker();
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [infoModalHeader,setInfoModalHeader] = useState("");
@@ -77,7 +80,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
       let funcName = "";
 
       if(stateId!=0) {
-         params = [stateId,tokenIds,jsonHash,url,title];
+         params = [stateId,jsonHash,url,title];
          funcName = "setSquareImagesForState";
       }
       else {
@@ -86,7 +89,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
       }
 
       
-        const tx = await metaTx('square',funcName,params);
+        const tx = await txHook('square',funcName,params);
     
         console.log("Tx is:"+tx);
     
