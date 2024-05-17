@@ -1,13 +1,13 @@
 
 import { ethers } from 'ethers';
-import { getContractConfig } from './contractConfigs';
+import { blastRPC, getContractConfig } from './contractConfigs';
 import { useMemo } from 'react';
 
 const useMarketplace = () => {
    
 
     const provider = useMemo(() => {
-        return new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
+        return new ethers.providers.JsonRpcProvider(blastRPC);
       }, []);
 
       

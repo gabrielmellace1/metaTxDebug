@@ -1,11 +1,12 @@
 import { ethers } from 'ethers';
 import { useMemo } from 'react';
+import { blastRPC } from './contractConfigs';
 
 const useTxChecker = () => {
     
 
     const polygonProvider = useMemo(() => {
-        return new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
+        return new ethers.providers.JsonRpcProvider(blastRPC);
       }, []);
 
 

@@ -1,19 +1,24 @@
 import Phaser from 'phaser';
+import PopupScene from './PopupScene';
+import { AtlasTile } from '../../types/atlasTypes';
+
 
 export default class MainScene extends Phaser.Scene {
     private bg!: Phaser.GameObjects.Image;
-    private popup!: Phaser.GameObjects.Text;
     private dragging = false;
     private lastPointerPosition = new Phaser.Math.Vector2();
     private dragDistanceThreshold = 5;
     private lastPinchDistance: number | null = null; // Add this line to declare the property
     private imageUrl: string;
+    private clickableSquares: AtlasTile[];
 
 
-    constructor(imageUrl: string) {
+
+    constructor(imageUrl: string, clickableSquares: AtlasTile[]) {
         super({ key: 'MainScene' });
-        this.imageUrl = imageUrl
-    }
+        this.imageUrl = imageUrl;
+        this.clickableSquares = clickableSquares;
+      }
 
     preload(): void {
         
@@ -31,15 +36,15 @@ export default class MainScene extends Phaser.Scene {
     
 
     create(): void {
+        this.scene.launch('PopupScene')
         this.bg = this.setupBackground();
         this.setupInputHandlers();
         this.createInteractiveSquares();
-        this.createPopup();
         this.input.setDefaultCursor('url(assets/cursor.png), default');
-        this.addGridGlareEffect();
-        
-
+       
     }
+
+    
 
     private setupBackground(): Phaser.GameObjects.Image {
         const bg = this.add.image(0, 0, 'background').setOrigin(0, 0).setInteractive();
@@ -177,48 +182,49 @@ export default class MainScene extends Phaser.Scene {
         });
     }
 
-    private async fetchSquaresData(): Promise<any> {
-        const response = await fetch('https://squares.town/api/graphSquares');
-        const data = await response.json();
-        return data.data;
-    }
+    
 
-    private async createInteractiveSquares(): Promise<void> {
-        const cellSize = 10;
-        const numRows = 500;
-        const gridHeight = numRows * cellSize;
+// Update createInteractiveSquares method
+private createInteractiveSquares(): void {
 
-        const squaresData = await this.fetchSquaresData();
+    console.log("Clickable urls from mainscene" + this.clickableSquares);
+    const cellSize = 10;
+    const numRows = 500;
+    const gridHeight = numRows * cellSize;
 
-        Object.keys(squaresData).forEach(key => {
-            const square = squaresData[key];
-            const adjustedY = gridHeight - (square.y + 1) * cellSize;
+    this.clickableSquares.forEach(square => {
+      if (square.clickableURL) {
+        const adjustedY = gridHeight - (square.y + 1) * cellSize;
 
-            const squareGraphic = this.add.rectangle(
-                square.x * cellSize,
-                adjustedY,
-                cellSize,
-                cellSize,
-                0x00FF00,
-                0
-            ).setOrigin(0, 0).setInteractive().setData('url', square.clickableURL);
+        const squareGraphic = this.add.rectangle(
+          square.x * cellSize,
+          adjustedY,
+          cellSize,
+          cellSize,
+          0x00FF00,
+          0
+        ).setOrigin(0, 0).setInteractive().setData('url', square.clickableURL);
 
-            this.configureSquareInteraction(squareGraphic, square);
-        });
-    }
+        this.configureSquareInteraction(squareGraphic, square);
+      }
+    });
+}
 
-    private configureSquareInteraction(squareGraphic: Phaser.GameObjects.Rectangle, square: { x?: number; y?: number; title: any; url: any; }) {
-        squareGraphic.on('pointerover', () => {
-            this.showPopup(square.title, squareGraphic.getTopLeft());
-            this.highlightSquare(squareGraphic);
-            this.input.setDefaultCursor(square.url ? 'pointer' : 'not-allowed');
-        });
+// Add logging in configureSquareInteraction
+private configureSquareInteraction(squareGraphic: Phaser.GameObjects.Rectangle, square: AtlasTile) {
+    console.log("Configuring interaction for square:", square);
+    squareGraphic.on('pointerover', () => {
+      this.showPopup(square.title || 'No Title', squareGraphic.getTopLeft());
+      this.highlightSquare(squareGraphic);
+      this.input.setDefaultCursor(square.clickableURL ? 'pointer' : 'not-allowed');
+    });
 
-        squareGraphic.on('pointerout', () => {
-            this.hidePopup();
-            this.input.setDefaultCursor('default'); // Reset cursor to default when not hovering
-        });
-    }
+    squareGraphic.on('pointerout', () => {
+      this.hidePopup();
+      this.input.setDefaultCursor('default');
+    });
+}
+
 
     private highlightSquare(square: Phaser.GameObjects.Rectangle): void {
         const border = this.add.graphics();
@@ -227,29 +233,28 @@ export default class MainScene extends Phaser.Scene {
         square.on('pointerout', () => border.destroy());  // Remove border when not hovering
     }
 
-    private createPopup(): void {
-        this.popup = this.add.text(0, 0, 'Popup', {
-            backgroundColor: '#000',
-            color: '#fff',
-            padding: { left: 10, right: 10, top: 10, bottom: 10 },
-            wordWrap: { width: 200 },
-            align: 'center'
-        }).setOrigin(0.5, 1).setVisible(false);
-    }
-
     private showPopup(title: string, position: Phaser.Geom.Point): void {
-        this.popup.setText(title);
-        const centerX = this.cameras.main.width / 2;
-        const centerY = this.cameras.main.height / 2;
-        let offsetX = position.x < centerX ? 90 : -90;
-        let offsetY = position.y < centerY ? 90 : -90;
-        this.popup.setPosition(position.x + offsetX, position.y + offsetY);
-        this.popup.setVisible(true);
+        const popupScene = this.scene.get('PopupScene') as PopupScene;
+        const camera = this.cameras.main;
+    
+        // Convert world position to screen position
+        const screenX = (position.x - camera.worldView.x) * camera.zoom;
+        const screenY = (position.y - camera.worldView.y) * camera.zoom;
+    
+        const centerX = camera.width / 2;
+        const centerY = camera.height / 2;
+        let offsetX = screenX < centerX ? 90 : -90;
+        let offsetY = screenY < centerY ? 90 : -90;
+        popupScene.showPopup(title, screenX + offsetX, screenY + offsetY);
     }
-
+    
     private hidePopup(): void {
-        this.popup.setVisible(false);
+        const popupScene = this.scene.get('PopupScene') as PopupScene;
+        popupScene.hidePopup();
     }
+    
+    
+    
 
     public resizeGame(width: number,height: number): void {
         console.log("resizeGame called");
@@ -269,7 +274,5 @@ export default class MainScene extends Phaser.Scene {
         this.cameras.main.centerOn(this.bg.displayWidth / 2, this.bg.displayHeight / 2);
     }
 
-    private addGridGlareEffect(): void {
-        // Glare effect implementation is commented out for now
-    }
+    
 }

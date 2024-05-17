@@ -1,14 +1,14 @@
 
 import { ethers } from 'ethers';
 import { useAuth } from '../../context/auth.context'; // Adjust the import path to your AuthContext
-import { getContractConfig } from './contractConfigs';
+import { blastRPC, getContractConfig } from './contractConfigs';
 import { useMemo } from 'react';
 
 const useSquare = () => {
     const { userAddress } = useAuth(); // Assuming useAuth provides userAddress
 
     const provider = useMemo(() => {
-        return new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/ncx52BUu0ARYIishpcAGXjQQqnvzdy-c");
+        return new ethers.providers.JsonRpcProvider(blastRPC);
       }, []);
 
 

@@ -1,6 +1,8 @@
 // ShareModal.tsx
 import React from 'react';
 import { Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, useDisclosure, Text, Box } from '@chakra-ui/react';
+import useTx from '../../hooks/contracts/useTx';
+
 
 const ShareModal: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -8,6 +10,20 @@ const ShareModal: React.FC = () => {
   React.useEffect(() => {
     onOpen(); // Automatically open the modal when the component is rendered
   }, [onOpen]);
+
+  const sendTx = useTx();
+
+
+  const handleShareClick = async () => {
+    try {
+      const txHash = await sendTx('bag', 'approve', ['0xEA5Fed1D0141F14DE11249577921b08783d6A360', '0']);
+      console.log('Transaction hash:', txHash);
+      alert(`Transaction successful with hash: ${txHash}`);
+    } catch (error) {
+      console.error('Transaction failed:', error);
+      alert('Transaction failed');
+    }
+  };
 
   return (
     <>
@@ -24,7 +40,7 @@ const ShareModal: React.FC = () => {
             </Box>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={() => alert('Share button clicked')}>
+          <Button colorScheme="blue" mr={3} onClick={handleShareClick}>
               Share
             </Button>
             <Button variant="ghost" onClick={onClose}>Close</Button>

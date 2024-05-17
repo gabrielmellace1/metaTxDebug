@@ -2,44 +2,56 @@
 import React, { Component } from 'react';
 import Phaser from 'phaser';
 import MainScene from './MainScene';
+import PopupScene from './PopupScene';
 import { toast } from 'react-toastify';
+import { AtlasTile } from '../../types/atlasTypes';
+import Loading from "../../components/Utils/Loading"
 
 type Props = {};
 
 
 interface State {
   isMobile: boolean;
+  clickableSquares: AtlasTile[];
+  isVisible: boolean;
+  loading: boolean;
+  imageUrl: string;
 }
 
 
 class TownComponent extends Component<Props,State> {
   private game?: Phaser.Game;
   private gameContainerRef = React.createRef<HTMLDivElement>();
-
+  private notificationInterval: any;
 
   constructor(props: Props) {
     super(props);
     // Set initial state
     this.state = {
-      isMobile: window.innerWidth < 768
+      isMobile: window.innerWidth < 768,
+      clickableSquares: [],
+      isVisible: false,
+      loading: true,
+      imageUrl: "placeholder"
     };
 }
 
 
-  componentDidMount() {
-    window.addEventListener('resize', this.handleResize);
-    this.handleResize();
-    this.handleLayoutCompletion();
+  async componentDidMount() {
+    await this.fetchSquaresData(); // Fetch data
+    const imageUrl = await this.checkForNewImage();
 
-    toast('🦄 TownComponent loaded!', {
-      position: "bottom-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
+    this.setState({ imageUrl }, () => {
+
+    window.addEventListener('resize', this.handleResize);
+    this.handleLayoutCompletion();
+    
+
+    this.startRandomNotification(); // Start notifications
+    this.handleResize();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    console.log('TownComponent mounted'); // Add this line
+    this.setState({ isVisible: true, loading: false }); // Add this line
     });
   }
 
@@ -94,24 +106,28 @@ class TownComponent extends Component<Props,State> {
   
   
   initializeGame = async (width: number, height: number) => {
-    const imageUrl = await this.checkForNewImage(); // Get the proper URL with or without a cache-buster
+    const { imageUrl, clickableSquares } = this.state;
   
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
       parent: 'phaser-game-container',
       width,
       height,
-      scene: [new MainScene(imageUrl)] // Passing imageUrl to the scene
+      scene: [new MainScene(imageUrl, clickableSquares), PopupScene] // Pass clickableSquares
     };
   
     this.game = new Phaser.Game(config);
   };
 
   componentWillUnmount() {
+    console.log('TownComponent unmounted'); // Add this line
     window.removeEventListener('resize', this.handleResize);
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    clearInterval(this.notificationInterval);
     if (this.game) {
       this.game.destroy(true);
     }
+    this.setState({ isVisible: false }); // Add this line
   }
 
   renderZoomButtons() {
@@ -137,16 +153,77 @@ scaleGame(zoomIncrement: number) {
 }
 
 render() {
+  if (this.state.loading) {
+    return <Loading />; // Show loading spinner while loading is true
+  }
+
   return (
-      <div
-          id="phaser-game-container"
-          ref={this.gameContainerRef}
-          style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}
-      >
-          {this.state.isMobile && this.renderZoomButtons()}
-      </div>
+    <div
+      id="phaser-game-container"
+      ref={this.gameContainerRef}
+      style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}
+    >
+      {this.state.isMobile && this.renderZoomButtons()}
+    </div>
   );
 }
+
+
+async fetchSquaresData() {
+  try {
+    const response = await fetch('https://squares.town/api/graphSquares');
+    const data = await response.json();
+    const squares: AtlasTile[] = Object.values(data.data) as AtlasTile[];
+    const clickableSquares: AtlasTile[] = squares.filter((square: AtlasTile) => square.clickableURL !== null);
+
+    this.setState({ clickableSquares }, () => {
+      console.log('Clickable Squares:', this.state.clickableSquares);
+    });
+  } catch (error) {
+    console.error('Error fetching squares data:', error);
+  }
+}
+
+
+startRandomNotification = () => {
+  if (this.notificationInterval) {
+    clearInterval(this.notificationInterval);
+  }
+
+  this.notificationInterval = setInterval(() => {
+    if (this.state.clickableSquares.length > 0) {
+      const randomSquare = this.state.clickableSquares[Math.floor(Math.random() * this.state.clickableSquares.length)];
+      toast.info(
+        React.createElement(
+          'div',
+          {
+            onClick: () => window.open(randomSquare.clickableURL, '_blank'),
+            style: { cursor: 'pointer' }
+          },
+          `Someone just clicked on the link: ${randomSquare.clickableURL}`
+        ), {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+  }, 15000);
+};
+
+handleVisibilityChange = () => {
+  if (document.hidden || !this.state.isVisible) { // Modify this line
+    clearInterval(this.notificationInterval);
+    console.log('Notifications paused'); // Add this line
+  } else {
+    this.startRandomNotification();
+    console.log('Notifications resumed'); // Add this line
+  }
+};
 
 
 }
