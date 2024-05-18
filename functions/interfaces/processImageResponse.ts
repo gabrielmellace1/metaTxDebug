@@ -1,7 +1,6 @@
 export interface ProcessImageResponse {
+    cid: string;
+    tokenID: number;
     success: boolean;
-    message?: string;
-    error?: string;
-    errorCode?: number;
-    successCode: number;
+    code: number;
   }

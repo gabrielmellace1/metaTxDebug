@@ -1,7 +1,6 @@
 import { fetchFromGraph, getTransactionsQuery } from "../helpers/graph";
 
 import { GraphTransactionsResponse } from "../interfaces/graphTransactionsResponse";
-import { ProcessImageResponse } from "../interfaces/processImageResponse";
 import { Env } from "../lib/env";
 import { error, json } from "../lib/response";
 
@@ -14,6 +13,7 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
         const pixelServiceUrl = env.PIXEL_SERVICE_URL;
         const queryResult = await env.squareblocksdb.prepare("SELECT counter FROM counters WHERE counterName = 'lastTransactionParsed'").all();
         let lastTransactionParsed = queryResult.results.length > 0 ? parseInt(queryResult.results[0].counter as string) : 0;
+       
         const query = getTransactionsQuery(lastTransactionParsed);
         
         
@@ -21,28 +21,37 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       
 
         const transactions = jsonResponse.data.transactions;
-        let lastProcessedTransaction = lastTransactionParsed;
-        let failures = [];
+      
 
-        for (const transaction of transactions) {
-            lastProcessedTransaction = transaction.numericID;
+        const cidList = transactions.map(tx => tx.updatedCID);
+        const tokenIdList = transactions.map(tx => tx.tokenId);
 
-            const response = await fetch(`${pixelServiceUrl}/api/processImage?cid=${transaction.updatedCID}&tokenId=${transaction.tokenId}`);
-            const processResponse = (await response.json()) as ProcessImageResponse;
+        try {
+            const response = await fetch('https://ipfs.squares.town/pixelService/process-images', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cidList, tokenIdList })
+            });
+
+            const processResponse = await response.json();
+
+            const lastProcessedTransaction = transactions.reduce((max, transaction) => {
+                const numericID = transaction.numericID;
+                return numericID > max ? numericID : max;
+            }, lastTransactionParsed);
 
 
-            if (!processResponse.success) {
-                failures.push({ transactionId: transaction.id, tokenId: transaction.tokenId, errorCode: processResponse.errorCode });
-                await logFailure(transaction, processResponse.errorCode || 500, env); // Default error code if undefined
-                continue; // Skip remaining logic if processing fails
+            if (transactions.length > 0) {
+                await env.squareblocksdb.prepare("UPDATE counters SET counter = ? WHERE counterName = 'lastTransactionParsed'").bind(lastProcessedTransaction.toString()).run();
             }
+
+            return json({ processResponse });
+
+        } catch (err) {
+            console.error("Error in processing:", err);
+            return error(`Failed to process transactions: ${err.message}`, 500);
         }
 
-        if (transactions.length > 0) {
-            await env.squareblocksdb.prepare("UPDATE counters SET counter = ? WHERE counterName = 'lastTransactionParsed'").bind(lastProcessedTransaction.toString()).run();
-        }
-
-        return json({ lastTransactionParsed, transactions, failures });
     } catch (err) {
         console.error("Error in processing:", err);
         return error(`Failed to process transactions: ${err.message}`, 500);
