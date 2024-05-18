@@ -32,7 +32,10 @@ const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, editorSquares, setE
     const srcX = square.normalizedSquare.x * srcWidth;
     const srcY = (height - 1 - square.normalizedSquare.y) * srcHeight;
   
+  
     ctx.clearRect(offsetX, offsetY, squareSize, squareSize);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(offsetX, offsetY, squareSize, squareSize);
     ctx.drawImage(image, srcX, srcY, srcWidth, srcHeight, offsetX, offsetY, squareSize, squareSize);
     captureSquareBlob(ctx, offsetX, offsetY, square);  // Pass the full 'square' object
   };
