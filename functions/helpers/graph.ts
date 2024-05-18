@@ -7,7 +7,7 @@ import { Env } from "../lib/env";
 export const getTransactionsQuery = (lastTransactionParsed: number): string => {
   return JSON.stringify({
     query: `{
-      transactions(first: 1000, orderBy: numericID, orderDirection: asc, skip: ${lastTransactionParsed}) {
+      transactions(first: 100, orderBy: numericID, orderDirection: asc, skip: ${lastTransactionParsed}) {
         id,
         tokenId,
         updatedCID,
