@@ -179,7 +179,10 @@ const ActionBar: React.FC<ActionBarProps> = ({userAddress, selectedTiles,
 
 const handleGroupConfirm = async () => { // Function to handle user confirmation
   try {
-    const tx = await txHook('state','mintState',[ tokenIds]);
+
+    const sortedTokenIds = [...tokenIds].sort((a, b) => Number(a) - Number(b));
+    console.log(sortedTokenIds);
+    const tx = await txHook('state','mintState',[ sortedTokenIds]);
 
     console.log("Tx is:"+tx);
 

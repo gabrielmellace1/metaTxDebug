@@ -21,7 +21,8 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       
 
         const transactions = jsonResponse.data.transactions;
-      
+        transactions.sort((a, b) => Number(a.tokenId) - Number(b.tokenId));
+
 
         const cidList = transactions.map(tx => tx.updatedCID);
         const tokenIdList = transactions.map(tx => tx.tokenId);

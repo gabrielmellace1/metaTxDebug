@@ -55,6 +55,8 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
         const hash = await uploadToIPFS(formData);
         return { ...square, hashId: hash };
       }));
+
+      updatedSquares.sort((a, b) => Number(a.tokenId) - Number(b.tokenId));
       setEditorSquares(updatedSquares);
       
       const tokenIdToHash = updatedSquares.reduce((acc, cur) => ({ ...acc, [cur.tokenId]: cur.hashId }), {});

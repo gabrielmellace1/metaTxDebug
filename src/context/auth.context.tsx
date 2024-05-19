@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, SafeEventEmitterProvider } from "@web3auth/base";
 import { ethers } from "ethers";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
+//import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { MetamaskAdapter } from "@web3auth/metamask-adapter";
 import { OPENLOGIN_NETWORK } from "@web3auth/openlogin-adapter";
 import { twitterPixelEvent } from "../helpers/funcHelper";
@@ -98,6 +98,7 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const [isMetaMask, setIsMetamask] = useState<boolean>(false);
+  isMetaMask;
   const [userAddress, setUserAddress] = useState<string | undefined>(undefined);
   const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(
     null
@@ -155,7 +156,7 @@ export const AuthContextProvider = ({
   }, []);
 
   const login = async () => {
-    await switchNetworks("blast");
+    //await switchNetworks("blast");
 
     try {
       const web3authProvider = await _web3auth.connect();
@@ -219,57 +220,57 @@ export const AuthContextProvider = ({
   };
 
   // Function to switch networks
-  async function switchNetworks(_network: "blast") {
-    // Update the Web3 instance with the Blast network configuration
-    if (!provider) {
-      if (window.ethereum) {
-        const metaProvider = new ethers.providers.Web3Provider(window.ethereum);
-        const network = await metaProvider.getNetwork();
-        if (network.chainId !== parseInt(blastRpcProvider.chainId, 16)) {
-          await metaProvider.send("wallet_switchEthereumChain", [
-            { chainId: blastRpcProvider.chainId },
-          ]);
-        }
-      }
-    } else {
-      const chainConfig = blastRpcProvider;
-      if (isMetaMask) {
-        let tempProvider: ethers.providers.Web3Provider | null =
-          new ethers.providers.Web3Provider(provider);
-        if (tempProvider) {
-          const currentNetwork = await tempProvider.getNetwork();
-          if (currentNetwork.chainId !== parseInt(blastRpcProvider.chainId, 16)) {
-            await provider.request({
-              method: "wallet_switchEthereumChain",
-              params: [{ chainId: blastRpcProvider.chainId }],
-            });
-            tempProvider = null;
-            const blastProvider = new ethers.providers.Web3Provider(provider);
-            return blastProvider.getSigner();
-          } else {
-            return tempProvider.getSigner();
-          }
-        }
-      } else {
-        const privateKey = await provider.request<string, string>({
-          method: "eth_private_key",
-        });
+  // async function switchNetworks(_network: "blast") {
+  //   // Update the Web3 instance with the Blast network configuration
+  //   if (!provider) {
+  //     if (window.ethereum) {
+  //       const metaProvider = new ethers.providers.Web3Provider(window.ethereum);
+  //       const network = await metaProvider.getNetwork();
+  //       if (network.chainId !== parseInt(blastRpcProvider.chainId, 16)) {
+  //         await metaProvider.send("wallet_switchEthereumChain", [
+  //           { chainId: blastRpcProvider.chainId },
+  //         ]);
+  //       }
+  //     }
+  //   } else {
+  //     const chainConfig = blastRpcProvider;
+  //     if (isMetaMask) {
+  //       let tempProvider: ethers.providers.Web3Provider | null =
+  //         new ethers.providers.Web3Provider(provider);
+  //       if (tempProvider) {
+  //         const currentNetwork = await tempProvider.getNetwork();
+  //         if (currentNetwork.chainId !== parseInt(blastRpcProvider.chainId, 16)) {
+  //           await provider.request({
+  //             method: "wallet_switchEthereumChain",
+  //             params: [{ chainId: blastRpcProvider.chainId }],
+  //           });
+  //           tempProvider = null;
+  //           const blastProvider = new ethers.providers.Web3Provider(provider);
+  //           return blastProvider.getSigner();
+  //         } else {
+  //           return tempProvider.getSigner();
+  //         }
+  //       }
+  //     } else {
+  //       const privateKey = await provider.request<string, string>({
+  //         method: "eth_private_key",
+  //       });
 
-        if (!privateKey) return;
-        const blastPrivateKeyProvider = new EthereumPrivateKeyProvider({
-          config: {
-            chainConfig: chainConfig,
-          },
-        });
+  //       if (!privateKey) return;
+  //       const blastPrivateKeyProvider = new EthereumPrivateKeyProvider({
+  //         config: {
+  //           chainConfig: chainConfig,
+  //         },
+  //       });
 
-        await blastPrivateKeyProvider.setupProvider(privateKey);
-        return new ethers.providers.Web3Provider(
-          //@ts-expect-error web3Provider is private
-          blastPrivateKeyProvider.provider
-        ).getSigner();
-      }
-    }
-  }
+  //       await blastPrivateKeyProvider.setupProvider(privateKey);
+  //       return new ethers.providers.Web3Provider(
+  //         //@ts-expect-error web3Provider is private
+  //         blastPrivateKeyProvider.provider
+  //       ).getSigner();
+  //     }
+  //   }
+  // }
 
   return (
     <AuthContext.Provider
