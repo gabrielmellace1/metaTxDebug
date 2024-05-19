@@ -56,6 +56,10 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
         return { ...square, hashId: hash };
       }));
 
+      if (updatedSquares.some(square => !square.hashId)) {
+        throw new Error('Not all tokens have a hash set.');
+      }
+
       updatedSquares.sort((a, b) => Number(a.tokenId) - Number(b.tokenId));
       setEditorSquares(updatedSquares);
       
