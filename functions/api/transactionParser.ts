@@ -28,25 +28,32 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
         const tokenIdList = transactions.map(tx => tx.tokenId);
 
         try {
-            const response = await fetch('https://ipfs.squares.town/pixelService/process-images', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cidList, tokenIdList })
-            });
-
-            const processResponse = await response.json();
-
-            const lastProcessedTransaction = transactions.reduce((max, transaction) => {
-                const numericID = transaction.numericID;
-                return numericID > max ? numericID : max;
-            }, lastTransactionParsed);
-
-
             if (transactions.length > 0) {
-                await env.squareblocksdb.prepare("UPDATE counters SET counter = ? WHERE counterName = 'lastTransactionParsed'").bind(lastProcessedTransaction.toString()).run();
+                try {
+                    const response = await fetch('https://ipfs.squares.town/pixelService/process-images', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cidList, tokenIdList })
+                    });
+            
+                    const processResponse = await response.json();
+            
+                    const lastProcessedTransaction = transactions.reduce((max, transaction) => {
+                        const numericID = transaction.numericID;
+                        return numericID > max ? numericID : max;
+                    }, lastTransactionParsed);
+            
+                    await env.squareblocksdb.prepare("UPDATE counters SET counter = ? WHERE counterName = 'lastTransactionParsed'").bind(lastProcessedTransaction.toString()).run();
+            
+                    return json({ processResponse });
+            
+                } catch (err) {
+                    console.error("Error in processing:", err);
+                    return error(`Failed to process transactions: ${err.message}`, 500);
+                }
+            } else {
+                return json({ message: 'No transactions to process' });
             }
-
-            return json({ processResponse });
 
         } catch (err) {
             console.error("Error in processing:", err);

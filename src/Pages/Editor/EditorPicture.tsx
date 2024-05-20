@@ -35,105 +35,118 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
   const [infoModalHeader,setInfoModalHeader] = useState("");
   const [infoModalBody,setInfoModalBody] = useState("");
 
-  const uploadToIPFS = async (formData: EditorSquare | FormData) => {
+  const BATCH_SIZE = 25;
+
+  const uploadToIPFS = async (formData: FormData) => {
     try {
-      const response = await axios.post('https://ipfs.squares.town/api/v0/add?pin=true', formData);
-      return response.data.Hash;
+      const response = await axios.post('https://ipfs.squares.town/api/v0/add?pin=true', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
     } catch (error) {
       console.error('Error uploading to IPFS:', error);
       throw error;
     }
   };
-
+  
   const handleUpload = async () => {
     setIsLoading(true);
     try {
-      const updatedSquares = await Promise.all(editorSquares.map(async (square) => {
+      // Function to upload a batch of files
+      const uploadBatch = async (batch: EditorSquare[]) => {
         const formData = new FormData();
-        if(square.blob)
-        formData.append("file", square.blob, `square-${square.tokenId}.png`);
-        const hash = await uploadToIPFS(formData);
-        return { ...square, hashId: hash };
-      }));
-
-      if (updatedSquares.some(square => !square.hashId)) {
-        throw new Error('Not all tokens have a hash set.');
+        batch.forEach((square, index) => {
+          if (square.blob) {
+            formData.append(`file${index}`, square.blob, `square-${square.tokenId}.png`);
+          }
+        });
+        const response = await uploadToIPFS(formData);
+        return response;
+      };
+  
+      const batches = [];
+      for (let i = 0; i < editorSquares.length; i += BATCH_SIZE) {
+        batches.push(editorSquares.slice(i, i + BATCH_SIZE));
       }
-
-      updatedSquares.sort((a, b) => Number(a.tokenId) - Number(b.tokenId));
+  
+      let allResponses = '';
+      for (const batch of batches) {
+        const response = await uploadBatch(batch);
+        allResponses += response;
+      }
+  
+      // Convert the combined response to a JSON array format
+      const jsonResponseString = '[' + allResponses.split('\n').filter(Boolean).map(str => str.trim()).join(',') + ']';
+      const jsonArrayResponse = JSON.parse(jsonResponseString);
+  
+      // Extract file hashes from the response
+      const fileHashes = jsonArrayResponse.reduce((acc: { [x: string]: any; }, item: { Name: string; Hash: any; }) => {
+        if (item.Name) {
+          const tokenId = item.Name.split('-')[1].split('.')[0]; // Extract tokenId from filename
+          acc[tokenId] = item.Hash;
+        }
+        return acc;
+      }, {});
+  
+      // Update squares with their respective hashes
+      const updatedSquares = editorSquares.map(square => ({
+        ...square,
+        hashId: fileHashes[square.tokenId]
+      }));
+  
       setEditorSquares(updatedSquares);
-      
+  
+      // Create and upload JSON mapping of tokenIds to hash
       const tokenIdToHash = updatedSquares.reduce((acc, cur) => ({ ...acc, [cur.tokenId]: cur.hashId }), {});
       const jsonBlob = new Blob([JSON.stringify(tokenIdToHash)], { type: 'application/json' });
-      const formData = new FormData();
-      formData.append("file", jsonBlob, "tokenIdToHash.json");
-      const jsonHash = await uploadToIPFS(formData);
-
+      const jsonFormData = new FormData();
+      jsonFormData.append("file", jsonBlob, "tokenIdToHash.json");
+      const jsonUploadResponse = await uploadToIPFS(jsonFormData);
+      const jsonHash = jsonUploadResponse.Hash;
+  
       console.log(jsonHash);
-      
-      console.log("Updated Squares"+updatedSquares);
-
+  
+      // Prepare the transaction parameters
       const tokenIds = updatedSquares.map(sq => sq.tokenId);
-      console.log("tokenIds " + tokenIds);
-
-      //const hashes =     updatedSquares.map(sq => sq.hashId);
       const stateId = updatedSquares[0].stateId;
-      // Title & URL
-
-      
-
-      let params: any[] = [];
+      let params = [];
       let funcName = "";
-
-      if(stateId!=0) {
-         params = [stateId,jsonHash,url,title];
-         funcName = "setSquareImagesForState";
+  
+      if (stateId !== 0) {
+        params = [stateId, jsonHash, url, title];
+        funcName = "setSquareImagesForState";
+      } else {
+        params = [tokenIds, jsonHash, url, title];
+        funcName = "setMultipleSquareImages";
       }
-      else {
-         params = [tokenIds,jsonHash,url,title];
-         funcName = "setMultipleSquareImages";
-      }
-
-      
-        const tx = await txHook('square',funcName,params);
-    
-        console.log("Tx is:"+tx);
-    
-        setInfoModalHeader("Processing content upload");
-        setInfoModalBody("The content is being uploaded, one moment please. Tx hash: " + tx);
-        setShowInfoModal(true); // Open informative modal
-    
-        try {
-          if(tx){
-            const status = await txChecker.checkTransactionStatus(tx,setInfoModalHeader,setInfoModalBody); // Use the context function
-          
-    
-            if (status?.status) {
-              setInfoModalHeader("Content upload succesfull");
-              setInfoModalBody("The content has been uploaded succesfully ");
-            } else {
-              setInfoModalHeader("Upps, Content upload failed");
-              setInfoModalBody("There was an error while uploading the content");
-            }
-          }
-          
-        } catch (error) {
-          console.error("Error getting transaction status:", error);
-          setInfoModalHeader("Transaction Status Unknown");
-          setInfoModalBody("Unable to retrieve transaction status. Please try again later.");
-        } finally {
-          // Reset txHash after checking status
-         
+  
+      // Execute the transaction
+      const tx = await txHook('square', funcName, params);
+      console.log("Tx is:", tx);
+  
+      setInfoModalHeader("Processing content upload");
+      setInfoModalBody(`The content is being uploaded, one moment please. Tx hash: ${tx}`);
+      setShowInfoModal(true);
+  
+      if (tx) {
+        const status = await txChecker.checkTransactionStatus(tx, setInfoModalHeader, setInfoModalBody);
+        if (status?.status) {
+          setInfoModalHeader("Content upload successful");
+          setInfoModalBody("The content has been uploaded successfully.");
+        } else {
+          setInfoModalHeader("Oops, content upload failed");
+          setInfoModalBody("There was an error while uploading the content.");
         }
-
-     
-
+      }
     } catch (error) {
       console.error('Failed to upload all squares:', error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-
   };
+  
+  
+  
 
   useEffect(() => {
     console.log("Updated editorSquares:", editorSquares);

@@ -7,6 +7,7 @@ import { ethers } from "ethers";
 import { MetamaskAdapter } from "@web3auth/metamask-adapter";
 import { OPENLOGIN_NETWORK } from "@web3auth/openlogin-adapter";
 import { twitterPixelEvent } from "../helpers/funcHelper";
+//import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 
 interface AuthContextInterface {
   login: () => Promise<void>;
@@ -127,19 +128,15 @@ export const AuthContextProvider = ({
 
   useEffect(() => {
     const execute = async () => {
-      const signature = await getSignature();
       if (provider) {
         const etherProvider = new ethers.providers.Web3Provider(provider);
         const signer = etherProvider.getSigner();
         const address = await signer.getAddress();
+        setIsLoggedIn(true);
         setUserAddress(address);
       }
 
-      if (!signature) {
-        setIsLoggedIn(false);
-        await logout();
-        return;
-      }
+      
     };
     if (provider) {
       execute();
@@ -185,39 +182,9 @@ export const AuthContextProvider = ({
     setSignature(undefined);
     setIsLoggedIn(false);
     setIsMetamask(false);
-    localStorage.removeItem("apiKeyDG");
   };
 
-  const getSignature = async () => {
-    try {
-      if (!provider) {
-        console.log("provider not initialized yet");
-        return;
-      }
 
-      const localSignature = localStorage.getItem("apiKeyDG");
-      if (localSignature) {
-        setIsLoggedIn(true);
-        return localSignature;
-      }
-
-      const message = "Login";
-      const etherProvider = new ethers.providers.Web3Provider(provider);
-      const signer = etherProvider.getSigner();
-      const userSignature = await signer.signMessage(message);
-      if (!userSignature) {
-        return false;
-      }
-      setSignature(userSignature);
-
-      setIsLoggedIn(true);
-      
-      return userSignature;
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
-  };
 
   // Function to switch networks
   // async function switchNetworks(_network: "blast") {
@@ -264,8 +231,9 @@ export const AuthContextProvider = ({
   //       });
 
   //       await blastPrivateKeyProvider.setupProvider(privateKey);
+
+  //       if(blastPrivateKeyProvider.provider)
   //       return new ethers.providers.Web3Provider(
-  //         //@ts-expect-error web3Provider is private
   //         blastPrivateKeyProvider.provider
   //       ).getSigner();
   //     }
