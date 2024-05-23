@@ -39,7 +39,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
   const [infoModalBody, setInfoModalBody] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isApproving, setIsApproving] = useState(false);
+
 
   const handleSellClick = async () => {
     setIsLoading(true);
@@ -51,6 +51,9 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
       return;
     }
     try {
+
+      
+
       const isApproved = stateSelected 
         ? await state?.isApprovedForAll(addresses.marketplace) 
         : await square?.isApprovedForAll(addresses.marketplace);
@@ -105,7 +108,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
   };
 
   const handleApproveConfirm = async () => {
-    setIsApproving(true);
+   
     const activeContract = stateSelected ? 'state' : 'square';
 
     try {
@@ -133,7 +136,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
     } catch (error) {
       console.error("Error making the approval, please try again:", error);
     } finally {
-      setIsApproving(false);
+    
     }
   };
 
