@@ -1,16 +1,15 @@
-import React from 'react';
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, Button, HStack } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, Button, HStack, Spinner } from '@chakra-ui/react';
 
 type ConfirmModalProps = {
-  isOpen: boolean; // Flag to control modal visibility
-  header: string; // Text for the modal header
-  body: string; // Text for the modal body
-  confirm?: string; // Optional text for confirm button (defaults to "Confirm")
-  cancel?: string; // Optional text for cancel button (defaults to "Cancel")
-  onConfirm?: () => void; // Function to execute on confirm button click
-  onClose?: () => void; // Optional function to execute on modal close (e.g., escape key)
+  isOpen: boolean;
+  header: string;
+  body: string;
+  confirm?: string;
+  cancel?: string;
+  onConfirm?: () => void;
+  onClose?: () => void;
   setShowConfirmModal: React.Dispatch<React.SetStateAction<boolean>>;
-  
 };
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -22,14 +21,21 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   setShowConfirmModal
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
 
-    const handleClose = () => {
-        if (setShowConfirmModal) {
-            setShowConfirmModal(false); // Close the modal by setting showInfoModal to false
-        }
-       
-      };
-  
+  const handleConfirm = async () => {
+    if (onConfirm) {
+      setIsLoading(true);
+      await onConfirm();
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (setShowConfirmModal) {
+      setShowConfirmModal(false);
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
@@ -42,8 +48,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <Button variant="outline" mr={3} onClick={handleClose}>
             {cancel}
           </Button>
-          <Button colorScheme="blue" onClick={onConfirm}>
-            {confirm}
+          <Button colorScheme="blue" onClick={handleConfirm} disabled={isLoading}>
+            {isLoading ? <Spinner size="sm" /> : confirm}
           </Button>
         </HStack>
       </ModalContent>

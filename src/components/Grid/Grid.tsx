@@ -63,6 +63,15 @@ const Grid: React.FC<GridProps> = ({userAddress, setSelectedTiles,stateSelected,
 
   }, []);
 
+  useEffect(() => {
+    // Reset selected tiles when the user address changes
+    selected = [];
+    tokenIdsSelected = [];
+    setSelectedTiles([]);
+    setStateSelected(false);
+}, [userAddress, setSelectedTiles, setStateSelected]);
+
+
   const handleHover = (x: number, y: number) => {
     const id = `${x},${y}`;
     const tile = atlas ? atlas[id] : null;
@@ -176,7 +185,7 @@ const Grid: React.FC<GridProps> = ({userAddress, setSelectedTiles,stateSelected,
         </Flex>
       )}
     </Flex>
-  );
+  ); 
 };
 
 export default Grid;

@@ -4,10 +4,15 @@ import { Env } from "../lib/env";
 
 
 // Function to construct the transaction query
-export const getTransactionsQuery = (lastTransactionParsed: number): string => {
+export const getTransactionsQuery = (lastNumericID: number): string => {
   return JSON.stringify({
     query: `{
-      transactions(first: 100, orderBy: numericID, orderDirection: asc, skip: ${lastTransactionParsed}) {
+      transactions(
+        first: 100, 
+        orderBy: numericID, 
+        orderDirection: asc, 
+        where: {numericID_gte: ${lastNumericID}}
+      ) {
         id,
         tokenId,
         updatedCID,
