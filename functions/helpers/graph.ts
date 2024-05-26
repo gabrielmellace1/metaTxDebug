@@ -8,7 +8,7 @@ export const getTransactionsQuery = (lastNumericID: number): string => {
   return JSON.stringify({
     query: `{
       transactions(
-        first: 100, 
+        first: 500, 
         orderBy: numericID, 
         orderDirection: asc, 
         where: {numericID_gte: ${lastNumericID}}

@@ -12,40 +12,16 @@
         const canvas = document.getElementById('gridCanvas');
         const ctx = canvas.getContext('2d');
         const GRID_SIZE = 500;
-        const RECTANGLE_SIZES = [
-            { width: 25, height: 25 },
-            { width: 24, height: 24 },
-            { width: 23, height: 23 },
-            { width: 22, height: 22 },
-            { width: 21, height: 21 },
-            { width: 20, height: 20 },
-            { width: 19, height: 19 },
-            { width: 18, height: 18 },
-            { width: 17, height: 17 },
-            { width: 16, height: 16 },
-            { width: 15, height: 15 },
-            { width: 14, height: 14 },
-            { width: 13, height: 13 },
-            { width: 12, height: 12 },
-            { width: 11, height: 11 },
-            { width: 10, height: 10 },
-            { width: 9, height: 9 },
-            { width: 8, height: 8 },
-            { width: 7, height: 7 },
-            { width: 6, height: 6 },
-            { width: 5, height: 5 },
-            { width: 4, height: 4 },
-            { width: 3, height: 3 },
-            { width: 2, height: 2 },
-            { width: 1, height: 1 }
-        ];
+        const MAX_RECT_SIZE = 100;
+        const MID_RECT_SIZE = 25;
         const usedCoordinates = new Set();
+        const allRectangles = [];
 
         function generateRectangle(startX, startY, width, height) {
             const rectangle = [];
             for (let i = 0; i < width; i++) {
                 for (let j = 0; j < height; j++) {
-                    rectangle.push(`${startX + i},${startY + j}`);
+                    rectangle.push([startX + i, startY + j]);
                 }
             }
             return rectangle;
@@ -53,8 +29,8 @@
 
         function canPlaceRectangle(rectangle) {
             for (const coord of rectangle) {
-                const [x, y] = coord.split(',').map(Number);
-                if (x >= GRID_SIZE || y >= GRID_SIZE || usedCoordinates.has(coord)) {
+                const [x, y] = coord;
+                if (x >= GRID_SIZE || y >= GRID_SIZE || usedCoordinates.has(`${x},${y}`)) {
                     return false;
                 }
             }
@@ -63,16 +39,42 @@
 
         function placeRectangle(rectangle) {
             for (const coord of rectangle) {
-                usedCoordinates.add(coord);
+                usedCoordinates.add(`${coord[0]},${coord[1]}`);
             }
         }
 
         function drawRectangle(rectangle) {
-            const [x, y] = rectangle[0].split(',').map(Number);
-            const width = rectangle.filter(coord => coord.startsWith(`${x},`)).length;
-            const height = rectangle.filter(coord => coord.endsWith(`,${y}`)).length;
+            const [x, y] = rectangle[0];
+            const width = rectangle.filter(coord => coord[0] === x).length;
+            const height = rectangle.filter(coord => coord[1] === y).length;
             ctx.fillStyle = '#' + Math.floor(Math.random() * 16777215).toString(16);
             ctx.fillRect(x, y, width, height);
+        }
+
+        function getRandomRectangleSize() {
+            const sizeDistribution = [
+                { width: 5, height: 5, probability: 0.3 },
+                { width: 10, height: 10, probability: 0.25 },
+                { width: 15, height: 15, probability: 0.2 },
+                { width: 20, height: 20, probability: 0.15 },
+                { width: 25, height: 25, probability: 0.05 },
+                { width: 30, height: 30, probability: 0.02 },
+                { width: 35, height: 35, probability: 0.01 },
+                { width: 40, height: 40, probability: 0.01 },
+                { width: 45, height: 45, probability: 0.01 }
+            ];
+
+            const randomValue = Math.random();
+            let accumulatedProbability = 0;
+
+            for (const size of sizeDistribution) {
+                accumulatedProbability += size.probability;
+                if (randomValue <= accumulatedProbability) {
+                    return { width: size.width, height: size.height };
+                }
+            }
+
+            return { width: 1, height: 1 }; // Default to 1x1 if none matched
         }
 
         function fillGrid() {
@@ -81,29 +83,27 @@
                     const coord = `${x},${y}`;
                     if (!usedCoordinates.has(coord)) {
                         let placed = false;
-                        // Shuffle the rectangle sizes to start with a random size
-                        const shuffledSizes = RECTANGLE_SIZES.sort(() => Math.random() - 0.5);
-                        for (let i = 0; i < shuffledSizes.length; i++) {
-                            const size = shuffledSizes[i];
-                            const rectangle = generateRectangle(x, y, size.width, size.height);
+                        while (!placed) {
+                            const { width, height } = getRandomRectangleSize();
+                            const rectangle = generateRectangle(x, y, width, height);
                             if (canPlaceRectangle(rectangle)) {
                                 placeRectangle(rectangle);
                                 drawRectangle(rectangle);
-                                console.log(rectangle); // Print the array of coordinates to the console
+                                allRectangles.push(rectangle);
                                 placed = true;
-                                break;
+                            } else {
+                                // Place a 1x1 rectangle if no larger rectangle fits
+                                const rectangle = generateRectangle(x, y, 1, 1);
+                                placeRectangle(rectangle);
+                                drawRectangle(rectangle);
+                                allRectangles.push(rectangle);
+                                placed = true;
                             }
-                        }
-                        // If no rectangle could be placed, place a 1x1 rectangle
-                        if (!placed) {
-                            const rectangle = generateRectangle(x, y, 1, 1);
-                            placeRectangle(rectangle);
-                            drawRectangle(rectangle);
-                            console.log(rectangle); // Print the array of coordinates to the console
                         }
                     }
                 }
             }
+            console.log(allRectangles); // Print the array of all rectangles to the console
         }
 
         fillGrid(); // Fill the grid with rectangles
