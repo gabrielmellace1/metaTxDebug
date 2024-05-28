@@ -1,28 +1,23 @@
-// ShareModal.tsx
 import React from 'react';
 import { Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, useDisclosure, Text, Box } from '@chakra-ui/react';
-import useTx from '../../hooks/contracts/useTx';
 
+interface ShareModalProps {
+  fileName: string;
+}
 
-const ShareModal: React.FC = () => {
+const ShareModal: React.FC<ShareModalProps> = ({ fileName }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   React.useEffect(() => {
     onOpen(); // Automatically open the modal when the component is rendered
   }, [onOpen]);
 
-  const sendTx = useTx();
+  const webpageUrl = `https://ipfs.squares.town/pixelService/twitterCard?image=${fileName}`;
+  const tweetText = "I just updated my squares at https://squares.town, check it out!";
+  const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(webpageUrl)}`;
 
-
-  const handleShareClick = async () => {
-    try {
-      const txHash = await sendTx('bag', 'approve', ['0xEA5Fed1D0141F14DE11249577921b08783d6A360', '0']);
-      console.log('Transaction hash:', txHash);
-      alert(`Transaction successful with hash: ${txHash}`);
-    } catch (error) {
-      console.error('Transaction failed:', error);
-      alert('Transaction failed');
-    }
+  const handleShareClick = () => {
+    window.open(tweetUrl, '_blank');
   };
 
   return (
@@ -35,12 +30,11 @@ const ShareModal: React.FC = () => {
           <ModalBody>
             <Text mb={4}>Share your uploaded content to X</Text>
             <Box border="1px solid #e2e8f0" borderRadius="md" p={4} h="300px">
-              {/* Canvas placeholder */}
-              <canvas id="shareCanvas" width="100%" height="100%" style={{ border: '1px solid #000' }}></canvas>
+              <img src={`https://ipfs.squares.town/pixelService/share/${fileName}`} alt="Shared Content" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </Box>
           </ModalBody>
           <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={handleShareClick}>
+            <Button colorScheme="blue" mr={3} onClick={handleShareClick}>
               Share
             </Button>
             <Button variant="ghost" onClick={onClose}>Close</Button>

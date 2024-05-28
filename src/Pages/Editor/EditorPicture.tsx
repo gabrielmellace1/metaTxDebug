@@ -8,6 +8,7 @@ import { EditorSquare } from '../../types/allTypes';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import InformationModal from '../../components/Modals/InformationModal';
 import useTx from '../../hooks/contracts/useTx';
+import ShareModal from '../../components/Modals/ShareModal';
 
 
 interface EditorPictureProps {
@@ -26,6 +27,8 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
+  const [uploadedFileName, setUploadedFileName] = useState('');
+
 
   //const metaTx = useMetaTx();
   const txHook = useTx();
@@ -72,15 +75,18 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
       let allResponses = '';
       for (const batch of batches) {
         const response = await uploadBatch(batch);
-        allResponses += response;
+        allResponses += typeof response === 'string' ? response : JSON.stringify(response);
       }
   
       // Convert the combined response to a JSON array format
       const jsonResponseString = '[' + allResponses.split('\n').filter(Boolean).map(str => str.trim()).join(',') + ']';
       const jsonArrayResponse = JSON.parse(jsonResponseString);
   
+      // Ensure jsonArrayResponse is always an array
+      const responseArray = Array.isArray(jsonArrayResponse) ? jsonArrayResponse : [jsonArrayResponse];
+  
       // Extract file hashes from the response
-      const fileHashes = jsonArrayResponse.reduce((acc: { [x: string]: any; }, item: { Name: string; Hash: any; }) => {
+      const fileHashes = responseArray.reduce((acc: { [x: string]: any; }, item: { Name: string; Hash: any; }) => {
         if (item.Name) {
           const tokenId = item.Name.split('-')[1].split('.')[0]; // Extract tokenId from filename
           acc[tokenId] = item.Hash;
@@ -133,6 +139,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
         if (status?.status) {
           setInfoModalHeader("Content upload successful");
           setInfoModalBody("The content has been uploaded successfully.");
+          generateOwnedImage();
         } else {
           setInfoModalHeader("Oops, content upload failed");
           setInfoModalBody("There was an error while uploading the content.");
@@ -146,6 +153,64 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
   };
   
   
+  const generateOwnedImage = () => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+  
+    canvas.width = width;
+    canvas.height = height;
+  
+    let imagesLoaded = 0;
+    const coordinates: { x: number; y: number; }[] = [];
+  
+    editorSquares.forEach(square => {
+      if (square.blob || square.base64) {
+        const img = new Image();
+        img.src = square.blob ? URL.createObjectURL(square.blob) : square.base64 as string;
+        img.onload = () => {
+          if (square.normalizedSquare && square.originalSquare) {
+            const destX = square.normalizedSquare.x * 10;
+            const destY = (height / 10 - square.normalizedSquare.y - 1) * 10; // Correcting the Y axis inversion
+            ctx.drawImage(img, 0, 0, img.width, img.height, destX, destY, 10, 10);
+  
+            coordinates.push({ x: square.originalSquare.x, y: square.originalSquare.y });
+  
+            imagesLoaded++;
+            if (imagesLoaded === editorSquares.length) {
+              canvas.toBlob(async (blob) => {
+                if (blob) {
+                  const formData = new FormData();
+                  formData.append('image', blob, 'owned-image.png');
+                  formData.append('coordinates', JSON.stringify(coordinates));
+  
+                  try {
+                    const response = await axios.post('https://ipfs.squares.town/pixelService/share', formData, {
+                      headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    console.log('Image successfully uploaded:', response.data);
+                    setUploadedFileName(response.data); // Store the returned file name
+                  } catch (error) {
+                    console.error('Error uploading the image:', error);
+                  }
+                }
+              }, 'image/png');
+            }
+          }
+        };
+        img.onerror = () => {
+          console.error('Error loading image for square:', square);
+          imagesLoaded++;
+        };
+      } else {
+        imagesLoaded++;
+      }
+    });
+  };
+  
+  
+  
+
   
 
   useEffect(() => {
@@ -179,75 +244,75 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
   };
 
   return (
-    
-    <VStack p={4} bg="gray.700" borderRadius="md" boxShadow="base" color="white" spacing={4}>
-      <Dropzone onDrop={handleFileChange} disabled={isLoading}>
-        {({ getRootProps, getInputProps }) => (
-          <div {...getRootProps()}>
-            <input {...getInputProps()} disabled={isLoading} />
-            <div style={{ position: 'relative' }}>
-              <AvatarEditor
-                ref={editorRef}
-                image={image}
-                width={width}
-                height={height}
-                border={50}
-                color={[255, 255, 255, 0.6]}
-                scale={scale}
-                rotate={rotate}
-                onImageChange={handleImageChange}
-                onImageReady={handleImageChange}
-              />
-              {isLoading && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.5)', cursor: 'not-allowed' }}></div>}
+    <>
+      <VStack p={4} bg="gray.700" borderRadius="md" boxShadow="base" color="white" spacing={4}>
+        <Dropzone onDrop={handleFileChange} disabled={isLoading}>
+          {({ getRootProps, getInputProps }) => (
+            <div {...getRootProps()}>
+              <input {...getInputProps()} disabled={isLoading} />
+              <div style={{ position: 'relative' }}>
+                <AvatarEditor
+                  ref={editorRef}
+                  image={image}
+                  width={width}
+                  height={height}
+                  border={50}
+                  color={[255, 255, 255, 0.6]}
+                  scale={scale}
+                  rotate={rotate}
+                  onImageChange={handleImageChange}
+                  onImageReady={handleImageChange}
+                />
+                {isLoading && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.5)', cursor: 'not-allowed' }}></div>}
+              </div>
             </div>
-          </div>
+          )}
+        </Dropzone>
+        <Box width="full">
+          <Text fontSize="sm" mb="2">Zoom:</Text>
+          <Slider defaultValue={1.2} min={0.1} max={10} step={0.01} onChange={v => setScale(v)} isDisabled={isLoading}>
+            <SliderTrack bg="blue.300">
+              <SliderFilledTrack bg="blue.600" />
+            </SliderTrack>
+            <SliderThumb boxSize={6} />
+          </Slider>
+        </Box>
+        <Box width="full">
+          <Text fontSize="sm" mb="2">Rotation:</Text>
+          <Slider defaultValue={0} min={0} max={360} step={1} onChange={v => setRotate(v)} isDisabled={isLoading}>
+            <SliderTrack bg="blue.300">
+              <SliderFilledTrack bg="blue.600" />
+            </SliderTrack>
+            <SliderThumb boxSize={6} />
+          </Slider>
+        </Box>
+        <FormControl id="title" isRequired>
+          <FormLabel>Title:</FormLabel>
+          <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter title" disabled={isLoading} />
+        </FormControl>
+        <FormControl id="url" isRequired>
+          <FormLabel>Clickable URL:</FormLabel>
+          <Input value={url} onChange={e => setUrl(e.target.value)} placeholder="Enter URL" disabled={isLoading} />
+        </FormControl>
+        <Button colorScheme="blue" onClick={handleUpload} isLoading={isLoading} loadingText="Uploading">
+          Upload
+        </Button>
+        <Box p={4} w="full" bg="gray.600" borderRadius="md">
+          <Text fontSize="sm">Uploading to Coordinates:</Text>
+          <Text fontSize="xs">{displayCoordinates()}</Text>
+        </Box>
+        {showInfoModal && (
+          <InformationModal
+            isOpen={showInfoModal}
+            header={infoModalHeader}
+            text={infoModalBody}
+            setShowInfoModal={setShowInfoModal}
+          />
         )}
-      </Dropzone>
-      <Box width="full">
-        <Text fontSize="sm" mb="2">Zoom:</Text>
-        <Slider defaultValue={1.2} min={0.1} max={10} step={0.01} onChange={v => setScale(v)} isDisabled={isLoading}>
-          <SliderTrack bg="blue.300">
-            <SliderFilledTrack bg="blue.600" />
-          </SliderTrack>
-          <SliderThumb boxSize={6} />
-        </Slider>
-      </Box>
-      <Box width="full">
-        <Text fontSize="sm" mb="2">Rotation:</Text>
-        <Slider defaultValue={0} min={0} max={360} step={1} onChange={v => setRotate(v)} isDisabled={isLoading}>
-          <SliderTrack bg="blue.300">
-            <SliderFilledTrack bg="blue.600" />
-          </SliderTrack>
-          <SliderThumb boxSize={6} />
-        </Slider>
-      </Box>
-      <FormControl id="title" isRequired>
-        <FormLabel>Title:</FormLabel>
-        <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter title" disabled={isLoading} />
-      </FormControl>
-      <FormControl id="url" isRequired>
-        <FormLabel>Clickable URL:</FormLabel>
-        <Input value={url} onChange={e => setUrl(e.target.value)} placeholder="Enter URL" disabled={isLoading} />
-      </FormControl>
-      <Button colorScheme="blue" onClick={handleUpload} isLoading={isLoading} loadingText="Uploading">
-        Upload
-      </Button>
-      <Box p={4} w="full" bg="gray.600" borderRadius="md">
-        <Text fontSize="sm">Uploading to Coordinates:</Text>
-        <Text fontSize="xs">{displayCoordinates()}</Text>
-      </Box>
-      {showInfoModal && (
-      <InformationModal 
-        isOpen={showInfoModal}
-        header={infoModalHeader} 
-        text={infoModalBody} 
-        setShowInfoModal={setShowInfoModal}
-      />
-    )}
-    </VStack>
-    
+      </VStack>
+      {uploadedFileName && <ShareModal fileName={uploadedFileName} />} {/* Pass the file name to ShareModal */}
+    </>
   );
-  
 };
 
 export default EditorPicture;
