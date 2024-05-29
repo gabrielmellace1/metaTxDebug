@@ -1,0 +1,33 @@
+{
+    "town": "Muro",
+    "marketplace": "Mercado",
+    "myAssets": "Mis Activos",
+    "about": "Acerca de",
+    "connected": "Conectado: {{userAddress}}",
+    "notConnected": "No conectado",
+    "logout": "Cerrar sesión",
+    "connectWallet": "Conectar Billetera",
+    "followUs": "Sigue a @SquaresTown"
+,
+    "amountInBag": "Cantidad en BAG",
+    "buy": "Comprar",
+    "sell": "Vender",
+    "cancel": "Cancelar",
+    "group": "Agrupar",
+    "ungroup": "Desagrupar",
+    "uploadContent": "Subir contenido",
+    "transfer": "Transferir",
+    "processingStateCreation": "Procesando creación de estado",
+    "stateIsBeingProcessed": "El estado se está procesando, un momento por favor. Tx hash: {{tx}}",
+    "stateCreationSuccessful": "Creación de estado exitosa",
+    "stateCreationFailed": "Hubo un error al crear el estado",
+    "stateDissolutionSuccessful": "Disolución de estado exitosa",
+    "stateDissolutionFailed": "Hubo un error al disolver el estado",
+    "transactionStatusUnknown": "Estado de la transacción desconocido",
+    "unableToRetrieveTransactionStatus": "No se puede recuperar el estado de la transacción. Por favor, inténtelo de nuevo más tarde.",
+    "stateCreation": "Creación de estado",
+    "stateCreationBody": "Estás a punto de crear un nuevo estado usando tus cuadrados seleccionados",
+    "stateDissolution": "Disolución de estado",
+    "stateDissolutionBody": "Estás a punto de disolver un estado, recuperarás tus cuadrados individuales"
+  }
+  

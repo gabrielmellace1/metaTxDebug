@@ -9,6 +9,7 @@ import useSquare from '../../hooks/contracts/useSquare';
 import useStateContract from '../../hooks/contracts/useState';
 import { addresses } from '../../hooks/contracts/contractConfigs';
 import useTx from '../../hooks/contracts/useTx';
+import { useTranslation } from 'react-i18next';
 
 type SellModalProps = {
   isOpen: boolean;
@@ -18,6 +19,7 @@ type SellModalProps = {
 };
 
 const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateSelected }) => {
+  const { t } = useTranslation();
   const txHook = useTx();
   const txChecker = useTxChecker();
   const marketplace = useMarketplace();
@@ -26,8 +28,8 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
 
   let nftAddress = stateSelected ? addresses.state : addresses.square;
   const displayText = stateSelected 
-    ? "Please enter the price for your states, the price is for each element" 
-    : "Please enter the price for your squares, the price is for each element";
+    ? t("enterPriceForStates") 
+    : t("enterPriceForSquares");
 
   const [showApproveSell, setApproveSell] = useState(false);
   const [approveHeader, setApproveHeader] = useState("");
@@ -40,20 +42,16 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
 
   const [isLoading, setIsLoading] = useState(false);
 
-
   const handleSellClick = async () => {
     setIsLoading(true);
     if (!marketplace) {
-      setInfoModalHeader("Marketplace not available");
-      setInfoModalBody("The marketplace contract is not available at the moment.");
+      setInfoModalHeader(t("marketplaceNotAvailable"));
+      setInfoModalBody(t("marketplaceNotAvailableBody"));
       setShowInfoModal(true);
       setIsLoading(false);
       return;
     }
     try {
-
-      
-
       const isApproved = stateSelected 
         ? await state?.isApprovedForAll(addresses.marketplace) 
         : await square?.isApprovedForAll(addresses.marketplace);
@@ -63,8 +61,8 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
         const pricesToSend = new Array(tokenIds.length).fill(priceInWei).map(String); // Create an array of strings
 
         if (await marketplace.areOrdersActive(nftAddress, tokenIds)) {
-          setInfoModalHeader("Sell failed");
-          setInfoModalBody("One or more of the items you have selected are already for sale");
+          setInfoModalHeader(t("sellFailed"));
+          setInfoModalBody(t("sellFailedBody"));
           setShowInfoModal(true);
           setIsLoading(false);
           return;
@@ -72,8 +70,8 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
 
         try {
           const tx = await txHook('marketplace', 'sell', [nftAddress, tokenIds, pricesToSend]);
-          setInfoModalHeader("Processing sell");
-          setInfoModalBody("The transaction is being processed, one moment please. Tx hash: " + tx);
+          setInfoModalHeader(t("processingSell"));
+          setInfoModalBody(t("processingSellBody", { tx }));
           setApproveSell(false);
           setShowInfoModal(true);
 
@@ -81,23 +79,23 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
             const status = await txChecker.checkTransactionStatus(tx, setInfoModalHeader, setInfoModalBody);
 
             if (status?.status) {
-              setInfoModalHeader("Sell successful");
-              setInfoModalBody("Your items have been published to the marketplace");
+              setInfoModalHeader(t("sellSuccessful"));
+              setInfoModalBody(t("sellSuccessfulBody"));
             } else {
-              setInfoModalHeader("Upps, sell failed");
-              setInfoModalBody("There was an error while putting your items for sale");
+              setInfoModalHeader(t("sellFailedGeneral"));
+              setInfoModalBody(t("sellFailedGeneralBody"));
             }
           } catch (error) {
             console.error("Error getting transaction status:", error);
-            setInfoModalHeader("Transaction Status Unknown");
-            setInfoModalBody("Unable to retrieve transaction status. Please try again later.");
+            setInfoModalHeader(t("transactionStatusUnknown"));
+            setInfoModalBody(t("unableToRetrieveTransactionStatus"));
           }
         } catch (error) {
           console.error("Error approving BAG:", error);
         }
       } else {
-        setApproveHeader("Authorization required");
-        setApproveBody("In order to put your NFTs for sale, you need to give permission to the marketplace to sell them. Please click on confirm to allow the marketplace.");
+        setApproveHeader(t("authorizationRequired"));
+        setApproveBody(t("authorizationRequiredBody"));
         setApproveSell(true);
       }
     } catch (error) {
@@ -108,13 +106,12 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
   };
 
   const handleApproveConfirm = async () => {
-   
     const activeContract = stateSelected ? 'state' : 'square';
 
     try {
       const tx = await txHook(activeContract, 'setApprovalForAll', [addresses.marketplace, 1]);
-      setInfoModalHeader("Processing authorization");
-      setInfoModalBody("The transaction is being processed, one moment please. Tx hash: " + tx);
+      setInfoModalHeader(t("processingAuthorization"));
+      setInfoModalBody(t("processingSellBody", { tx }));
       setApproveSell(false);
       setShowInfoModal(true);
 
@@ -122,21 +119,19 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
         const status = await txChecker.checkTransactionStatus(tx, setInfoModalHeader, setInfoModalBody);
 
         if (status?.status) {
-          setInfoModalHeader("Authorization successful");
-          setInfoModalBody("The authorization has been processed successfully");
+          setInfoModalHeader(t("authorizationSuccessful"));
+          setInfoModalBody(t("authorizationSuccessfulBody"));
         } else {
-          setInfoModalHeader("Upps, authorization failed");
-          setInfoModalBody("There was an error processing the authorization");
+          setInfoModalHeader(t("authorizationFailed"));
+          setInfoModalBody(t("authorizationFailedBody"));
         }
       } catch (error) {
         console.error("Error getting transaction status:", error);
-        setInfoModalHeader("Transaction Status Unknown");
-        setInfoModalBody("Unable to retrieve transaction status. Please try again later.");
+        setInfoModalHeader(t("transactionStatusUnknown"));
+        setInfoModalBody(t("unableToRetrieveTransactionStatus"));
       }
     } catch (error) {
       console.error("Error making the approval, please try again:", error);
-    } finally {
-    
     }
   };
 
@@ -145,20 +140,20 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Place your elements for sale</ModalHeader>
+          <ModalHeader>{t("placeElementsForSale")}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4}>
               <Text>{displayText}</Text>
               <Input
-                placeholder="Enter price in BAG"
+                placeholder={t("enterPriceInBag")}
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 type="number"
                 step="0.01"
               />
               <Button colorScheme="red" mt={4} onClick={handleSellClick} isDisabled={!price || isLoading}>
-                {isLoading ? <Spinner size="sm" /> : "Confirm Sell"}
+                {isLoading ? <Spinner size="sm" /> : t("confirmSell")}
               </Button>
             </VStack>
           </ModalBody>
