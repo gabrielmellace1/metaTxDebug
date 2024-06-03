@@ -10,6 +10,7 @@ import useMarketplace from '../../hooks/contracts/useMarketplace';
 import { twitterPixelEvent } from '../../helpers/funcHelper';
 import useTx from '../../hooks/contracts/useTx';
 import { useTranslation } from 'react-i18next';
+import metaTx from '../../hooks/contracts/useMetaTx';
 
 type BuyModalProps = {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
   const { t } = useTranslation();
   const bag = useBAG();
   const txHook = useTx();
+  const meta = metaTx();
   const txChecker = useTxChecker();
   const marketplace = useMarketplace();
 
@@ -130,7 +132,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
     setIsLoading(true);
     try {
       const itemCostsString = itemCosts.map(num => num.toString());
-      const tx = await txHook('marketplace', 'buy', [nftAddress, tokenIds, itemCostsString]);
+      const tx = await meta('marketplace', 'buy', [nftAddress, tokenIds, itemCostsString]);
 
       setShowConfirmModal(false);
       setShowInfoModal(true);

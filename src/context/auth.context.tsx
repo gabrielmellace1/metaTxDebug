@@ -53,7 +53,9 @@ const metamaskAdapter = new MetamaskAdapter({
   sessionTime: 86400, // 1 hour in seconds
   web3AuthNetwork: "sapphire_mainnet",
   chainConfig: {
-    ...blastRpcProvider
+    chainNamespace: CHAIN_NAMESPACES.EIP155,
+    chainId: "0x1",
+    rpcTarget: "https://rpc.ankr.com/eth",
   },
 });
 
@@ -67,7 +69,7 @@ const web3AuthModalOptions: Web3AuthOptions = {
   clientId,
   chainConfig: blastRpcProvider,
   web3AuthNetwork: OPENLOGIN_NETWORK.SAPPHIRE_MAINNET,
-  privateKeyProvider: ethereumPrivateKeyProvider
+  privateKeyProvider: ethereumPrivateKeyProvider,
 };
 
 const _web3auth = new Web3Auth(web3AuthModalOptions);
@@ -96,11 +98,7 @@ const web3AuthModalParameters = {
   },
 };
 
-export const AuthContextProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+export const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [isMetaMask, setIsMetamask] = useState<boolean>(false);
   const [userAddress, setUserAddress] = useState<string | undefined>(undefined);
   const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(null);
@@ -116,42 +114,37 @@ export const AuthContextProvider = ({
       const web3authProvider = await _web3auth.connect();
       if (web3authProvider) {
         const user = await _web3auth.getUserInfo();
-        if (Object.keys(user).length === 0) {
-          setIsMetamask(true);
-        }
-        setProvider(web3authProvider as SafeEventEmitterProvider);
         setUser(user);
+        setProvider(web3authProvider as SafeEventEmitterProvider);
       }
     } catch (error) {
-      console.error(error);
-      throw error;
+      console.error("Web3Auth initialization error:", error);
     }
   };
 
   // Set signer and user address
   useEffect(() => {
-    const execute = async () => {
+    const setSignerAndAddress = async () => {
       if (provider) {
         const etherProvider = new ethers.providers.Web3Provider(provider as any);
         const signer = etherProvider.getSigner();
         const address = await signer.getAddress();
         setUserAddress(address);
-        setIsLoggedIn(true);
         setSigner(signer);
+        setIsLoggedIn(true);
       }
     };
     if (provider) {
-      execute();
+      setSignerAndAddress();
     }
   }, [provider]);
 
   // Detect MetaMask and initialize Web3Auth
   useEffect(() => {
-    if (window.ethereum && window.ethereum.isMetaMask) {
+    if (window.ethereum?.isMetaMask) {
       setIsMetamask(true);
-      twitterPixelEvent('tw-om2cf-om2vj'); // Trigger Twitter event if MetaMask is detected
+      twitterPixelEvent("tw-om2cf-om2vj"); // Trigger Twitter event if MetaMask is detected
     }
-
     initWeb3Auth();
   }, []);
 
@@ -176,31 +169,21 @@ export const AuthContextProvider = ({
         const metaProvider = new ethers.providers.Web3Provider(window.ethereum);
         const network = await metaProvider.getNetwork();
         if (network.chainId !== parseInt(chainConfig.chainId, 16)) {
-          await metaProvider.send("wallet_switchEthereumChain", [
-            { chainId: chainConfig.chainId },
-          ]);
+          await metaProvider.send("wallet_switchEthereumChain", [{ chainId: chainConfig.chainId }]);
         }
         const newSigner = metaProvider.getSigner();
         setSigner(newSigner);
-        setProvider(metaProvider.provider as unknown as SafeEventEmitterProvider); // Update provider state
+        setProvider(metaProvider.provider as unknown as SafeEventEmitterProvider);
       } else {
-        const privateKey = await provider.request<string, string>({
-          method: "eth_private_key",
-        });
-
+        const privateKey = await provider.request<string, string>({ method: "eth_private_key" });
         if (!privateKey) return;
-        const blastPrivateKeyProvider = new EthereumPrivateKeyProvider({
-          config: { chainConfig },
-        });
 
+        const blastPrivateKeyProvider = new EthereumPrivateKeyProvider({ config: { chainConfig } });
         await blastPrivateKeyProvider.setupProvider(privateKey);
-        const newProvider = new ethers.providers.Web3Provider(
-          //@ts-expect-error web3Provider is private
-          blastPrivateKeyProvider.provider
-        );
+        const newProvider = new ethers.providers.Web3Provider(blastPrivateKeyProvider.provider as any);
         const newSigner = newProvider.getSigner();
         setSigner(newSigner);
-        setProvider(newProvider.provider as unknown as SafeEventEmitterProvider); // Update provider state
+        setProvider(newProvider.provider as unknown as SafeEventEmitterProvider);
       }
     } catch (error) {
       console.error("Failed to switch network:", error);
@@ -215,11 +198,8 @@ export const AuthContextProvider = ({
 
       setProvider(web3authProvider as SafeEventEmitterProvider);
       const user = await _web3auth.getUserInfo();
-      if (Object.keys(user).length === 0) {
-        setIsMetamask(true);
-      }
       setUser(user);
-      twitterPixelEvent('tw-om2cf-om2uj');
+      twitterPixelEvent("tw-om2cf-om2uj");
     } catch (error) {
       console.log(error);
     }
@@ -231,7 +211,7 @@ export const AuthContextProvider = ({
     setProvider(null);
     setUser(null);
     setUserAddress(undefined);
-    setSignature(undefined);
+    setSignature(null);
     setIsLoggedIn(false);
     setIsMetamask(false);
     setSigner(null);
@@ -242,8 +222,8 @@ export const AuthContextProvider = ({
     <AuthContext.Provider
       value={{
         login,
-        user,
         logout,
+        user,
         userAddress,
         isLoggedIn,
         signature,

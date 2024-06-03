@@ -3,7 +3,7 @@ import { EditorGridProps, EditorSquare } from '../../types/allTypes';
 
 
 
-const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, editorSquares, setEditorSquares,minX,minY,maxX,maxY,squareSize,gridRows,gridCols }) => {
+const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, editorSquares, minX,minY,maxX,maxY,squareSize,gridRows,gridCols }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
 
@@ -41,38 +41,38 @@ const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, editorSquares, setE
   };
   
   
-  const captureSquareBlob = (ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number, square: EditorSquare) => {
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
+  // const captureSquareBlob = (ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number, square: EditorSquare) => {
+  //   const tempCanvas = document.createElement('canvas');
+  //   const tempCtx = tempCanvas.getContext('2d');
     
-    if (!tempCtx) return;
+  //   if (!tempCtx) return;
   
-    tempCanvas.width = squareSize;
-    tempCanvas.height = squareSize;
+  //   tempCanvas.width = squareSize;
+  //   tempCanvas.height = squareSize;
   
-    // Draw the specific square from the main canvas to the temporary canvas
-    tempCtx.drawImage(ctx.canvas, offsetX, offsetY, squareSize, squareSize, 0, 0, squareSize, squareSize);
+  //   // Draw the specific square from the main canvas to the temporary canvas
+  //   tempCtx.drawImage(ctx.canvas, offsetX, offsetY, squareSize, squareSize, 0, 0, squareSize, squareSize);
   
-    // Create blob from the temporary canvas
-    tempCanvas.toBlob((blob) => {
-      if (blob) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
+  //   // Create blob from the temporary canvas
+  //   tempCanvas.toBlob((blob) => {
+  //     if (blob) {
+  //       const reader = new FileReader();
+  //       reader.onloadend = () => {
           
   
-          // Update state with new blob and base64 data
-          setEditorSquares(prevSquares => prevSquares.map(sq => {
-            if (sq.tokenId === square.tokenId) {
-              const base64String = (reader.result as string) ?? '';
-              return { ...sq, blob: blob, base64: base64String };
-            }
-            return sq;
-          }));
-        };
-        reader.readAsDataURL(blob);  // Start reading the blob as base64
-      }
-    }, 'image/png');
-  };
+  //         // Update state with new blob and base64 data
+  //         setEditorSquares(prevSquares => prevSquares.map(sq => {
+  //           if (sq.tokenId === square.tokenId) {
+  //             const base64String = (reader.result as string) ?? '';
+  //             return { ...sq, blob: blob, base64: base64String };
+  //           }
+  //           return sq;
+  //         }));
+  //       };
+  //       reader.readAsDataURL(blob);  // Start reading the blob as base64
+  //     }
+  //   }, 'image/png');
+  // };
   
 
   useEffect(() => {

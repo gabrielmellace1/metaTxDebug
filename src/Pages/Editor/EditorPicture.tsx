@@ -108,13 +108,13 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
 
     let finalizedSquares = await finalizeSquares(editorSquares); // Ensure squares are captured with latest zoom and rotation
 
-    const checkBlobs = async (squares: EditorSquare[]) => {
-      const missingBlobs = squares.filter(square => !square.blob);
-      if (missingBlobs.length > 0) {
-        const newSquares = await finalizeSquares(missingBlobs);
-        finalizedSquares = finalizedSquares.map(square => newSquares.find(ns => ns.tokenId === square.tokenId) || square);
-      }
-    };
+    // const checkBlobs = async (squares: EditorSquare[]) => {
+    //   const missingBlobs = squares.filter(square => !square.blob);
+    //   if (missingBlobs.length > 0) {
+    //     const newSquares = await finalizeSquares(missingBlobs);
+    //     finalizedSquares = finalizedSquares.map(square => newSquares.find(ns => ns.tokenId === square.tokenId) || square);
+    //   }
+    // };
 
     const sortedSquares = [...finalizedSquares].sort((a, b) => a.tokenId - b.tokenId);
     console.log("Squares finalized:", sortedSquares);
