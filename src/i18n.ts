@@ -8,14 +8,14 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    supportedLngs: ['en'],
+    supportedLngs: ['en', 'es', 'cn'],
     fallbackLng: 'en',
     debug: true,
     backend: {
       loadPath: '/locales/{{lng}}/translation.json',
     },
     detection: {
-      order: ['path', 'cookie', 'htmlTag'],
+      order: ['navigator', 'querystring', 'cookie', 'localStorage', 'sessionStorage', 'htmlTag', 'path', 'subdomain'],
       caches: ['cookie'],
     },
     react: {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Flex, Portal } from '@chakra-ui/react';
 import ActionBar from '../../components/ActionBar/ActionBar';
 import { AtlasToken } from '../../types/atlasTypes';
@@ -13,10 +13,10 @@ const MyAssets: React.FC = () => {
   let { userAddress } = useAuth();
   userAddress = userAddress?.toLowerCase();
 
-  const colorReferences = [
+  const colorReferences = useMemo(() => [
     { color: 'pink', text: t('yourAssetsOnSale') },
     { color: 'blue', text: t('yourAssets') },
-  ];
+  ], [t]);
 
   const buttonsToShow = {
     sell: true,

@@ -39,7 +39,7 @@
     "owner": "Owner: {{owner}}",
     "price": "Price: {{price}} BAG",
     "noTileSelected": "No tile selected",
-    "n/a": "N/A"
+    "n/a": "- "
 ,
 "_section": "BuyModal",
     "buyConfirmation": "Buy Confirmation",
@@ -177,9 +177,11 @@
   
         "_section": "MyAssets",
         "yourAssetsOnSale": "Your assets on sale",
-        "yourAssets": "Your assets"
+        "yourAssets": "Your assets",
       
       
+        "_section": "GameComponent",
+        "someoneClickedLink": "Someone just clicked on the link: {{clickableURL}}"
     }
     
   

@@ -1,8 +1,10 @@
 import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useTranslation } from 'react-i18next';
 
 const WelcomeModal: FC = () => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -27,20 +29,20 @@ const WelcomeModal: FC = () => {
     <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Welcome to the history of blockchain</ModalHeader>
+        <ModalHeader>{t("welcomeTitle")}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          Seems like it's the first time you are visiting the site, do you wanna find out what it is all about?
+          {t("welcomeMessage")}
         </ModalBody>
         <ModalFooter>
           <Button colorScheme="blue" mr={3} onClick={handleConfirm}>
-            Yes
+            {t("yes")}
           </Button>
           <Button colorScheme="red" onClick={handleClose}>
-            No
+            {t("no")}
           </Button>
           <Button colorScheme="green" onClick={handleConfirm}>
-            TLDR
+            {t("tldr")}
           </Button>
         </ModalFooter>
       </ModalContent>

@@ -35,7 +35,7 @@ export const onRequestGet: PagesFunction<Env, "id"> = async (context) => {
     id: stateTokenId,
     name,
     description,
-    image: `${baseUrl}/api/tokens/${stateTokenId}/image`,
+    image: `${baseUrl}/api/states/${stateTokenId}/image`,
   };
 
   return json(result);

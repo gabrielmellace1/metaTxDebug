@@ -32,6 +32,10 @@ const useTx = () => {
       // Load contract
       const contract = new ethers.Contract(config.address, config.abi, currentSigner);
 
+      console.log("a");
+      const gasEstimate = await contract.estimateGas[functionName](...params);
+      console.log(`Estimated gas for ${functionName}:`, gasEstimate.toString());
+      console.log("b");
       // Send transaction
       const txResponse = await contract[functionName](...params);
       console.log("Transaction response:", txResponse);

@@ -37,7 +37,7 @@ const EditorGrid: React.FC<EditorGridProps> = ({ previewUrl, editorSquares, setE
     ctx.fillStyle = 'black';
     ctx.fillRect(offsetX, offsetY, squareSize, squareSize);
     ctx.drawImage(image, srcX, srcY, srcWidth, srcHeight, offsetX, offsetY, squareSize, squareSize);
-    captureSquareBlob(ctx, offsetX, offsetY, square);  // Pass the full 'square' object
+    //captureSquareBlob(ctx, offsetX, offsetY, square);  // Pass the full 'square' object
   };
   
   

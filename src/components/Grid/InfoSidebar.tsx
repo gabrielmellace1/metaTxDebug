@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { Box, VStack, Text } from "@chakra-ui/react";
-import styles from './InfoSidebar.module.css';
+import React, { useMemo, useState } from 'react';
+import { Box, VStack, Text } from '@chakra-ui/react';
 import { ethers } from 'ethers';
+import { useTranslation } from 'react-i18next';
+import styles from './InfoSidebar.module.css';
 
 interface ColorReference {
   color: string;
   text: string;
 }
-
 
 interface InfoSidebarProps {
   tile: {
@@ -22,11 +22,33 @@ interface InfoSidebarProps {
 }
 
 const InfoSidebar: React.FC<InfoSidebarProps> = ({ tile, colorReferences }) => {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
 
   const toggleCollapse = () => {
     setCollapsed(!collapsed);
   };
+
+  const colorRefMemo = useMemo(() => {
+    return colorReferences.map((ref, index) => (
+      <div key={index} className={styles.flexRow}>
+        <Box className={styles.smallSquare} style={{ backgroundColor: ref.color }}></Box>
+        <Text className={styles.detail}>{ref.text}</Text>
+      </div>
+    ));
+  }, [colorReferences]);
+
+  const details = useMemo(() => (
+    tile ? (
+      <>
+        <Text className={styles.detail}>{t('coordinates', { x: tile.x, y: tile.y })}</Text>
+        <Text className={styles.detail}>{t('owner', { owner: tile.owner || t('n/a') })}</Text>
+        <Text className={styles.detail}>{t('price', { price: tile.price ? ethers.utils.formatEther(tile.price.toString()) : t('n/a') })}</Text>
+      </>
+    ) : (
+      <Text className={styles.detail}>{t('noTileSelected')}</Text>
+    )
+  ), [tile, t]);
 
   return (
     <Box className={styles.sidebar} style={{ width: collapsed ? '50px' : '200px', minHeight: collapsed ? '100px' : 'auto' }}>
@@ -35,24 +57,10 @@ const InfoSidebar: React.FC<InfoSidebarProps> = ({ tile, colorReferences }) => {
       </div>
       {!collapsed && (
         <VStack align="start" spacing={4}>
-          <Text className={styles.title}>Color reference:</Text>
-          {colorReferences.map((ref, index) => (
-  <div key={index} className={styles.flexRow}>
-    <Box className={styles.smallSquare} style={{ backgroundColor: ref.color }}></Box>
-    <Text className={styles.detail}>{ref.text}</Text>
-  </div>
-))}
-          <Text className={styles.title}>Details:</Text>
-          {tile ? (
-            <>
-              <Text className={styles.detail}>Coordinates: ({tile.x}, {tile.y})</Text>
-              <Text className={styles.detail}>Owner: {tile.owner || 'N/A'}</Text>
-              <Text className={styles.detail}>Price: {tile.price ? `${ethers.utils.formatEther(tile.price.toString())} BAG` : 'N/A'}</Text>
-
-            </>
-          ) : (
-            <Text className={styles.detail}>No tile selected</Text>
-          )}
+          <Text className={styles.title}>{t('colorReference')}</Text>
+          {colorRefMemo}
+          <Text className={styles.title}>{t('details')}</Text>
+          {details}
         </VStack>
       )}
     </Box>

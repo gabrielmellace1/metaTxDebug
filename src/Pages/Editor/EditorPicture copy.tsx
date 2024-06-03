@@ -15,9 +15,10 @@ interface EditorPictureProps {
   width: number;
   height: number;
   editorSquares: EditorSquare[];
+  setEditorSquares: React.Dispatch<React.SetStateAction<EditorSquare[]>>;
 }
 
-const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, height, editorSquares }) => {
+const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, height, editorSquares, setEditorSquares }) => {
   const { t } = useTranslation();
   const editorRef = useRef<AvatarEditor>(null);
   const [image, setImage] = useState('/avatar.png');
@@ -48,77 +49,8 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
     }
   };
 
-  const finalizeSquares = async (squares: EditorSquare[]) => {
-    console.log("Finalizing squares...");
-    if (editorRef.current) {
-      const canvas = editorRef.current.getImageScaledToCanvas();
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        console.error("Canvas context is not available.");
-        return [];
-      }
-
-      const newSquares = [...squares]; // Create a new array to ensure state change
-
-      const promises = squares.map((square, index) => {
-        return new Promise<void>((resolve) => {
-          if (square.normalizedSquare) {
-            const offsetX = square.normalizedSquare.x * 10;
-            const offsetY = (height / 10 - square.normalizedSquare.y - 1) * 10;
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-
-            if (!tempCtx) return resolve();
-
-            tempCanvas.width = 10;
-            tempCanvas.height = 10;
-
-            tempCtx.drawImage(ctx.canvas, offsetX, offsetY, 10, 10, 0, 0, 10, 10);
-
-            tempCanvas.toBlob((blob) => {
-              if (blob) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  const base64String = (reader.result as string) ?? '';
-                  newSquares[index] = { ...square, blob, base64: base64String };
-
-                  console.log(`Blob captured for square ${square.tokenId} at index ${index}`);
-                  resolve();
-                };
-                reader.readAsDataURL(blob);
-              } else {
-                resolve();
-              }
-            }, 'image/png');
-          } else {
-            resolve();
-          }
-        });
-      });
-
-      await Promise.all(promises);
-      return newSquares;
-    }
-    return [];
-  };
-
   const handleUpload = async () => {
     setIsLoading(true);
-    console.log("Uploading...");
-
-    let finalizedSquares = await finalizeSquares(editorSquares); // Ensure squares are captured with latest zoom and rotation
-
-    const checkBlobs = async (squares: EditorSquare[]) => {
-      const missingBlobs = squares.filter(square => !square.blob);
-      if (missingBlobs.length > 0) {
-        const newSquares = await finalizeSquares(missingBlobs);
-        finalizedSquares = finalizedSquares.map(square => newSquares.find(ns => ns.tokenId === square.tokenId) || square);
-      }
-    };
-
-    const sortedSquares = [...finalizedSquares].sort((a, b) => a.tokenId - b.tokenId);
-    console.log("Squares finalized:", sortedSquares);
-
     try {
       const uploadBatch = async (batch: EditorSquare[]) => {
         const formData = new FormData();
@@ -132,23 +64,18 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
       };
 
       const batches = [];
-      for (let i = 0; i < sortedSquares.length; i += BATCH_SIZE) {
-        batches.push(sortedSquares.slice(i, i + BATCH_SIZE));
+      for (let i = 0; i < editorSquares.length; i += BATCH_SIZE) {
+        batches.push(editorSquares.slice(i, i + BATCH_SIZE));
       }
 
       let allResponses = '';
       for (const batch of batches) {
         const response = await uploadBatch(batch);
-        if (typeof response === 'string') {
-          allResponses += response;
-        } else {
-          allResponses += JSON.stringify(response);
-        }
+        allResponses += typeof response === 'string' ? response : JSON.stringify(response);
       }
 
       const jsonResponseString = '[' + allResponses.split('\n').filter(Boolean).map(str => str.trim()).join(',') + ']';
       const jsonArrayResponse = JSON.parse(jsonResponseString);
-
       const responseArray = Array.isArray(jsonArrayResponse) ? jsonArrayResponse : [jsonArrayResponse];
 
       const fileHashes = responseArray.reduce((acc: { [x: string]: any; }, item: { Name: string; Hash: any; }) => {
@@ -159,37 +86,25 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
         return acc;
       }, {});
 
-      const updatedSquares = sortedSquares.map(square => ({
+      const updatedSquares = editorSquares.map(square => ({
         ...square,
         hashId: fileHashes[square.tokenId]
       }));
 
-      const checkHashes = async (squares: EditorSquare[]) => {
-        const missingHashes = squares.filter(square => !square.hashId);
-        if (missingHashes.length > 0) {
-          const newResponses = await uploadBatch(missingHashes);
-          newResponses.forEach((res: any) => {
-            const tokenId = res.Name.split('-')[1].split('.')[0];
-            fileHashes[tokenId] = res.Hash;
-          });
-        }
-      };
+      updatedSquares.sort((a, b) => Number(a.tokenId) - Number(b.tokenId));
+      setEditorSquares(updatedSquares);
 
-      await checkHashes(updatedSquares);
-
-      const jsonHashes = JSON.stringify(fileHashes);
-
-      const jsonBlob = new Blob([jsonHashes], { type: 'application/json' });
+      const tokenIdToHash = updatedSquares.reduce((acc, cur) => ({ ...acc, [cur.tokenId]: cur.hashId }), {});
+      const jsonBlob = new Blob([JSON.stringify(tokenIdToHash)], { type: 'application/json' });
       const jsonFormData = new FormData();
-      jsonFormData.append('file', jsonBlob, 'hashes.json');
-
+      jsonFormData.append("file", jsonBlob, "tokenIdToHash.json");
       const jsonUploadResponse = await uploadToIPFS(jsonFormData);
       const jsonHash = jsonUploadResponse.Hash;
 
-      console.log("JSON Hash:", jsonHash);
+      console.log(jsonHash);
 
       const tokenIds = updatedSquares.map(sq => sq.tokenId);
-      const stateId = updatedSquares[0]?.stateId || 0;
+      const stateId = updatedSquares[0].stateId;
       let params = [];
       let funcName = "";
 
@@ -213,7 +128,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
         if (status?.status) {
           setInfoModalHeader(t("contentUploadSuccessful"));
           setInfoModalBody(t("contentUploadSuccessfulBody"));
-          generateOwnedImage(finalizedSquares); // Pass finalizedSquares to generateOwnedImage
+          generateOwnedImage();
         } else {
           setInfoModalHeader(t("contentUploadFailed"));
           setInfoModalBody(t("contentUploadFailedBody"));
@@ -226,7 +141,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
     }
   };
 
-  const generateOwnedImage = (finalizedSquares: EditorSquare[]) => {
+  const generateOwnedImage = () => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -237,7 +152,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
     let imagesLoaded = 0;
     const coordinates: { x: number; y: number; }[] = [];
 
-    finalizedSquares.forEach(square => {
+    editorSquares.forEach(square => {
       if (square.blob || square.base64) {
         const img = new Image();
         img.src = square.blob ? URL.createObjectURL(square.blob) : square.base64 as string;
@@ -250,7 +165,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
             coordinates.push({ x: square.originalSquare.x, y: square.originalSquare.y });
 
             imagesLoaded++;
-            if (imagesLoaded === finalizedSquares.length) {
+            if (imagesLoaded === editorSquares.length) {
               canvas.toBlob(async (blob) => {
                 if (blob) {
                   const formData = new FormData();
@@ -312,72 +227,74 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
   };
 
   return (
-    <VStack p={4} bg="gray.700" borderRadius="md" boxShadow="base" color="white" spacing={4}>
-      <Dropzone onDrop={handleFileChange} disabled={isLoading}>
-        {({ getRootProps, getInputProps }) => (
-          <div {...getRootProps()}>
-            <input {...getInputProps()} disabled={isLoading} />
-            <div style={{ position: 'relative' }}>
-              <AvatarEditor
-                ref={editorRef}
-                image={image}
-                width={width}
-                height={height}
-                border={50}
-                color={[255, 255, 255, 0.6]}
-                scale={scale}
-                rotate={rotate}
-                onImageChange={handleImageChange}
-                onImageReady={handleImageChange}
-              />
-              {isLoading && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.5)', cursor: 'not-allowed' }}></div>}
+    <>
+      <VStack p={4} bg="gray.700" borderRadius="md" boxShadow="base" color="white" spacing={4}>
+        <Dropzone onDrop={handleFileChange} disabled={isLoading}>
+          {({ getRootProps, getInputProps }) => (
+            <div {...getRootProps()}>
+              <input {...getInputProps()} disabled={isLoading} />
+              <div style={{ position: 'relative' }}>
+                <AvatarEditor
+                  ref={editorRef}
+                  image={image}
+                  width={width}
+                  height={height}
+                  border={50}
+                  color={[255, 255, 255, 0.6]}
+                  scale={scale}
+                  rotate={rotate}
+                  onImageChange={handleImageChange}
+                  onImageReady={handleImageChange}
+                />
+                {isLoading && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.5)', cursor: 'not-allowed' }}></div>}
+              </div>
             </div>
-          </div>
+          )}
+        </Dropzone>
+        <Box width="full">
+          <Text fontSize="sm" mb="2">{t('zoom')}</Text>
+          <Slider defaultValue={1.2} min={0.1} max={10} step={0.01} onChange={v => setScale(v)} isDisabled={isLoading}>
+            <SliderTrack bg="blue.300">
+              <SliderFilledTrack bg="blue.600" />
+            </SliderTrack>
+            <SliderThumb boxSize={6} />
+          </Slider>
+        </Box>
+        <Box width="full">
+          <Text fontSize="sm" mb="2">{t('rotation')}</Text>
+          <Slider defaultValue={0} min={0} max={360} step={1} onChange={v => setRotate(v)} isDisabled={isLoading}>
+            <SliderTrack bg="blue.300">
+              <SliderFilledTrack bg="blue.600" />
+            </SliderTrack>
+            <SliderThumb boxSize={6} />
+          </Slider>
+        </Box>
+        <FormControl id="title" isRequired>
+          <FormLabel>{t('title')}</FormLabel>
+          <Input value={title} onChange={e => setTitle(e.target.value)} placeholder={t('enterTitle')} disabled={isLoading} />
+        </FormControl>
+        <FormControl id="url" isRequired>
+          <FormLabel>{t('clickableUrl')}</FormLabel>
+          <Input value={url} onChange={e => setUrl(e.target.value)} placeholder={t('enterUrl')} disabled={isLoading} />
+        </FormControl>
+        <Button colorScheme="blue" onClick={handleUpload} isLoading={isLoading} loadingText={t('uploading')}>
+          {t('upload')}
+        </Button>
+        <Box p={4} w="full" bg="gray.600" borderRadius="md">
+          <Text fontSize="sm">{t('uploadingToCoordinates')}</Text>
+          <Text fontSize="xs">{displayCoordinates()}</Text>
+        </Box>
+        {showInfoModal && (
+          <InformationModal
+            isOpen={showInfoModal}
+            header={infoModalHeader}
+            text={infoModalBody}
+            setShowInfoModal={setShowInfoModal}
+          />
         )}
-      </Dropzone>
-      <Box width="full">
-        <Text fontSize="sm" mb="2">{t('zoom')}</Text>
-        <Slider defaultValue={1.2} min={0.1} max={10} step={0.01} onChange={v => setScale(v)} isDisabled={isLoading}>
-          <SliderTrack bg="blue.300">
-            <SliderFilledTrack bg="blue.600" />
-          </SliderTrack>
-          <SliderThumb boxSize={6} />
-        </Slider>
-      </Box>
-      <Box width="full">
-        <Text fontSize="sm" mb="2">{t('rotation')}</Text>
-        <Slider defaultValue={0} min={0} max={360} step={1} onChange={v => setRotate(v)} isDisabled={isLoading}>
-          <SliderTrack bg="blue.300">
-            <SliderFilledTrack bg="blue.600" />
-          </SliderTrack>
-          <SliderThumb boxSize={6} />
-        </Slider>
-      </Box>
-      <FormControl id="title" isRequired>
-        <FormLabel>{t('title')}</FormLabel>
-        <Input value={title} onChange={e => setTitle(e.target.value)} placeholder={t('enterTitle')} disabled={isLoading} />
-      </FormControl>
-      <FormControl id="url" isRequired>
-        <FormLabel>{t('clickableUrl')}</FormLabel>
-        <Input value={url} onChange={e => setUrl(e.target.value)} placeholder={t('enterUrl')} disabled={isLoading} />
-      </FormControl>
-      <Button colorScheme="blue" onClick={handleUpload} isLoading={isLoading} loadingText={t('uploading')}>
-        {t('upload')}
-      </Button>
-      <Box p={4} w="full" bg="gray.600" borderRadius="md">
-        <Text fontSize="sm">{t('uploadingToCoordinates')}</Text>
-        <Text fontSize="xs">{displayCoordinates()}</Text>
-      </Box>
-      {showInfoModal && (
-        <InformationModal
-          isOpen={showInfoModal}
-          header={infoModalHeader}
-          text={infoModalBody}
-          setShowInfoModal={setShowInfoModal}
-        />
-      )}
+      </VStack>
       {uploadedFileName && <ShareModal fileName={uploadedFileName} />}
-    </VStack>
+    </>
   );
 };
 

@@ -15,6 +15,7 @@ interface EditorPictureProps {
   width: number;
   height: number;
   editorSquares: EditorSquare[];
+  
 }
 
 const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, height, editorSquares }) => {
@@ -48,7 +49,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
     }
   };
 
-  const finalizeSquares = async (squares: EditorSquare[]) => {
+  const finalizeSquares = async () => {
     console.log("Finalizing squares...");
     if (editorRef.current) {
       const canvas = editorRef.current.getImageScaledToCanvas();
@@ -58,9 +59,9 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
         return [];
       }
 
-      const newSquares = [...squares]; // Create a new array to ensure state change
+      const newSquares = [...editorSquares]; // Create a new array to ensure state change
 
-      const promises = squares.map((square, index) => {
+      const promises = editorSquares.map((square, index) => {
         return new Promise<void>((resolve) => {
           if (square.normalizedSquare) {
             const offsetX = square.normalizedSquare.x * 10;
@@ -105,16 +106,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
   const handleUpload = async () => {
     setIsLoading(true);
     console.log("Uploading...");
-
-    let finalizedSquares = await finalizeSquares(editorSquares); // Ensure squares are captured with latest zoom and rotation
-
-    const checkBlobs = async (squares: EditorSquare[]) => {
-      const missingBlobs = squares.filter(square => !square.blob);
-      if (missingBlobs.length > 0) {
-        const newSquares = await finalizeSquares(missingBlobs);
-        finalizedSquares = finalizedSquares.map(square => newSquares.find(ns => ns.tokenId === square.tokenId) || square);
-      }
-    };
+    const finalizedSquares = await finalizeSquares(); // Ensure squares are captured with latest zoom and rotation
 
     const sortedSquares = [...finalizedSquares].sort((a, b) => a.tokenId - b.tokenId);
     console.log("Squares finalized:", sortedSquares);
@@ -164,19 +156,6 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
         hashId: fileHashes[square.tokenId]
       }));
 
-      const checkHashes = async (squares: EditorSquare[]) => {
-        const missingHashes = squares.filter(square => !square.hashId);
-        if (missingHashes.length > 0) {
-          const newResponses = await uploadBatch(missingHashes);
-          newResponses.forEach((res: any) => {
-            const tokenId = res.Name.split('-')[1].split('.')[0];
-            fileHashes[tokenId] = res.Hash;
-          });
-        }
-      };
-
-      await checkHashes(updatedSquares);
-
       const jsonHashes = JSON.stringify(fileHashes);
 
       const jsonBlob = new Blob([jsonHashes], { type: 'application/json' });
@@ -189,7 +168,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
       console.log("JSON Hash:", jsonHash);
 
       const tokenIds = updatedSquares.map(sq => sq.tokenId);
-      const stateId = updatedSquares[0]?.stateId || 0;
+      const stateId = updatedSquares[0].stateId;
       let params = [];
       let funcName = "";
 

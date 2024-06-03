@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, Button, HStack, Spinner } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 
 type ConfirmModalProps = {
   isOpen: boolean;
@@ -8,7 +9,6 @@ type ConfirmModalProps = {
   confirm?: string;
   cancel?: string;
   onConfirm?: () => void;
-  onClose?: () => void;
   setShowConfirmModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -16,11 +16,12 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   isOpen,
   header,
   body,
-  confirm = 'Confirm',
-  cancel = 'Cancel',
+  confirm,
+  cancel,
   onConfirm,
   setShowConfirmModal
 }) => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -46,10 +47,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         <ModalBody>{body}</ModalBody>
         <HStack justifyContent="flex-end" mt={4}>
           <Button variant="outline" mr={3} onClick={handleClose}>
-            {cancel}
+            {cancel ? t(cancel) : t('cancel')}
           </Button>
           <Button colorScheme="blue" onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? <Spinner size="sm" /> : confirm}
+            {isLoading ? <Spinner size="sm" /> : (confirm ? t(confirm) : t('confirm'))}
           </Button>
         </HStack>
       </ModalContent>

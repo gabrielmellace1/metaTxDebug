@@ -60,6 +60,7 @@ const Header = () => {
         />
         <Button onClick={() => changeLanguage('en')} ml={2} colorScheme="blue">EN</Button>
         <Button onClick={() => changeLanguage('es')} ml={2} colorScheme="blue">ES</Button>
+        <Button onClick={() => changeLanguage('cn')} ml={2} colorScheme="blue">CN</Button>
       </Flex>
     </Flex>
   );

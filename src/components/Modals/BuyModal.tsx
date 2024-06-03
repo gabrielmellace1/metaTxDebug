@@ -9,6 +9,7 @@ import useTxChecker from '../../hooks/contracts/useTxChecker';
 import useMarketplace from '../../hooks/contracts/useMarketplace';
 import { twitterPixelEvent } from '../../helpers/funcHelper';
 import useTx from '../../hooks/contracts/useTx';
+import { useTranslation } from 'react-i18next';
 
 type BuyModalProps = {
   isOpen: boolean;
@@ -19,6 +20,7 @@ type BuyModalProps = {
 };
 
 const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenIds, stateSelected }) => {
+  const { t } = useTranslation();
   const bag = useBAG();
   const txHook = useTx();
   const txChecker = useTxChecker();
@@ -56,27 +58,27 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
         );
 
         if (totalCost.gt(balance)) {
-          setInfoModalHeader("Insufficient balance");
-          setInfoModalBody("Oops, looks like you don't have enough balance to complete this purchase.");
+          setInfoModalHeader(t("insufficientBalance"));
+          setInfoModalBody(t("insufficientBalanceBody"));
           setShowInfoModal(true);
           setIsLoading(false);
           return;
         } else {
           if (totalCost.lt(allowance)) {
             if (marketplace && await marketplace.areOrdersActive(nftAddress, tokenIds)) {
-              setConfirmPurchaseHeader("Confirm purchase?");
-              setConfirmPurchaseBody("You are about to buy squares for a total of " + ethers.utils.formatEther(totalCost.toString()) + " BAG");
+              setConfirmPurchaseHeader(t("confirmPurchase"));
+              setConfirmPurchaseBody(t("confirmPurchaseBody", { totalCost: ethers.utils.formatEther(totalCost.toString()) }));
               setConfirmPurchase(true);
             } else {
-              setInfoModalHeader("Oh no!");
-              setInfoModalBody("Oh no! It looks like some of the elements you have selected are no longer available");
+              setInfoModalHeader(t("someElementsNotAvailable"));
+              setInfoModalBody(t("someElementsNotAvailableBody"));
               setShowInfoModal(true);
               setIsLoading(false);
               return;
             }
           } else {
-            setConfirmModalHeader("Spending authorization required");
-            setConfirmModalBody("In order to perform the purchase, you need to authorize the marketplace to spend your BAG tokens and receive your square NFTs");
+            setConfirmModalHeader(t("spendingAuthorizationRequired"));
+            setConfirmModalBody(t("spendingAuthorizationBody"));
             setShowConfirmModal(true);
             setIsLoading(false);
             return;
@@ -95,8 +97,8 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
     setIsLoading(true);
     try {
       const tx = await txHook('bag', 'approve', [addresses.marketplace, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]);
-      setInfoModalHeader("Processing authorization");
-      setInfoModalBody("The transaction is being processed, one moment please. Tx hash: " + tx);
+      setInfoModalHeader(t("processingAuthorization"));
+      setInfoModalBody(t("authorizationSuccessfulBody", { tx }));
       setShowConfirmModal(false);
       setShowInfoModal(true);
 
@@ -104,17 +106,17 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
         if (tx) {
           const status = await txChecker.checkTransactionStatus(tx, setInfoModalHeader, setInfoModalBody);
           if (status?.status) {
-            setInfoModalHeader("Authorization successful");
-            setInfoModalBody("The authorization has been processed successfully");
+            setInfoModalHeader(t("authorizationSuccessful"));
+            setInfoModalBody(t("authorizationSuccessfulBody"));
           } else {
-            setInfoModalHeader("Upps, authorization failed");
-            setInfoModalBody("There was an error processing the authorization");
+            setInfoModalHeader(t("authorizationFailed"));
+            setInfoModalBody(t("authorizationFailedBody"));
           }
         }
       } catch (error) {
         console.error("Error getting transaction status:", error);
-        setInfoModalHeader("Transaction Status Unknown");
-        setInfoModalBody("Unable to retrieve transaction status. Please try again later.");
+        setInfoModalHeader(t("transactionStatusUnknown"));
+        setInfoModalBody(t("unableToRetrieveTransactionStatus"));
       } finally {
         setIsLoading(false);
       }
@@ -132,14 +134,14 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
 
       setShowConfirmModal(false);
       setShowInfoModal(true);
-      setInfoModalHeader("Processing purchase");
-      setInfoModalBody("The purchase is being processed, one moment please. Tx hash: " + tx);
+      setInfoModalHeader(t("processingPurchase"));
+      setInfoModalBody(t("purchaseSuccessfulBody", { tx }));
 
       try {
         const status = await txChecker.checkTransactionStatus(tx, setInfoModalHeader, setInfoModalBody);
         if (status?.status) {
-          setInfoModalHeader("Purchase successful");
-          setInfoModalBody("The purchase has been processed successfully");
+          setInfoModalHeader(t("purchaseSuccessful"));
+          setInfoModalBody(t("purchaseSuccessfulBody"));
 
           const totalCostValue = ethers.utils.formatEther(itemCosts.reduce(
             (acc, cost) => acc.add(cost),
@@ -148,13 +150,13 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
 
           twitterPixelEvent('tw-om2cf-om2cg', { value: totalCostValue });
         } else {
-          setInfoModalHeader("Upps, purchase failed");
-          setInfoModalBody("There was an error processing the purchase");
+          setInfoModalHeader(t("purchaseFailed"));
+          setInfoModalBody(t("purchaseFailedBody"));
         }
       } catch (error) {
         console.error("Error getting transaction status:", error);
-        setInfoModalHeader("Transaction Status Unknown");
-        setInfoModalBody("Unable to retrieve transaction status. Please try again later.");
+        setInfoModalHeader(t("transactionStatusUnknown"));
+        setInfoModalBody(t("unableToRetrieveTransactionStatus"));
       } finally {
         setIsLoading(false);
       }
@@ -169,19 +171,19 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Buy Confirmation</ModalHeader>
+          <ModalHeader>{t("buyConfirmation")}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text>Please select your payment option:</Text>
+            <Text>{t("pleaseSelectPaymentOption")}</Text>
             <RadioGroup onChange={handleOptionChange} value={selectedOption}>
               <VStack spacing={2}>
-                <Radio value="1">BAG</Radio>
-                <Radio value="2">Binance</Radio>
+                <Radio value="1">{t("bag")}</Radio>
+                <Radio value="2">{t("binance")}</Radio>
                 {/* Add more Radio options as needed */}
               </VStack>
             </RadioGroup>
             <Button colorScheme="blue" mt={4} onClick={handleBuyClick} disabled={isLoading}>
-              {isLoading ? <Spinner size="sm" /> : "Buy"}
+              {isLoading ? <Spinner size="sm" /> : t("buy")}
             </Button>
           </ModalBody>
         </ModalContent>

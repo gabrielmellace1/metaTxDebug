@@ -43,7 +43,7 @@ const blastRpcProvider = {
   chainId: "0x13E31",
   rpcTarget: "https://rpc.blast.io",
   displayName: "Blast",
-  blockExplorer: "https://blastscan.io/",
+  blockExplorerUrl: "https://blastscan.io/",
   ticker: "ETH",
   tickerName: "Ethereum",
 };
@@ -53,9 +53,13 @@ const metamaskAdapter = new MetamaskAdapter({
   sessionTime: 86400, // 1 hour in seconds
   web3AuthNetwork: "sapphire_mainnet",
   chainConfig: {
-    chainNamespace: CHAIN_NAMESPACES.EIP155,
-    chainId: "0x1",
-    rpcTarget: "https://rpc.ankr.com/eth",
+    ...blastRpcProvider
+  },
+});
+
+const ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
+  config: {
+    chainConfig: blastRpcProvider,
   },
 });
 
@@ -63,6 +67,7 @@ const web3AuthModalOptions: Web3AuthOptions = {
   clientId,
   chainConfig: blastRpcProvider,
   web3AuthNetwork: OPENLOGIN_NETWORK.SAPPHIRE_MAINNET,
+  privateKeyProvider: ethereumPrivateKeyProvider
 };
 
 const _web3auth = new Web3Auth(web3AuthModalOptions);
@@ -80,6 +85,10 @@ const web3AuthModalParameters = {
         },
         sms_passwordless: {
           name: "sms_passwordless",
+          showOnModal: false,
+        },
+        phone_passwordless: {
+          name: "phone_passwordless",
           showOnModal: false,
         },
       },
