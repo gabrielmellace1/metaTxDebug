@@ -18,8 +18,8 @@ kv_namespaces = [
 [vars]
 baseUrl = "https://squares.town"
 rpcUrl =  "https://rpc.blast.io"
-squaresContractAddress = "0x722Dc0C8677D0822507b2324BF171EB297260Cd7"
-stateContractAddress = "0xFa89EdF8d53F572812370fDD8120b511bd0C4DDC"
+squaresContractAddress = "0x2933f1a981b40409a26864284fD8169e5DA159c8"
+stateContractAddress = "0x119E95F4deBdFdaE96D07E1239255847742F1cA3"
 
 STATE_CONTRACT_ABI = """
 [
