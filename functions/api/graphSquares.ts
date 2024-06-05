@@ -2,6 +2,7 @@ import { fetchFromGraph } from "../helpers/graph";
 import type { Env } from "../lib/env";
 import { json } from '../lib/response'; // Import response utilities
 import { AtlasTile } from '../interfaces/atlasTile'; // Assuming this interface is properly defined elsewhere
+import { uploadToR2 } from '../lib/r2';
 
 interface CacheData {
     data: Record<string, AtlasTile>;  // Assuming AtlasTile is your data structure
@@ -32,6 +33,13 @@ export async function onRequest(context: { env: Env }) {
 
         // // Update cache with new data and timestamp
         // await context.env.SquaresKV.put(CACHE_KEY, JSON.stringify({ data: transformedTiles, timestamp: new Date().getTime() }), { expirationTtl: CACHE_TTL });
+
+
+         const wrappedData = { data: transformedTiles };
+
+        // Upload wrapped data to Cloudflare R2
+        const uploadResult = await uploadToR2(context.env.squareblocksr2, 'transformedTiles.json', JSON.stringify(wrappedData));
+        console.log('Upload to R2 result:', uploadResult);
 
         return json({ data: transformedTiles }); // Ensure the returned data is wrapped in { data: ... } as well
     } catch (error) {

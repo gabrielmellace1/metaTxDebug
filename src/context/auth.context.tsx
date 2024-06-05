@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useContext, useState, useEffect } from "react";
 import { Web3Auth, Web3AuthOptions } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, SafeEventEmitterProvider } from "@web3auth/base";
@@ -106,19 +105,12 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [signature, setSignature] = useState<any | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize Web3Auth
   const initWeb3Auth = async () => {
     try {
       await _web3auth.initModal(web3AuthModalParameters);
-      const web3authProvider = await _web3auth.connect();
-      if (web3authProvider) {
-        const user = await _web3auth.getUserInfo();
-        setUser(user);
-        setProvider(web3authProvider as SafeEventEmitterProvider);
-        setIsMetamask(_web3auth.connectedAdapterName === "metamask");
-        console.log("Adapter on init:", _web3auth.connectedAdapterName);
-      }
+      setIsInitialized(true);
     } catch (error) {
       console.error("Web3Auth initialization error:", error);
     }
@@ -141,12 +133,11 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     }
   }, [provider]);
 
-  // Detect MetaMask and initialize Web3Auth
+  // Detect MetaMask
   useEffect(() => {
     if (window.ethereum?.isMetaMask) {
       twitterPixelEvent("tw-om2cf-om2vj"); // Trigger Twitter event if MetaMask is detected
     }
-    initWeb3Auth();
   }, []);
 
   const getUpdatedSigner = async (): Promise<ethers.Signer | null> => {
@@ -194,6 +185,9 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   // Login with Web3Auth
   const login = async () => {
     try {
+      if (!isInitialized) {
+        await initWeb3Auth(); // Initialize Web3Auth if not already initialized
+      }
       const web3authProvider = await _web3auth.connect();
       if (!web3authProvider) return;
 

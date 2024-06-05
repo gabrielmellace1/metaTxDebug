@@ -7,8 +7,8 @@ database_name = "squareblocksdb"
 database_id = "3cf11196-05cb-4276-9bbd-ead735f36c9f"
 
 [[r2_buckets]]
-binding = "squareblocksr2"
-bucket_name = "squareblocksr2"
+binding = "squareblocks"
+bucket_name = "squareblocks"
 
 kv_namespaces = [
   { binding = "SquaresKV", id = "758bea6a1d9a4c4688d1db73af49bdc6" }
