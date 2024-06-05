@@ -35,6 +35,7 @@ async function loadTiles(setAtlasLoaded: (loaded: boolean) => void) {
   const resp = await fetch("https://squares.town/api/graphSquares");
   const json = await resp.json();
   atlas = json.data as Record<string, AtlasTile>;
+  console.log(atlas);
   setAtlasLoaded(true);
 }
 

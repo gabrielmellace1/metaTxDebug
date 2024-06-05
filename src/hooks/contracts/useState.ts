@@ -37,15 +37,22 @@ const useStateContract = () => {
     const getStateSquares = async (stateId: number) => {
         try {
             console.log(`Fetching squares for state ID: ${stateId}`);
-            const squareIds = await contract?.getStateSquares(stateId);
-            const squareIdsNumbers = squareIds.map((id: { toNumber: () => any; }) => id.toNumber()); // Convert each BigNumber to a number
-            console.log(`Square IDs for state ${stateId}:`, squareIdsNumbers);
-            return squareIdsNumbers;
+            const squareIds: number[] = await contract?.getStateSquares(stateId);
+    
+            // Ensure squareIds is an array of numbers
+            if (Array.isArray(squareIds)) {
+                console.log(`Square IDs for state ${stateId}:`, squareIds);
+                return squareIds;
+            } else {
+                console.error(`Unexpected format for square IDs:`, squareIds);
+                return [];
+            }
         } catch (error) {
             console.error(`Error fetching squares for state ID ${stateId}:`, error);
             return [];
         }
     };
+    
 
     return {
         isApprovedForAll,getStateSquares

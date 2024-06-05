@@ -1167,9 +1167,9 @@ const configs: ContractConfigs = {
         "inputs": [
           {
             "indexed": false,
-            "internalType": "uint256[]",
+            "internalType": "uint24[]",
             "name": "tokenIds",
-            "type": "uint256[]"
+            "type": "uint24[]"
           },
           {
             "indexed": false,
@@ -1220,12 +1220,25 @@ const configs: ContractConfigs = {
       },
       {
         "inputs": [],
+        "name": "BLAST",
+        "outputs": [
+          {
+            "internalType": "contract IBlast",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
         "name": "GRID_HEIGHT",
         "outputs": [
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "",
-            "type": "uint256"
+            "type": "uint24"
           }
         ],
         "stateMutability": "view",
@@ -1236,9 +1249,9 @@ const configs: ContractConfigs = {
         "name": "GRID_WIDTH",
         "outputs": [
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "",
-            "type": "uint256"
+            "type": "uint24"
           }
         ],
         "stateMutability": "view",
@@ -1249,9 +1262,9 @@ const configs: ContractConfigs = {
         "name": "TOTAL_SQUARES",
         "outputs": [
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "",
-            "type": "uint256"
+            "type": "uint24"
           }
         ],
         "stateMutability": "view",
@@ -1302,12 +1315,79 @@ const configs: ContractConfigs = {
             "type": "address"
           },
           {
-            "internalType": "uint256[]",
+            "internalType": "uint24[]",
             "name": "tokenIds",
-            "type": "uint256[]"
+            "type": "uint24[]"
           }
         ],
         "name": "batchTransferFrom",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint24[]",
+            "name": "tokenIds",
+            "type": "uint24[]"
+          }
+        ],
+        "name": "batchTransferToState",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint24[]",
+            "name": "tokenIds",
+            "type": "uint24[]"
+          }
+        ],
+        "name": "batchTransferToUser",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "claimGasFees",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "claimMaxGasFees",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "configureClaimableGas",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -1352,6 +1432,19 @@ const configs: ContractConfigs = {
         "type": "function"
       },
       {
+        "inputs": [],
+        "name": "gasRecipient",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
         "inputs": [
           {
             "internalType": "uint256",
@@ -1392,9 +1485,9 @@ const configs: ContractConfigs = {
       {
         "inputs": [
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "tokenId",
-            "type": "uint256"
+            "type": "uint24"
           }
         ],
         "name": "getSquareImage",
@@ -1453,9 +1546,9 @@ const configs: ContractConfigs = {
             "type": "address"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "numSquares",
-            "type": "uint256"
+            "type": "uint24"
           }
         ],
         "name": "mintMultipleSquares",
@@ -1511,22 +1604,22 @@ const configs: ContractConfigs = {
       {
         "inputs": [
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "x",
-            "type": "uint256"
+            "type": "uint24"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "y",
-            "type": "uint256"
+            "type": "uint24"
           }
         ],
         "name": "positionToTokenId",
         "outputs": [
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "",
-            "type": "uint256"
+            "type": "uint24"
           }
         ],
         "stateMutability": "pure",
@@ -1640,9 +1733,9 @@ const configs: ContractConfigs = {
       {
         "inputs": [
           {
-            "internalType": "uint256[]",
+            "internalType": "uint24[]",
             "name": "tokenIds",
-            "type": "uint256[]"
+            "type": "uint24[]"
           },
           {
             "internalType": "string",
@@ -1772,22 +1865,22 @@ const configs: ContractConfigs = {
       {
         "inputs": [
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "tokenId",
-            "type": "uint256"
+            "type": "uint24"
           }
         ],
         "name": "tokenIdToPosition",
         "outputs": [
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "",
-            "type": "uint256"
+            "type": "uint24"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint24",
             "name": "",
-            "type": "uint256"
+            "type": "uint24"
           }
         ],
         "stateMutability": "pure",
@@ -1844,6 +1937,19 @@ const configs: ContractConfigs = {
           }
         ],
         "name": "transferOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "newRecipient",
+            "type": "address"
+          }
+        ],
+        "name": "updateGasRecipient",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -1982,9 +2088,9 @@ const configs: ContractConfigs = {
           },
           {
             "indexed": false,
-            "internalType": "uint256[]",
+            "internalType": "uint24[]",
             "name": "squareIds",
-            "type": "uint256[]"
+            "type": "uint24[]"
           }
         ],
         "name": "StateCreated",
@@ -2001,9 +2107,9 @@ const configs: ContractConfigs = {
           },
           {
             "indexed": false,
-            "internalType": "uint256[]",
+            "internalType": "uint24[]",
             "name": "squareIds",
-            "type": "uint256[]"
+            "type": "uint24[]"
           }
         ],
         "name": "StateDeleted",
@@ -2033,6 +2139,19 @@ const configs: ContractConfigs = {
         ],
         "name": "Transfer",
         "type": "event"
+      },
+      {
+        "inputs": [],
+        "name": "BLAST",
+        "outputs": [
+          {
+            "internalType": "contract IBlast",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
       },
       {
         "inputs": [
@@ -2079,12 +2198,33 @@ const configs: ContractConfigs = {
             "type": "address"
           },
           {
-            "internalType": "uint256[]",
+            "internalType": "uint24[]",
             "name": "tokenIds",
-            "type": "uint256[]"
+            "type": "uint24[]"
           }
         ],
         "name": "batchTransferFrom",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "claimGasFees",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "claimMaxGasFees",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "configureClaimableGas",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -2142,6 +2282,19 @@ const configs: ContractConfigs = {
         "type": "function"
       },
       {
+        "inputs": [],
+        "name": "gasRecipient",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
         "inputs": [
           {
             "internalType": "uint256",
@@ -2190,9 +2343,9 @@ const configs: ContractConfigs = {
         "name": "getStateSquares",
         "outputs": [
           {
-            "internalType": "uint256[]",
+            "internalType": "uint24[]",
             "name": "",
-            "type": "uint256[]"
+            "type": "uint24[]"
           }
         ],
         "stateMutability": "view",
@@ -2239,8 +2392,21 @@ const configs: ContractConfigs = {
         "inputs": [
           {
             "internalType": "uint256[]",
-            "name": "squareIds",
+            "name": "stateIds",
             "type": "uint256[]"
+          }
+        ],
+        "name": "mergeStates",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint24[]",
+            "name": "squareIds",
+            "type": "uint24[]"
           }
         ],
         "name": "mintState",
@@ -2434,7 +2600,7 @@ const configs: ContractConfigs = {
         "name": "squareContract",
         "outputs": [
           {
-            "internalType": "contract IERC721",
+            "internalType": "contract SquareNFT",
             "name": "",
             "type": "address"
           }
@@ -2525,6 +2691,19 @@ const configs: ContractConfigs = {
           }
         ],
         "name": "transferOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "newRecipient",
+            "type": "address"
+          }
+        ],
+        "name": "updateGasRecipient",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

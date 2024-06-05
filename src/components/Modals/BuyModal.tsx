@@ -11,6 +11,8 @@ import { twitterPixelEvent } from '../../helpers/funcHelper';
 import useTx from '../../hooks/contracts/useTx';
 import { useTranslation } from 'react-i18next';
 import metaTx from '../../hooks/contracts/useMetaTx';
+import { useAuth } from '../../context/auth.context';
+import BinanceModal from './BinanceModal';
 
 type BuyModalProps = {
   isOpen: boolean;
@@ -27,7 +29,8 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
   const meta = metaTx();
   const txChecker = useTxChecker();
   const marketplace = useMarketplace();
-
+  let { userAddress } = useAuth();
+  
   let nftAddress = stateSelected ? addresses.state : addresses.square;
 
   const [selectedOption, setSelectedOption] = useState('1'); // Initial selected option
@@ -43,6 +46,9 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
   const [showConfirmPurchase, setConfirmPurchase] = useState(false);
   const [confirmPurchaseHeader, setConfirmPurchaseHeader] = useState("");
   const [confirmPurchaseBody, setConfirmPurchaseBody] = useState("");
+
+  const [showBinanceModal, setShowBinanceModal] = useState(false);
+  const [binanceData, setBinanceData] = useState<{ prepayId: string, qrcodeLink: string, checkoutUrl: string, expireTime: number } | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -88,10 +94,25 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
         }
         break;
 
-      case '2':
-        console.log("bsd");
-        setIsLoading(false);
-        break;
+        case '2':
+  try {
+    const response = await fetch(`https://api.dglive.org/v1/binance/payment-link?nftAddress=${nftAddress}&tokenIds=${tokenIds.join(',')}&buyerAddress=${userAddress}`);
+    const data = await response.json();
+
+    if (data.status === 200 && data.data) {
+      const { prepayId, qrcodeLink, checkoutUrl, expireTime } = data.data;
+      setBinanceData({ prepayId, qrcodeLink, checkoutUrl, expireTime });
+      setShowBinanceModal(true);
+    } else {
+      console.error("Failed to generate Binance payment link");
+    }
+  } catch (error) {
+    console.error("Error fetching Binance payment link:", error);
+  } finally {
+    setIsLoading(false);
+  }
+  break;
+        
     }
   };
 
@@ -199,6 +220,17 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
       {showConfirmPurchase && (
         <ConfirmModal isOpen={showConfirmPurchase} header={confirmPurchaseHeader} body={confirmPurchaseBody} onConfirm={handleBuyConfirm} setShowConfirmModal={setConfirmPurchase} />
       )}
+     {showBinanceModal && binanceData && (
+  <BinanceModal
+    isOpen={showBinanceModal}
+    onClose={() => setShowBinanceModal(false)}
+    imageUrl={binanceData.qrcodeLink}
+    linkUrl={binanceData.checkoutUrl}
+    prepayId={binanceData.prepayId}
+    expireTime={binanceData.expireTime}
+  />
+)}
+
     </>
   );
 };
