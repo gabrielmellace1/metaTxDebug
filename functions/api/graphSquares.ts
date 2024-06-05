@@ -38,7 +38,7 @@ export async function onRequest(context: { env: Env }) {
          const wrappedData = { data: transformedTiles };
 
         // Upload wrapped data to Cloudflare R2
-        const uploadResult = await uploadToR2(context.env.squareblocksr2, 'transformedTiles.json', JSON.stringify(wrappedData));
+        const uploadResult = await uploadToR2(context.env.squareblocksr2, 'transformedTiles.json', JSON.stringify(wrappedData), 'application/json');
         console.log('Upload to R2 result:', uploadResult);
 
         return json({ data: transformedTiles }); // Ensure the returned data is wrapped in { data: ... } as well
