@@ -72,8 +72,9 @@ export default class MainScene extends Phaser.Scene {
 
         this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
             if (this.dragging) {
-                const dx = pointer.x - this.lastPointerPosition.x;
-                const dy = pointer.y - this.lastPointerPosition.y;
+                const dragAmplifier = 1.5; // Increase this value to amplify drag
+                const dx = (pointer.x - this.lastPointerPosition.x) * dragAmplifier;
+                const dy = (pointer.y - this.lastPointerPosition.y) * dragAmplifier;
                 this.cameras.main.scrollX -= dx;
                 this.cameras.main.scrollY -= dy;
                 this.lastPointerPosition.set(pointer.x, pointer.y);
@@ -97,7 +98,8 @@ export default class MainScene extends Phaser.Scene {
     private setupZooming(): void {
         this.input.on('wheel', (pointer: Phaser.Input.Pointer, _: any, _deltaX: number, deltaY: number) => {
             pointer.event.preventDefault();
-            const zoomAmount = deltaY * -0.005;
+            const zoomAmplifier = 0.05; // Increase this value to amplify zoom
+            const zoomAmount = deltaY * -zoomAmplifier;
             this.adjustZoom(zoomAmount);
         });
     
@@ -121,8 +123,9 @@ export default class MainScene extends Phaser.Scene {
                 );
     
                 if (this.lastPinchDistance) {
+                    const zoomAmplifier = 0.01; // Increase this value to amplify pinch-to-zoom
                     let distanceDiff = currentDistance - this.lastPinchDistance;
-                    const zoomAmount = distanceDiff * 0.001;
+                    const zoomAmount = distanceDiff * zoomAmplifier;                    
                     this.adjustZoom(zoomAmount);
                     console.log('Pinching - Current Distance:', currentDistance, 'Zoom Amount:', zoomAmount);
                 }

@@ -14,6 +14,7 @@ import TransferModal from '../Modals/TransferModal';
 import { useNavigate } from 'react-router-dom';
 import useTx from '../../hooks/contracts/useTx';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/auth.context';
 
 type ActionBarProps = {
   userAddress: string | undefined;
@@ -35,6 +36,7 @@ const ActionBar: React.FC<ActionBarProps> = ({ userAddress, selectedTiles, state
   const navigate = useNavigate();
   const txHook = useTx();
   const txChecker = useTxChecker();
+   const { login, isLoggedIn } = useAuth();
 
   // Action buttons
   const [canBuy, setCanBuy] = useState(true);
@@ -232,14 +234,113 @@ const ActionBar: React.FC<ActionBarProps> = ({ userAddress, selectedTiles, state
 
         {/* Button group */}
         <HStack spacing="4">
-          {buttons.buy && <Button colorScheme="blue" isDisabled={!canBuy} onClick={() => setBuyModalOpen(true)}>{t('buy')}</Button>}
-          {buttons.sell && <Button colorScheme="green" isDisabled={!canSell} onClick={() => setSellModalOpen(true)}>{t('sell')}</Button>}
-          {buttons.cancel && <Button colorScheme="red" isDisabled={!canCancel} onClick={() => setCancelModalOpen(true)}>{t('cancel')}</Button>}
-          {buttons.group && <Button colorScheme="purple" isDisabled={!canGroup} onClick={() => setShowConfirmGroup(true)}>{t('group')}</Button>}
-          {buttons.ungroup && <Button colorScheme="orange" isDisabled={!canUnGroup} onClick={() => setShowConfirmUnGroup(true)}>{t('ungroup')}</Button>}
-          {buttons.upload && <Button colorScheme="cyan" isDisabled={!canUpload} onClick={() => handleUploadContent()}>{t('uploadContent')}</Button>}
-          {buttons.transfer && <Button colorScheme="yellow" isDisabled={!canTransfer} onClick={() => setTransferModalOpen(true)}>{t('transfer')}</Button>}
-        </HStack>
+  {buttons.buy && (
+    <Button
+      colorScheme="blue"
+      isDisabled={!canBuy}
+      onClick={() => {
+        if (!isLoggedIn || !userAddress) {
+          login();
+        } else {
+          setBuyModalOpen(true);
+        }
+      }}
+    >
+      {t('buy')}
+    </Button>
+  )}
+  {buttons.sell && (
+    <Button
+      colorScheme="green"
+      isDisabled={!canSell}
+      onClick={() => {
+        if (!isLoggedIn || !userAddress) {
+          login();
+        } else {
+          setSellModalOpen(true);
+        }
+      }}
+    >
+      {t('sell')}
+    </Button>
+  )}
+  {buttons.cancel && (
+    <Button
+      colorScheme="red"
+      isDisabled={!canCancel}
+      onClick={() => {
+        if (!isLoggedIn || !userAddress) {
+          login();
+        } else {
+          setCancelModalOpen(true);
+        }
+      }}
+    >
+      {t('cancel')}
+    </Button>
+  )}
+  {buttons.group && (
+    <Button
+      colorScheme="purple"
+      isDisabled={!canGroup}
+      onClick={() => {
+        if (!isLoggedIn || !userAddress) {
+          login();
+        } else {
+          setShowConfirmGroup(true);
+        }
+      }}
+    >
+      {t('group')}
+    </Button>
+  )}
+  {buttons.ungroup && (
+    <Button
+      colorScheme="orange"
+      isDisabled={!canUnGroup}
+      onClick={() => {
+        if (!isLoggedIn || !userAddress) {
+          login();
+        } else {
+          setShowConfirmUnGroup(true);
+        }
+      }}
+    >
+      {t('ungroup')}
+    </Button>
+  )}
+  {buttons.upload && (
+    <Button
+      colorScheme="cyan"
+      isDisabled={!canUpload}
+      onClick={() => {
+        if (!isLoggedIn || !userAddress) {
+          login();
+        } else {
+          handleUploadContent();
+        }
+      }}
+    >
+      {t('uploadContent')}
+    </Button>
+  )}
+  {buttons.transfer && (
+    <Button
+      colorScheme="yellow"
+      isDisabled={!canTransfer}
+      onClick={() => {
+        if (!isLoggedIn || !userAddress) {
+          login();
+        } else {
+          setTransferModalOpen(true);
+        }
+      }}
+    >
+      {t('transfer')}
+    </Button>
+  )}
+</HStack>
+
       </Flex>
 
       {/* Modals */}

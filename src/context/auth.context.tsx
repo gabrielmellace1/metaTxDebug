@@ -83,7 +83,7 @@ const web3AuthModalParameters = {
       loginMethods: {
         email_passwordless: {
           name: "email_passwordless",
-          showOnModal: false,
+          showOnModal: true,
         },
         sms_passwordless: {
           name: "sms_passwordless",
@@ -116,6 +116,8 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         const user = await _web3auth.getUserInfo();
         setUser(user);
         setProvider(web3authProvider as SafeEventEmitterProvider);
+        setIsMetamask(_web3auth.connectedAdapterName === "metamask");
+        console.log("Adapter on init:", _web3auth.connectedAdapterName);
       }
     } catch (error) {
       console.error("Web3Auth initialization error:", error);
@@ -142,7 +144,6 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   // Detect MetaMask and initialize Web3Auth
   useEffect(() => {
     if (window.ethereum?.isMetaMask) {
-      setIsMetamask(true);
       twitterPixelEvent("tw-om2cf-om2vj"); // Trigger Twitter event if MetaMask is detected
     }
     initWeb3Auth();
@@ -200,6 +201,9 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       const user = await _web3auth.getUserInfo();
       setUser(user);
       twitterPixelEvent("tw-om2cf-om2uj");
+
+      console.log("Adapter:", _web3auth.connectedAdapterName);
+      setIsMetamask(_web3auth.connectedAdapterName === "metamask");
     } catch (error) {
       console.log(error);
     }
