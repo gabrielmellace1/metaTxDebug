@@ -41,7 +41,7 @@ const blastRpcProvider = {
   name: "Blast",
   chainNamespace: CHAIN_NAMESPACES.EIP155,
   chainId: "0x13E31",
-  rpcTarget: "https://rpc.blast.io",
+  rpcTarget: "https://blast-mainnet.infura.io/v3/cefd725b260046f1823aa5ba0c0537e6",
   displayName: "Blast",
   blockExplorerUrl: "https://blastscan.io/",
   ticker: "ETH",
@@ -159,7 +159,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       const web3authProvider = await _web3auth.connect();
       if (!web3authProvider) return;
 
-      setProvider(web3authProvider as SafeEventEmitterProvider);
+      setProvider(web3authProvider as any);
       const user = await _web3auth.getUserInfo();
       setUser(user);
       twitterPixelEvent("tw-om2cf-om2uj");

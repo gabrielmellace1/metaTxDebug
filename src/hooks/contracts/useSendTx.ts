@@ -8,8 +8,8 @@ const useSendTx = () => {
   const sendMetaTx = metaTx();
 
   const sendTransaction = async (configName: string, functionName: string, params: any[]) => {
-    const updatedSigner = await getUpdatedSigner();
-    console.log("Updated signer obtained after network switch:", updatedSigner);
+    //const updatedSigner = await getUpdatedSigner();
+    //console.log("Updated signer obtained after network switch:", updatedSigner);
 
     if (isMetaMask) {
       console.log("Using sendTx for MetaMask...");

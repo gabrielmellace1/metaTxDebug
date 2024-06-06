@@ -40,8 +40,9 @@ async function loadTiles(setAtlasLoaded: (loaded: boolean) => void) {
   const etag = localStorage.getItem(etagKey) || '';
 
   try {
-    console.log('Making HEAD request to check ETag...');
-    const headResponse = await fetch(jsonUrl, { method: 'HEAD' });
+    // Add timestamp to the URL to force the browser to bypass the cache for the HEAD request
+    const timestamp = new Date().getTime();
+    const headResponse = await fetch(`${jsonUrl}?_=${timestamp}`, { method: 'HEAD' });
     const newEtag = headResponse.headers.get('ETag');
 
     if (newEtag !== etag && newEtag) {
@@ -49,12 +50,15 @@ async function loadTiles(setAtlasLoaded: (loaded: boolean) => void) {
       localStorage.setItem(etagKey, newEtag);
 
       const dataResponse = await fetch(jsonUrl);
-      const data = await dataResponse.json();
-
-      localStorage.setItem(cachedDataKey, JSON.stringify(data));
-      atlas = data.data as Record<string, AtlasTile>;
-      console.log(atlas);
-      setAtlasLoaded(true);
+      if (dataResponse.ok) {
+        const data = await dataResponse.json();
+        localStorage.setItem(cachedDataKey, JSON.stringify(data));
+        atlas = data.data as Record<string, AtlasTile>;
+        console.log(atlas);
+        setAtlasLoaded(true);
+      } else {
+        console.error('Failed to fetch new data:', dataResponse.statusText);
+      }
     } else {
       console.log('ETag is the same, using cached data...');
       const cachedData = localStorage.getItem(cachedDataKey);
@@ -63,6 +67,8 @@ async function loadTiles(setAtlasLoaded: (loaded: boolean) => void) {
         atlas = data.data as Record<string, AtlasTile>;
         console.log(atlas);
         setAtlasLoaded(true);
+      } else {
+        console.error('No cached data available');
       }
     }
   } catch (error) {
@@ -74,9 +80,12 @@ async function loadTiles(setAtlasLoaded: (loaded: boolean) => void) {
       atlas = data.data as Record<string, AtlasTile>;
       console.log(atlas);
       setAtlasLoaded(true);
+    } else {
+      console.error('No cached data available in case of error');
     }
   }
 }
+
 
 function isSelected(x: number, y: number) {
   return selected.some((coord) => coord.x === x && coord.y === y);

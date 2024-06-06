@@ -26,14 +26,14 @@ const metaTx = () => {
 
         try {
 
-            await provider?.request({
-                method: "wallet_switchEthereumChain",
-                params: [
-                  {
-                    chainId: "0x13E31",
-                  },
-                ],
-              });
+            // await provider?.request({
+            //     method: "wallet_switchEthereumChain",
+            //     params: [
+            //       {
+            //         chainId: "0x13E31",
+            //       },
+            //     ],
+            //   });
 
             
 
@@ -108,7 +108,7 @@ const metaTx = () => {
                     );
                 } else {
                     signature = await signer2.provider.send("eth_signTypedData_v4", [
-                        userAddress,
+                        signerAddress,
                         dataToSign,
                     ]);
                 }
@@ -117,7 +117,7 @@ const metaTx = () => {
 
                 // Fallback to using eth_signTypedData (legacy) if v4 fails
                 signature = await signer2.provider.send("eth_signTypedData", [
-                    userAddress,
+                    signerAddress,
                     dataToSign,
                 ]);
             }
