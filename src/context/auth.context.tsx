@@ -30,12 +30,13 @@ const AuthContext = createContext<AuthContextInterface>({
   provider: null,
   signer: null,
   getUpdatedSigner: async () => null,
-  isMetaMask: false
+  isMetaMask: false,
 });
 
 export const useAuth = () => useContext(AuthContext);
 
-const clientId = "BHdopYoGj2lbGUaZGHLbfov4nbX7nQTuR_-aCTn6WnMTkGPnIwvkIaxmyyfFlkxNPLJAe_l6JzFo88I6EXFMAwI";
+const clientId =
+  "BHdopYoGj2lbGUaZGHLbfov4nbX7nQTuR_-aCTn6WnMTkGPnIwvkIaxmyyfFlkxNPLJAe_l6JzFo88I6EXFMAwI";
 
 const blastRpcProvider = {
   name: "Blast",
@@ -54,8 +55,9 @@ const metamaskAdapter = new MetamaskAdapter({
   web3AuthNetwork: "sapphire_mainnet",
   chainConfig: {
     chainNamespace: CHAIN_NAMESPACES.EIP155,
-    chainId: "0x1",
-    rpcTarget: "https://rpc.ankr.com/eth",
+    chainId: "0x13E31",
+    rpcTarget: "https://rpc.blast.io",
+    blockExplorerUrl: "https://blastscan.io/",
   },
 });
 
@@ -98,10 +100,16 @@ const web3AuthModalParameters = {
   },
 };
 
-export const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthContextProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [isMetaMask, setIsMetamask] = useState<boolean>(false);
   const [userAddress, setUserAddress] = useState<string | undefined>(undefined);
-  const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(null);
+  const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(
+    null
+  );
   const [user, setUser] = useState<any | null>(null);
   const [signature, setSignature] = useState<any | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -121,10 +129,12 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   useEffect(() => {
     const setSignerAndAddress = async () => {
       if (provider) {
-        const etherProvider = new ethers.providers.Web3Provider(provider as any);
+        const etherProvider = new ethers.providers.Web3Provider(
+          provider as any
+        );
         const signer = etherProvider.getSigner();
         const address = await signer.getAddress();
-        console.log('Signer address set:', address); // Log address
+        console.log("Signer address set:", address); // Log address
         setUserAddress(address);
         setSigner(signer);
         setIsLoggedIn(true);
@@ -195,7 +205,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         provider,
         signer,
         getUpdatedSigner,
-        isMetaMask
+        isMetaMask,
       }}
     >
       {children}
