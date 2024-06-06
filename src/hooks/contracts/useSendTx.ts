@@ -3,13 +3,11 @@ import metaTx from './useMetaTx';
 import { useAuth } from '../../context/auth.context';
 
 const useSendTx = () => {
-  const { isMetaMask, switchNetworks, getUpdatedSigner } = useAuth();
+  const { isMetaMask, getUpdatedSigner } = useAuth();
   const sendTx = useTx();
   const sendMetaTx = metaTx();
 
   const sendTransaction = async (configName: string, functionName: string, params: any[]) => {
-    console.log("Switching network to Blast...");
-    await switchNetworks("blast");
     const updatedSigner = await getUpdatedSigner();
     console.log("Updated signer obtained after network switch:", updatedSigner);
 

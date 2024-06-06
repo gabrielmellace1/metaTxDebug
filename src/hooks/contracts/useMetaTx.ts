@@ -5,7 +5,7 @@ import {  getContractConfig } from './contractConfigs';
 
 
 const metaTx = () => {
-    const { provider, userAddress,getUpdatedSigner,isMetaMask,signer } = useAuth();
+    const { provider, userAddress,isMetaMask,signer } = useAuth();
 
 
     if (!provider || !userAddress || !signer) {
@@ -37,8 +37,8 @@ const metaTx = () => {
 
             
 
-            let currentSigner = await getUpdatedSigner();
-            if (!currentSigner) throw new Error("Failed to get updated signer");
+            //let currentSigner = await getUpdatedSigner();
+           // if (!currentSigner) throw new Error("Failed to get updated signer");
 
             //const newProvider = new ethers.providers.Web3Provider(provider);
             //await newProvider.send("eth_requestAccounts", []);
@@ -82,17 +82,45 @@ const metaTx = () => {
              });
             }
             else {
+                const etherProvider = new ethers.providers.Web3Provider(provider);
+            const signer2 = etherProvider.getSigner();
+            const signerAddress = await signer2.getAddress();
 
-                
-                const etherProvider = new ethers.providers.Web3Provider(
-                    provider
-                  );
-                  const signer2 = etherProvider.getSigner();
-                  //const accountAddress = await signerNew.getAddress();
-                  signature = await signer2.provider.send("eth_signTypedData_v4", [
+            console.log('Signer address:', signerAddress);
+
+            // Ensure the signer address is not null
+            if (!signerAddress) {
+                throw new Error("Signer address is null");
+            }
+
+            // Logging the provider to ensure it's correctly initialized
+            console.log('Signer provider:', signer2.provider);
+
+            try {
+                // Attempt to use signer2._signTypedData directly if available
+                if (signer2._signTypedData) {
+                    signature = await signer2._signTypedData(
+                        config.domain,
+                        {
+                            MetaTransaction: config.types.MetaTransaction,
+                        },
+                        message
+                    );
+                } else {
+                    signature = await signer2.provider.send("eth_signTypedData_v4", [
+                        userAddress,
+                        dataToSign,
+                    ]);
+                }
+            } catch (innerError) {
+                console.error('Inner error during signing:', innerError);
+
+                // Fallback to using eth_signTypedData (legacy) if v4 fails
+                signature = await signer2.provider.send("eth_signTypedData", [
                     userAddress,
                     dataToSign,
-                  ]);
+                ]);
+            }
             }
           
 

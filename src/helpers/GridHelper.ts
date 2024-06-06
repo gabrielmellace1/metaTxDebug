@@ -19,8 +19,8 @@ export const gridProps = {
   x: 0,
   y: 0,
   className: 'react-tile-map',
-  initialX: 0,
-  initialY: 0,
+  initialX: 250,
+  initialY: 250,
   size: 14,
   zoom: 1,
   minSize: 7,
@@ -29,11 +29,11 @@ export const gridProps = {
   maxX: 650,
   minY: -150,
   maxY: 650,
-  panX: 1300,
-  panY: 250,
+  panX: 0,
+  panY: 0,
   padding: 4,
   isDraggable: true,
-  withZoomControls: false,
+  withZoomControls: true,
   layers: []
 }
 

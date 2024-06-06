@@ -16,7 +16,6 @@ interface AuthContextInterface {
   signature?: string;
   provider?: SafeEventEmitterProvider | null;
   signer?: ethers.Signer | null;
-  switchNetworks: (_network: string) => Promise<void>;
   getUpdatedSigner: () => Promise<ethers.Signer | null>;
   isMetaMask: boolean;
 }
@@ -30,7 +29,6 @@ const AuthContext = createContext<AuthContextInterface>({
   signature: undefined,
   provider: null,
   signer: null,
-  switchNetworks: async () => {},
   getUpdatedSigner: async () => null,
   isMetaMask: false
 });
@@ -40,7 +38,7 @@ export const useAuth = () => useContext(AuthContext);
 const clientId = "BHdopYoGj2lbGUaZGHLbfov4nbX7nQTuR_-aCTn6WnMTkGPnIwvkIaxmyyfFlkxNPLJAe_l6JzFo88I6EXFMAwI";
 
 const blastRpcProvider = {
-  name:"Blast",
+  name: "Blast",
   chainNamespace: CHAIN_NAMESPACES.EIP155,
   chainId: "0x13E31",
   rpcTarget: "https://rpc.blast.io",
@@ -60,7 +58,6 @@ const metamaskAdapter = new MetamaskAdapter({
     rpcTarget: "https://rpc.ankr.com/eth",
   },
 });
-
 
 const ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
   config: {
@@ -127,6 +124,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         const etherProvider = new ethers.providers.Web3Provider(provider as any);
         const signer = etherProvider.getSigner();
         const address = await signer.getAddress();
+        console.log('Signer address set:', address); // Log address
         setUserAddress(address);
         setSigner(signer);
         setIsLoggedIn(true);
@@ -136,7 +134,6 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       setSignerAndAddress();
     }
   }, [provider]);
-
 
   // Detect MetaMask
   useEffect(() => {
@@ -151,36 +148,6 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       return etherProvider.getSigner();
     }
     return null;
-  };
-
-  const switchNetworks = async (_network: string) => {
-    console.log("Trying to switch network");
-    if (!provider) return;
-    try {
-      const chainConfig = blastRpcProvider;
-      if (isMetaMask) {
-        const metaProvider = new ethers.providers.Web3Provider(window.ethereum);
-        const network = await metaProvider.getNetwork();
-        if (network.chainId !== parseInt(chainConfig.chainId, 16)) {
-          await metaProvider.send("wallet_switchEthereumChain", [{ chainId: chainConfig.chainId }]);
-        }
-        const newSigner = metaProvider.getSigner();
-        setSigner(newSigner);
-        setProvider(metaProvider.provider as unknown as SafeEventEmitterProvider);
-      } else {
-        const privateKey = await provider.request<string, string>({ method: "eth_private_key" });
-        if (!privateKey) return;
-
-        const blastPrivateKeyProvider = new EthereumPrivateKeyProvider({ config: { chainConfig } });
-        await blastPrivateKeyProvider.setupProvider(privateKey);
-        const newProvider = new ethers.providers.Web3Provider(blastPrivateKeyProvider.provider as any);
-        const newSigner = newProvider.getSigner();
-        setSigner(newSigner);
-        setProvider(newProvider.provider as unknown as SafeEventEmitterProvider);
-      }
-    } catch (error) {
-      console.error("Failed to switch network:", error);
-    }
   };
 
   // Login with Web3Auth
@@ -227,7 +194,6 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         signature,
         provider,
         signer,
-        switchNetworks,
         getUpdatedSigner,
         isMetaMask
       }}

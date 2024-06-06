@@ -21,8 +21,6 @@ const metaTx = () => {
     
     const ETHprovider = new ethers.providers.Web3Provider(provider);
 
-    
-
 
 
     const sendMetaTX = async (configName: string, functionName: string, params: any[]) => {
@@ -36,23 +34,8 @@ const metaTx = () => {
 
         try {
 
-            //console.log(provider);
-
-            
-            
-            //console.log(ETHprovider);
-            
-            //const ETHSigner = ETHprovider.getSigner();
-
-
-
-            // Polygon confg
-            
-
-
-            // Load contract
+           
             const contract = new ethers.Contract(config.address, config.abi, POLSigner);
-            // Get nonce
             const nonce = await contract.getNonce(userAddress); // Ensure your contract has such a function
          
         

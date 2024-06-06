@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/auth.context';
 import BinanceModal from './BinanceModal';
 import useSendTx from '../../hooks/contracts/useSendTx';
+import CoinbaseModal from './CoinbaseModal';
 
 type BuyModalProps = {
   isOpen: boolean;
@@ -51,13 +52,19 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
   const [showBinanceModal, setShowBinanceModal] = useState(false);
   const [binanceData, setBinanceData] = useState<{ prepayId: string, qrcodeLink: string, checkoutUrl: string, expireTime: number } | null>(null);
 
+  const [showCoinbaseModal, setShowCoinbaseModal] = useState(false);
+  const [coinbaseData, setCoinbaseData] = useState<{ code: string, hosted_url: string, expireTime: string } | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
 
   const handleOptionChange = (value: string) => setSelectedOption(value);
 
   const handleBuyClick = async () => {
     setIsLoading(true);
+
+    if (marketplace && await marketplace.areOrdersActive(nftAddress, tokenIds)) {
     switch (selectedOption) {
+
       case '1':
         const balance = await bag?.getBalance();
         const allowance = await bag?.getAllowance(addresses.marketplace);
@@ -73,18 +80,10 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
           setIsLoading(false);
           return;
         } else {
-          if (totalCost.lt(allowance)) {
-            if (marketplace && await marketplace.areOrdersActive(nftAddress, tokenIds)) {
+          if (totalCost.lt(allowance)) { 
               setConfirmPurchaseHeader(t("confirmPurchase"));
               setConfirmPurchaseBody(t("confirmPurchaseBody", { totalCost: ethers.utils.formatEther(totalCost.toString()) }));
-              setConfirmPurchase(true);
-            } else {
-              setInfoModalHeader(t("someElementsNotAvailable"));
-              setInfoModalBody(t("someElementsNotAvailableBody"));
-              setShowInfoModal(true);
-              setIsLoading(false);
-              return;
-            }
+              setConfirmPurchase(true);     
           } else {
             setConfirmModalHeader(t("spendingAuthorizationRequired"));
             setConfirmModalBody(t("spendingAuthorizationBody"));
@@ -113,8 +112,37 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
     setIsLoading(false);
   }
   break;
-        
-    }
+
+        case '3':
+              try {
+                const response = await fetch(`https://api.dglive.org/v1/coinbase/payment-link?nftAddress=${nftAddress}&tokenIds=${tokenIds.join(',')}&buyerAddress=${userAddress}`);
+                const data = await response.json();
+
+                if (data.status === 200 && data.data) {
+                  const { code, hosted_url, expires_at } = data.data;
+                  setCoinbaseData({ code, hosted_url, expireTime: expires_at });
+                  setShowCoinbaseModal(true);
+                } else {
+                  console.error("Failed to generate Coinbase payment link");
+                }
+              } catch (error) {
+                console.error("Error fetching Coinbase payment link:", error);
+              } finally {
+                setIsLoading(false);
+              }
+              break;
+              
+          }
+          
+      }
+
+      else {
+        setInfoModalHeader(t("someElementsNotAvailable"));
+        setInfoModalBody(t("someElementsNotAvailableBody"));
+        setShowInfoModal(true);
+        setIsLoading(false);
+        return;
+      }
   };
 
   const handleAllowanceConfirm = async () => {
@@ -203,6 +231,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
               <VStack spacing={2}>
                 <Radio value="1">{t("bag")}</Radio>
                 <Radio value="2">{t("binance")}</Radio>
+                <Radio value="3">Coinbase</Radio>
                 {/* Add more Radio options as needed */}
               </VStack>
             </RadioGroup>
@@ -231,7 +260,15 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
     expireTime={binanceData.expireTime}
   />
 )}
-
+{showCoinbaseModal && coinbaseData && (
+        <CoinbaseModal
+          isOpen={showCoinbaseModal}
+          onClose={() => setShowCoinbaseModal(false)}
+          linkUrl={coinbaseData.hosted_url}
+          code={coinbaseData.code}
+          expireTime={coinbaseData.expireTime}
+        />
+      )}
     </>
   );
 };

@@ -11,6 +11,7 @@ import { AtlasTile,AtlasToken } from "../../types/atlasTypes";
 import Loading from '../Utils/Loading';
 import { Flex } from "@chakra-ui/react";
 import InfoSidebar from "./InfoSidebar";
+import { toast } from "react-toastify";
 
 // Change the type of stateSelected to boolean and remove the incorrect usage as a function
 interface GridProps {
@@ -141,6 +142,23 @@ const Grid: React.FC<GridProps> = ({userAddress, setSelectedTiles,stateSelected,
           tokenIdsSelected.splice(existingTokenIndex, 1);
           selected = [];
         } else {
+
+          
+          if(tokenIdsSelected.length>20) {
+            
+            toast("Too many items selected, please merge your states first"), {
+              position: "bottom-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+            };
+              return;
+          }
+
           tokenIdsSelected.push({ tokenId: tile.tokenId, forSale: tile.forSale, price: tile.price, owner: tile.owner });
           selected = [{ x, y }];
         }
@@ -169,6 +187,20 @@ const Grid: React.FC<GridProps> = ({userAddress, setSelectedTiles,stateSelected,
           const index = tokenIdsSelected.findIndex(t => t.tokenId === tile.tokenId);
           if (index > -1) tokenIdsSelected.splice(index, 1);
         } else {
+          if(tokenIdsSelected.length>100) {
+            
+            toast("Too many items selected, please create states for larger selections"), {
+              position: "bottom-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+            };
+              return;
+          }
           tokenIdsSelected.push({ tokenId: tile.tokenId, forSale: tile.forSale, price: tile.price, owner: tile.owner });
           selected.push({ x, y });
         }
