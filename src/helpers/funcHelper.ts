@@ -21,3 +21,20 @@ export const twitterPixelEvent = (eventId: string, params: { [key: string]: any 
     document.head.appendChild(script);
   };
   
+
+  export function refreshCache() {
+    const endpoint = 'https://squares.town/api/graphSquares';
+  
+    // Using fetch without await for fire-and-forget
+    fetch(endpoint, { method: 'POST' })
+      .then(response => {
+        if (!response.ok) {
+          console.error('Error triggering backend update:', response.statusText);
+        } else {
+          console.log('Backend update triggered successfully');
+        }
+      })
+      .catch(error => {
+        console.error('Error triggering backend update:', error);
+      });
+  }

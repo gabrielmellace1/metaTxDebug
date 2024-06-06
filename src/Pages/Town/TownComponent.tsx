@@ -81,6 +81,64 @@ class TownComponent extends Component<Props,State> {
 
 
   };
+
+  async fetchSquaresData() {
+    const jsonUrl = 'https://pub-7259634f7e994e1e8a46cf6cfaea5881.r2.dev/transformedTiles.json';
+    const etagKey = 'squaresDataETag';
+    const cachedDataKey = 'cachedSquaresData';
+  
+    const etag = localStorage.getItem(etagKey) || '';
+  
+    try {
+      console.log('Making HEAD request to check ETag...');
+      const headResponse = await fetch(jsonUrl, { method: 'HEAD' });
+      const newEtag = headResponse.headers.get('ETag');
+  
+      if (newEtag !== etag && newEtag) {
+        console.log('ETag has changed, fetching new data...');
+        localStorage.setItem(etagKey, newEtag);
+  
+        const dataResponse = await fetch(jsonUrl);
+        const data = await dataResponse.json();
+  
+        localStorage.setItem(cachedDataKey, JSON.stringify(data));
+  
+        const squares: AtlasTile[] = Object.values(data.data) as AtlasTile[];
+        const clickableSquares: AtlasTile[] = squares.filter((square: AtlasTile) => square.clickableURL !== null);
+  
+        this.setState({ clickableSquares }, () => {
+          console.log('Clickable Squares:', this.state.clickableSquares);
+        });
+      } else {
+        console.log('ETag is the same, using cached data...');
+        const cachedData = localStorage.getItem(cachedDataKey);
+        if (cachedData) {
+          const data = JSON.parse(cachedData);
+          const squares: AtlasTile[] = Object.values(data.data) as AtlasTile[];
+          const clickableSquares: AtlasTile[] = squares.filter((square: AtlasTile) => square.clickableURL !== null);
+  
+          this.setState({ clickableSquares }, () => {
+            console.log('Clickable Squares:', this.state.clickableSquares);
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching squares data:', error);
+  
+      const cachedData = localStorage.getItem(cachedDataKey);
+      if (cachedData) {
+        const data = JSON.parse(cachedData);
+        const squares: AtlasTile[] = Object.values(data.data) as AtlasTile[];
+        const clickableSquares: AtlasTile[] = squares.filter((square: AtlasTile) => square.clickableURL !== null);
+  
+        this.setState({ clickableSquares }, () => {
+          console.log('Clickable Squares:', this.state.clickableSquares);
+        });
+      }
+    }
+  }
+  
+  
   
   async checkForNewImage() {
     const baseUrl = 'https://pub-7259634f7e994e1e8a46cf6cfaea5881.r2.dev/cryptowall.png';
@@ -169,20 +227,7 @@ render() {
 }
 
 
-async fetchSquaresData() {
-  try {
-    const response = await fetch('https://squares.town/api/graphSquares');
-    const data = await response.json();
-    const squares: AtlasTile[] = Object.values(data.data) as AtlasTile[];
-    const clickableSquares: AtlasTile[] = squares.filter((square: AtlasTile) => square.clickableURL !== null);
 
-    this.setState({ clickableSquares }, () => {
-      console.log('Clickable Squares:', this.state.clickableSquares);
-    });
-  } catch (error) {
-    console.error('Error fetching squares data:', error);
-  }
-}
 
 
 startRandomNotification = () => {

@@ -8,9 +8,8 @@ import useMarketplace from '../../hooks/contracts/useMarketplace';
 import useSquare from '../../hooks/contracts/useSquare';
 import useStateContract from '../../hooks/contracts/useState';
 import { addresses } from '../../hooks/contracts/contractConfigs';
-import useTx from '../../hooks/contracts/useTx';
 import { useTranslation } from 'react-i18next';
-import metaTx from '../../hooks/contracts/useMetaTx';
+import useSendTx from '../../hooks/contracts/useSendTx';
 
 type SellModalProps = {
   isOpen: boolean;
@@ -21,8 +20,7 @@ type SellModalProps = {
 
 const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateSelected }) => {
   const { t } = useTranslation();
-  const txHook = useTx();
-  const meta = metaTx();
+  const sendTx = useSendTx();
   const txChecker = useTxChecker();
   const marketplace = useMarketplace();
   const square = useSquare();
@@ -71,7 +69,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
         }
 
         try {
-          const tx = await meta('marketplace', 'sell', [nftAddress, tokenIds, pricesToSend]);
+          const tx = await sendTx('marketplace', 'sell', [nftAddress, tokenIds, pricesToSend]);
           setInfoModalHeader(t("processingSell"));
           setInfoModalBody(t("processingSellBody", { tx }));
           setApproveSell(false);
@@ -111,7 +109,7 @@ const SellModal: React.FC<SellModalProps> = ({ isOpen, onClose, tokenIds, stateS
     const activeContract = stateSelected ? 'state' : 'square';
 
     try {
-      const tx = await txHook(activeContract, 'setApprovalForAll', [addresses.marketplace, 1]);
+      const tx = await sendTx(activeContract, 'setApprovalForAll', [addresses.marketplace, 1]);
       setInfoModalHeader(t("processingAuthorization"));
       setInfoModalBody(t("processingSellBody", { tx }));
       setApproveSell(false);

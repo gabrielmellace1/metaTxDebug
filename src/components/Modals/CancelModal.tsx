@@ -4,8 +4,9 @@ import InformationModal from './InformationModal';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import useMarketplace from '../../hooks/contracts/useMarketplace';
 import { addresses } from '../../hooks/contracts/contractConfigs';
-import useTx from '../../hooks/contracts/useTx';
+
 import { useTranslation } from 'react-i18next';
+import useSendTx from '../../hooks/contracts/useSendTx';
 
 type CancelModalProps = {
   isOpen: boolean;
@@ -16,9 +17,11 @@ type CancelModalProps = {
 
 const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, tokenIds, stateSelected }) => {
   const { t } = useTranslation();
-  const txHook = useTx();
+
   const txChecker = useTxChecker();
   const marketplace = useMarketplace();
+  const sendTx = useSendTx();
+  
   let nftAddress = stateSelected ? addresses.state : addresses.square;
 
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -43,7 +46,7 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, tokenIds, st
         return;
       }
       try {
-        const tx = await txHook('marketplace', 'cancel', [nftAddress, tokenIds]);
+        const tx = await sendTx('marketplace', 'cancel', [nftAddress, tokenIds]);
         console.log("Tx is:" + tx);
         setInfoModalHeader(t("processingCancel"));
         setInfoModalBody(t("processingCancelBody", { tx }));

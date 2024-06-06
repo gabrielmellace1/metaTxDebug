@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, VStack, Text, Button, Input, Spinner } from '@chakra-ui/react';
 import InformationModal from './InformationModal';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
-import useTx from '../../hooks/contracts/useTx';
 import { useTranslation } from 'react-i18next';
+import useSendTx from '../../hooks/contracts/useSendTx';
 
 type TransferModalProps = {
   isOpen: boolean;
@@ -14,7 +14,7 @@ type TransferModalProps = {
 
 const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose, tokenIds, stateSelected }) => {
   const { t } = useTranslation();
-  const txHook = useTx();
+  const sendTx = useSendTx();
   const txChecker = useTxChecker();
 
   let contract = stateSelected ? 'state' : 'square';
@@ -32,7 +32,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose, tokenIds
   const handleTransferClick = async () => {
     setIsLoading(true);
     try {
-      const tx = await txHook(contract, 'batchTransferFrom', [address, tokenIds]);
+      const tx = await sendTx(contract, 'batchTransferFrom', [address, tokenIds]);
       console.log("Tx is:" + tx);
 
       setInfoModalHeader(t("processingTransfer"));

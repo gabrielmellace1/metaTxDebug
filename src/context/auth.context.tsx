@@ -18,6 +18,7 @@ interface AuthContextInterface {
   signer?: ethers.Signer | null;
   switchNetworks: (_network: string) => Promise<void>;
   getUpdatedSigner: () => Promise<ethers.Signer | null>;
+  isMetaMask: boolean;
 }
 
 const AuthContext = createContext<AuthContextInterface>({
@@ -31,6 +32,7 @@ const AuthContext = createContext<AuthContextInterface>({
   signer: null,
   switchNetworks: async () => {},
   getUpdatedSigner: async () => null,
+  isMetaMask: false
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -38,6 +40,7 @@ export const useAuth = () => useContext(AuthContext);
 const clientId = "BHdopYoGj2lbGUaZGHLbfov4nbX7nQTuR_-aCTn6WnMTkGPnIwvkIaxmyyfFlkxNPLJAe_l6JzFo88I6EXFMAwI";
 
 const blastRpcProvider = {
+  name:"Blast",
   chainNamespace: CHAIN_NAMESPACES.EIP155,
   chainId: "0x13E31",
   rpcTarget: "https://rpc.blast.io",
@@ -57,6 +60,7 @@ const metamaskAdapter = new MetamaskAdapter({
     rpcTarget: "https://rpc.ankr.com/eth",
   },
 });
+
 
 const ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
   config: {
@@ -133,6 +137,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     }
   }, [provider]);
 
+
   // Detect MetaMask
   useEffect(() => {
     if (window.ethereum?.isMetaMask) {
@@ -141,11 +146,6 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   }, []);
 
   const getUpdatedSigner = async (): Promise<ethers.Signer | null> => {
-    if (isMetaMask && window.ethereum) {
-      const metaProvider = new ethers.providers.Web3Provider(window.ethereum);
-      await metaProvider.send("eth_requestAccounts", []); // Request accounts to ensure connection
-      return metaProvider.getSigner();
-    }
     if (provider) {
       const etherProvider = new ethers.providers.Web3Provider(provider as any);
       return etherProvider.getSigner();
@@ -154,6 +154,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   };
 
   const switchNetworks = async (_network: string) => {
+    console.log("Trying to switch network");
     if (!provider) return;
     try {
       const chainConfig = blastRpcProvider;
@@ -196,7 +197,6 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       setUser(user);
       twitterPixelEvent("tw-om2cf-om2uj");
 
-      console.log("Adapter:", _web3auth.connectedAdapterName);
       setIsMetamask(_web3auth.connectedAdapterName === "metamask");
     } catch (error) {
       console.log(error);
@@ -229,6 +229,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         signer,
         switchNetworks,
         getUpdatedSigner,
+        isMetaMask
       }}
     >
       {children}

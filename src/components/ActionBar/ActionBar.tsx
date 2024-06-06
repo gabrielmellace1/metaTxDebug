@@ -12,9 +12,9 @@ import useTxChecker from '../../hooks/contracts/useTxChecker';
 import InformationModal from '../Modals/InformationModal';
 import TransferModal from '../Modals/TransferModal';
 import { useNavigate } from 'react-router-dom';
-import useTx from '../../hooks/contracts/useTx';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/auth.context';
+import useSendTx from '../../hooks/contracts/useSendTx';
 
 type ActionBarProps = {
   userAddress: string | undefined;
@@ -34,7 +34,8 @@ type ActionBarProps = {
 const ActionBar: React.FC<ActionBarProps> = ({ userAddress, selectedTiles, stateSelected, buttons }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const txHook = useTx();
+
+  const sendTx = useSendTx();
   const txChecker = useTxChecker();
    const { login, isLoggedIn } = useAuth();
 
@@ -138,10 +139,10 @@ const ActionBar: React.FC<ActionBarProps> = ({ userAddress, selectedTiles, state
       let tx;
 
       if(stateSelected) {
-         tx = await txHook('state', 'mergeStates', [sortedTokenIds]);
+         tx = await sendTx('state', 'mergeStates', [sortedTokenIds]);
       }
       else {
-         tx = await txHook('state', 'mintState', [sortedTokenIds]);
+         tx = await sendTx('state', 'mintState', [sortedTokenIds]);
       }
       
 
@@ -179,7 +180,7 @@ const ActionBar: React.FC<ActionBarProps> = ({ userAddress, selectedTiles, state
 
   const handleUnGroupConfirm = async () => {
     try {
-      const tx = await txHook('state', 'deleteState', [tokenIds[0]]);
+      const tx = await sendTx('state', 'deleteState', [tokenIds[0]]);
 
       console.log("Tx is:" + tx);
 

@@ -8,11 +8,12 @@ import { addresses } from '../../hooks/contracts/contractConfigs';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import useMarketplace from '../../hooks/contracts/useMarketplace';
 import { twitterPixelEvent } from '../../helpers/funcHelper';
-import useTx from '../../hooks/contracts/useTx';
+
 import { useTranslation } from 'react-i18next';
-import metaTx from '../../hooks/contracts/useMetaTx';
+
 import { useAuth } from '../../context/auth.context';
 import BinanceModal from './BinanceModal';
+import useSendTx from '../../hooks/contracts/useSendTx';
 
 type BuyModalProps = {
   isOpen: boolean;
@@ -25,8 +26,8 @@ type BuyModalProps = {
 const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenIds, stateSelected }) => {
   const { t } = useTranslation();
   const bag = useBAG();
-  const txHook = useTx();
-  const meta = metaTx();
+
+  const sendTx = useSendTx();
   const txChecker = useTxChecker();
   const marketplace = useMarketplace();
   let { userAddress } = useAuth();
@@ -119,7 +120,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
   const handleAllowanceConfirm = async () => {
     setIsLoading(true);
     try {
-      const tx = await txHook('bag', 'approve', [addresses.marketplace, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]);
+      const tx = await sendTx('bag', 'approve', [addresses.marketplace, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]);
       setInfoModalHeader(t("processingAuthorization"));
       setInfoModalBody(t("authorizationSuccessfulBody", { tx }));
       setShowConfirmModal(false);
@@ -153,7 +154,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ isOpen, onClose, itemCosts, tokenId
     setIsLoading(true);
     try {
       const itemCostsString = itemCosts.map(num => num.toString());
-      const tx = await meta('marketplace', 'buy', [nftAddress, tokenIds, itemCostsString]);
+      const tx = await sendTx('marketplace', 'buy', [nftAddress, tokenIds, itemCostsString]);
 
       setShowConfirmModal(false);
       setShowInfoModal(true);

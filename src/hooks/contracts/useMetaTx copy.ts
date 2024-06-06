@@ -1,19 +1,29 @@
 
 import { ethers } from 'ethers';
 import { useAuth } from '../../context/auth.context'; // Adjust the import path to your AuthContext
-import {  getContractConfig } from './contractConfigs';
+import { blastRPC, getContractConfig } from './contractConfigs';
+import { useMemo } from 'react';
 
 
 const metaTx = () => {
-    const { provider, userAddress,getUpdatedSigner,isMetaMask,signer } = useAuth();
+    const { provider, userAddress } = useAuth();
 
+    const POLProvider = useMemo(() => {
+        return new ethers.providers.JsonRpcProvider(blastRPC);
+      }, []);
 
-    if (!provider || !userAddress || !signer) {
+    var POLSigner = POLProvider.getSigner(userAddress);
+
+    if (!provider || !userAddress) {
         console.warn("Provider or user address not found");
         return async () => { throw new Error("Provider or user address not found"); };
     }
     
+    const ETHprovider = new ethers.providers.Web3Provider(provider);
+
     
+
+
 
     const sendMetaTX = async (configName: string, functionName: string, params: any[]) => {
        
@@ -26,31 +36,28 @@ const metaTx = () => {
 
         try {
 
-            await provider?.request({
-                method: "wallet_switchEthereumChain",
-                params: [
-                  {
-                    chainId: "0x13E31",
-                  },
-                ],
-              });
+            //console.log(provider);
 
             
-
-            let currentSigner = await getUpdatedSigner();
-            if (!currentSigner) throw new Error("Failed to get updated signer");
-
-            //const newProvider = new ethers.providers.Web3Provider(provider);
-            //await newProvider.send("eth_requestAccounts", []);
-
-            //const signerNew = newProvider.getSigner();
-           // const accountAddress = await signerNew.getAddress();
-
-            const contract = new ethers.Contract(config.address, config.abi, signer);
             
+            //console.log(ETHprovider);
+            
+            //const ETHSigner = ETHprovider.getSigner();
+
+
+
+            // Polygon confg
+            
+
+
+            // Load contract
+            const contract = new ethers.Contract(config.address, config.abi, POLSigner);
+            // Get nonce
             const nonce = await contract.getNonce(userAddress); // Ensure your contract has such a function
          
         
+
+
             const functionCallHex = await contract.populateTransaction[functionName](...params);
 
             const message = {
@@ -71,30 +78,15 @@ const metaTx = () => {
             
            console.log(dataToSign);
 
-           let signature;
+            // Requesting a signature
+            // This one works for metamask, but not for web3auth
+             //const signature = await ETHSigner._signTypedData(config.domain, config.types, message);
 
-           if(isMetaMask) {
-            signature =  await window.ethereum.request({
-                 method: "eth_signTypedData_v4",
-                 params: [userAddress, dataToSign],
-                 jsonrpc: "2.0",
-                 id: 999999999999,
-             });
-            }
-            else {
+            
+           const signature = await requestUserSignature(ETHprovider,dataToSign, 'metamask');
 
-                
-                const etherProvider = new ethers.providers.Web3Provider(
-                    provider
-                  );
-                  const signer2 = etherProvider.getSigner();
-                  //const accountAddress = await signerNew.getAddress();
-                  signature = await signer2.provider.send("eth_signTypedData_v4", [
-                    userAddress,
-                    dataToSign,
-                  ]);
-            }
           
+
 
 
             const serverPayload = JSON.stringify({
@@ -128,6 +120,32 @@ const metaTx = () => {
 };
 
 
+async function requestUserSignature(provider: ethers.providers.Web3Provider, dataToSign: string, walletType: string) {
+    let signature;
+
+    console.log(`Requesting user signature with walletType: ${walletType}`);
+    console.log("Data to sign:", dataToSign);
+
+    if (walletType === "metamask") {
+        // Assuming provider is passed as an instance of ethers.providers.Web3Provider
+        const signer = provider.getSigner();
+        const account = await signer.getAddress();
+
+        try {
+            // MetaMask requires the domain and types separately from the message
+            signature = await provider.send('eth_signTypedData_v4', [
+                account, // Address obtained from the signer
+                JSON.parse(dataToSign) // Ensure dataToSign is correctly formatted per EIP-712
+            ]);
+            console.log("Signature received:", signature);
+        } catch (error) {
+            console.error("Error signing data:", error);
+        }
+    }
+    // Handle other wallet types similarly
+
+    return signature;
+}
 
 async function post(url: any, body: any) {
     return fetch(`${url}`, {

@@ -32,11 +32,49 @@ let tokenIdsSelected: AtlasToken[] = [];
 const getCoords = (x: number | string, y: number | string) => `${x},${y}`;
 
 async function loadTiles(setAtlasLoaded: (loaded: boolean) => void) {
-  const resp = await fetch("https://squares.town/api/graphSquares");
-  const json = await resp.json();
-  atlas = json.data as Record<string, AtlasTile>;
-  console.log(atlas);
-  setAtlasLoaded(true);
+  const jsonUrl = 'https://pub-7259634f7e994e1e8a46cf6cfaea5881.r2.dev/transformedTiles.json';
+  const etagKey = 'squaresDataETag';
+  const cachedDataKey = 'cachedSquaresData';
+
+  const etag = localStorage.getItem(etagKey) || '';
+
+  try {
+    console.log('Making HEAD request to check ETag...');
+    const headResponse = await fetch(jsonUrl, { method: 'HEAD' });
+    const newEtag = headResponse.headers.get('ETag');
+
+    if (newEtag !== etag && newEtag) {
+      console.log('ETag has changed, fetching new data...');
+      localStorage.setItem(etagKey, newEtag);
+
+      const dataResponse = await fetch(jsonUrl);
+      const data = await dataResponse.json();
+
+      localStorage.setItem(cachedDataKey, JSON.stringify(data));
+      atlas = data.data as Record<string, AtlasTile>;
+      console.log(atlas);
+      setAtlasLoaded(true);
+    } else {
+      console.log('ETag is the same, using cached data...');
+      const cachedData = localStorage.getItem(cachedDataKey);
+      if (cachedData) {
+        const data = JSON.parse(cachedData);
+        atlas = data.data as Record<string, AtlasTile>;
+        console.log(atlas);
+        setAtlasLoaded(true);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching squares data:', error);
+
+    const cachedData = localStorage.getItem(cachedDataKey);
+    if (cachedData) {
+      const data = JSON.parse(cachedData);
+      atlas = data.data as Record<string, AtlasTile>;
+      console.log(atlas);
+      setAtlasLoaded(true);
+    }
+  }
 }
 
 function isSelected(x: number, y: number) {

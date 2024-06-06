@@ -6,9 +6,9 @@ import axios from 'axios';
 import { EditorSquare } from '../../types/allTypes';
 import useTxChecker from '../../hooks/contracts/useTxChecker';
 import InformationModal from '../../components/Modals/InformationModal';
-import useTx from '../../hooks/contracts/useTx';
 import ShareModal from '../../components/Modals/ShareModal';
 import { useTranslation } from 'react-i18next';
+import useSendTx from '../../hooks/contracts/useSendTx';
 
 interface EditorPictureProps {
   setPreviewUrl: (url: string) => void;
@@ -28,7 +28,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
   const [url, setUrl] = useState('');
   const [uploadedFileName, setUploadedFileName] = useState('');
 
-  const txHook = useTx();
+  const sendTx = useSendTx();
   const txChecker = useTxChecker();
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [infoModalHeader, setInfoModalHeader] = useState("");
@@ -201,7 +201,7 @@ const EditorPicture: React.FC<EditorPictureProps> = ({ setPreviewUrl, width, hei
         funcName = "setMultipleSquareImages";
       }
 
-      const tx = await txHook('square', funcName, params);
+      const tx = await sendTx('square', funcName, params);
       console.log("Tx is:", tx);
 
       setInfoModalHeader(t("processingContentUpload"));
