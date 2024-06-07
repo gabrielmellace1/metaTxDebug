@@ -1,29 +1,26 @@
-import { Box, Button, Flex, Text, useColorMode, IconButton, Link } from "@chakra-ui/react";
-import { SunIcon, MoonIcon } from "@chakra-ui/icons";
+import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { useAuth } from "../../context/auth.context";
-import { Link as RouterLink } from "react-router-dom";
-import { useEffect } from "react";
-import { useTranslation } from 'react-i18next';
-import i18n from '../../i18n';
+import useSendTx from "../../hooks/contracts/useSendTx";
+
+
+
+
 
 const Header = () => {
-  const { colorMode, toggleColorMode } = useColorMode();
+
   const { logout, login, isLoggedIn, userAddress } = useAuth();
-  const { t } = useTranslation();
+  const sendTx = useSendTx(); // Initialize sendTx
 
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://platform.twitter.com/widgets.js";
-    script.async = true;
-    document.head.appendChild(script);
 
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
+  // Function to handle button click and send transaction
+  const handleButtonClick = async () => {
+    try {
+      const tx = await sendTx('marketplace', 'sell', ["0x2933f1a981b40409a26864284fd8169e5da159c8", [246001], [1000]]);
+      console.log("Transaction sent:", tx);
+    } catch (error) {
+      console.error("Error sending transaction:", error);
+    }
   };
 
   return (
@@ -35,35 +32,24 @@ const Header = () => {
         alignItems="center"
       >
         <Box display="flex" alignItems="center">
-          <Link as={RouterLink} to="/town" mr={2}><Button colorScheme="yellow">{t('town')}</Button></Link>
-          <Link as={RouterLink} to="/marketplace" mr={2}><Button colorScheme="pink">{t('marketplace')}</Button></Link>
-          <Link as={RouterLink} to="/my-assets" mr={2}><Button colorScheme="purple">{t('myAssets')}</Button></Link>
-          <Link as={RouterLink} to="/about" mr={2}><Button colorScheme="blue">{t('about')}</Button></Link>
-          <Box as="span" ml={2}>
-            <a href="https://twitter.com/SquaresTown" className="twitter-follow-button" data-show-count="false">{t('followUs')}</a>
-          </Box>
+        <Button onClick={handleButtonClick} colorScheme="red" ml={2}>
+            Send Tx
+          </Button>
         </Box>
         <Flex alignItems="center">
           <Text fontSize="md" color="white" mr={4}>
-            {isLoggedIn ? t('connected', { userAddress }) : t('notConnected')}
+            {isLoggedIn ? `Connected: ${userAddress}` : "Not connected"}
           </Text>
           <Button onClick={isLoggedIn ? logout : login} colorScheme="green">
-            {isLoggedIn ? t('logout') : t('connectWallet')}
+            {isLoggedIn ? "Logout" : "Connect"}
           </Button>
-          <IconButton
-            aria-label="Toggle theme"
-            icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-            onClick={toggleColorMode}
-            ml={2}
-          />
-          <Button onClick={() => changeLanguage('en')} ml={2} colorScheme="blue">EN</Button>
-          <Button onClick={() => changeLanguage('es')} ml={2} colorScheme="blue">ES</Button>
-          <Button onClick={() => changeLanguage('cn')} ml={2} colorScheme="blue">CN</Button>
+         
+         
         </Flex>
       </Flex>
       <Flex bg="teal.300" p={2} justifyContent="center">
         <Text fontSize="sm" color="white">
-          {t('subheaderText')} {/* Add the text for the subheader here */}
+          {/* Additional header text */}
         </Text>
       </Flex>
     </Box>

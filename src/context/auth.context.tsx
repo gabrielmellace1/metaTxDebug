@@ -4,8 +4,9 @@ import { CHAIN_NAMESPACES, SafeEventEmitterProvider } from "@web3auth/base";
 import { ethers } from "ethers";
 import { MetamaskAdapter } from "@web3auth/metamask-adapter";
 import { OPENLOGIN_NETWORK } from "@web3auth/openlogin-adapter";
-import { twitterPixelEvent } from "../helpers/funcHelper";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
+import { getWalletConnectV2Settings, WalletConnectV2Adapter } from "@web3auth/wallet-connect-v2-adapter";
+import { WalletConnectModal } from "@walletconnect/modal";
 
 interface AuthContextInterface {
   login: () => Promise<void>;
@@ -18,6 +19,7 @@ interface AuthContextInterface {
   signer?: ethers.Signer | null;
   getUpdatedSigner: () => Promise<ethers.Signer | null>;
   isMetaMask: boolean;
+  web3auth: any
 }
 
 const AuthContext = createContext<AuthContextInterface>({
@@ -30,7 +32,8 @@ const AuthContext = createContext<AuthContextInterface>({
   provider: null,
   signer: null,
   getUpdatedSigner: async () => null,
-  isMetaMask: false
+  isMetaMask: false,
+  web3auth: null
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -41,7 +44,7 @@ const blastRpcProvider = {
   name: "Blast",
   chainNamespace: CHAIN_NAMESPACES.EIP155,
   chainId: "0x13E31",
-  rpcTarget: "https://blast-mainnet.infura.io/v3/cefd725b260046f1823aa5ba0c0537e6",
+  rpcTarget: "https://rpc.blast.io",
   displayName: "Blast",
   blockExplorerUrl: "https://blastscan.io/",
   ticker: "ETH",
@@ -57,6 +60,13 @@ const metamaskAdapter = new MetamaskAdapter({
     chainId: "0x1",
     rpcTarget: "https://rpc.ankr.com/eth",
   },
+});
+
+const defaultWcSettings = await getWalletConnectV2Settings("eip155", ["1"], "04309ed1007e77d1f119b85205bb779d");
+const walletConnectModal = new WalletConnectModal({ projectId: "04309ed1007e77d1f119b85205bb779d" });
+const walletConnectV2Adapter = new WalletConnectV2Adapter({
+  adapterSettings: { qrcodeModal: walletConnectModal, ...defaultWcSettings.adapterSettings },
+  loginSettings: { ...defaultWcSettings.loginSettings },
 });
 
 const ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
@@ -75,6 +85,7 @@ const web3AuthModalOptions: Web3AuthOptions = {
 const _web3auth = new Web3Auth(web3AuthModalOptions);
 
 _web3auth.configureAdapter(metamaskAdapter);
+// _web3auth.configureAdapter(walletConnectV2Adapter);
 
 const web3AuthModalParameters = {
   modalConfig: {
@@ -99,6 +110,7 @@ const web3AuthModalParameters = {
 };
 
 export const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
+
   const [isMetaMask, setIsMetamask] = useState<boolean>(false);
   const [userAddress, setUserAddress] = useState<string | undefined>(undefined);
   const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(null);
@@ -107,6 +119,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [web3auth,setWeb3auth] = useState(_web3auth);
 
   const initWeb3Auth = async () => {
     try {
@@ -119,6 +132,9 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 
   // Set signer and user address
   useEffect(() => {
+
+     
+
     const setSignerAndAddress = async () => {
       if (provider) {
         const etherProvider = new ethers.providers.Web3Provider(provider as any);
@@ -135,18 +151,13 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     }
   }, [provider]);
 
-  // Detect MetaMask
-  useEffect(() => {
-    if (window.ethereum?.isMetaMask) {
-      twitterPixelEvent("tw-om2cf-om2vj"); // Trigger Twitter event if MetaMask is detected
-    }
-  }, []);
+
 
   const getUpdatedSigner = async (): Promise<ethers.Signer | null> => {
-    if (provider) {
-      const etherProvider = new ethers.providers.Web3Provider(provider as any);
-      return etherProvider.getSigner();
-    }
+    // if (provider) {
+    //   const etherProvider = new ethers.providers.Web3Provider(provider as any);
+    //   return etherProvider.getSigner();
+    // }
     return null;
   };
 
@@ -159,10 +170,10 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       const web3authProvider = await _web3auth.connect();
       if (!web3authProvider) return;
 
-      setProvider(web3authProvider as any);
+      setProvider(web3authProvider as SafeEventEmitterProvider);
       const user = await _web3auth.getUserInfo();
       setUser(user);
-      twitterPixelEvent("tw-om2cf-om2uj");
+     
 
       setIsMetamask(_web3auth.connectedAdapterName === "metamask");
     } catch (error) {
@@ -180,7 +191,6 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     setIsLoggedIn(false);
     setIsMetamask(false);
     setSigner(null);
-    localStorage.removeItem("apiKeyDG");
   };
 
   return (
@@ -195,7 +205,8 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         provider,
         signer,
         getUpdatedSigner,
-        isMetaMask
+        isMetaMask,
+        web3auth
       }}
     >
       {children}

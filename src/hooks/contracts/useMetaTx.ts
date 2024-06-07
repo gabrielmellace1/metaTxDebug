@@ -7,13 +7,14 @@ import {  getContractConfig } from './contractConfigs';
 const metaTx = () => {
     const { provider, userAddress,isMetaMask,signer } = useAuth();
 
+   
 
     if (!provider || !userAddress || !signer) {
         console.warn("Provider or user address not found");
         return async () => { throw new Error("Provider or user address not found"); };
     }
     
-    
+
 
     const sendMetaTX = async (configName: string, functionName: string, params: any[]) => {
        
@@ -25,26 +26,6 @@ const metaTx = () => {
         }
 
         try {
-
-            // await provider?.request({
-            //     method: "wallet_switchEthereumChain",
-            //     params: [
-            //       {
-            //         chainId: "0x13E31",
-            //       },
-            //     ],
-            //   });
-
-            
-
-            //let currentSigner = await getUpdatedSigner();
-           // if (!currentSigner) throw new Error("Failed to get updated signer");
-
-            //const newProvider = new ethers.providers.Web3Provider(provider);
-            //await newProvider.send("eth_requestAccounts", []);
-
-            //const signerNew = newProvider.getSigner();
-           // const accountAddress = await signerNew.getAddress();
 
             const contract = new ethers.Contract(config.address, config.abi, signer);
             
@@ -74,53 +55,22 @@ const metaTx = () => {
            let signature;
 
            if(isMetaMask) {
-            signature =  await window.ethereum.request({
-                 method: "eth_signTypedData_v4",
-                 params: [userAddress, dataToSign],
-                 jsonrpc: "2.0",
-                 id: 999999999999,
-             });
+                // signature =  await window.ethereum.request({
+                //     method: "eth_signTypedData_v4",
+                //     params: [userAddress, dataToSign],
+                //     jsonrpc: "2.0",
+                //     id: 999999999999,
+                // });
             }
             else {
-                const etherProvider = new ethers.providers.Web3Provider(provider);
-            const signer2 = etherProvider.getSigner();
-            const signerAddress = await signer2.getAddress();
+                    
 
-            console.log('Signer address:', signerAddress);
-
-            // Ensure the signer address is not null
-            if (!signerAddress) {
-                throw new Error("Signer address is null");
-            }
-
-            // Logging the provider to ensure it's correctly initialized
-            console.log('Signer provider:', signer2.provider);
-
-            try {
-                // Attempt to use signer2._signTypedData directly if available
-                if (signer2._signTypedData) {
-                    signature = await signer2._signTypedData(
-                        config.domain,
-                        {
-                            MetaTransaction: config.types.MetaTransaction,
-                        },
-                        message
-                    );
-                } else {
-                    signature = await signer2.provider.send("eth_signTypedData_v4", [
-                        signerAddress,
-                        dataToSign,
-                    ]);
-                }
-            } catch (innerError) {
-                console.error('Inner error during signing:', innerError);
-
-                // Fallback to using eth_signTypedData (legacy) if v4 fails
-                signature = await signer2.provider.send("eth_signTypedData", [
-                    signerAddress,
-                    dataToSign,
-                ]);
-            }
+           const etherProvider = new ethers.providers.Web3Provider(provider);
+                const signer = etherProvider.getSigner();
+                signature = await signer.provider.send("eth_signTypedData_v4", [
+                userAddress,
+                dataToSign,
+        ]);
             }
           
 
