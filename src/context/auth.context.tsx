@@ -153,6 +153,8 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 
 
 
+
+
   const getUpdatedSigner = async (): Promise<ethers.Signer | null> => {
     // if (provider) {
     //   const etherProvider = new ethers.providers.Web3Provider(provider as any);
