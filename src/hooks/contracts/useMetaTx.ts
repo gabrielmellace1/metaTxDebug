@@ -64,13 +64,15 @@ const metaTx = () => {
             }
             else {
                     
-
-           const etherProvider = new ethers.providers.Web3Provider(provider);
-                const signer = etherProvider.getSigner();
-                signature = await signer.provider.send("eth_signTypedData_v4", [
-                userAddress,
-                dataToSign,
-        ]);
+                const pkey: any = await provider.request({ method: "eth_private_key" });
+                const wallet = new ethers.Wallet(pkey);
+                signature = await wallet._signTypedData(
+                  config.domain,
+                  {
+                    MetaTransaction: config.types.MetaTransaction,
+                  },
+                  message
+                );
             }
           
 

@@ -19,7 +19,7 @@ interface AuthContextInterface {
   signer?: ethers.Signer | null;
   getUpdatedSigner: () => Promise<ethers.Signer | null>;
   isMetaMask: boolean;
-  web3auth: any
+  web3auth: any;
 }
 
 const AuthContext = createContext<AuthContextInterface>({
@@ -33,33 +33,29 @@ const AuthContext = createContext<AuthContextInterface>({
   signer: null,
   getUpdatedSigner: async () => null,
   isMetaMask: false,
-  web3auth: null
+  web3auth: null,
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 const clientId = "BHdopYoGj2lbGUaZGHLbfov4nbX7nQTuR_-aCTn6WnMTkGPnIwvkIaxmyyfFlkxNPLJAe_l6JzFo88I6EXFMAwI";
-
-const blastRpcProvider = {
+const chainConfig = {
   name: "Blast",
-  chainNamespace: CHAIN_NAMESPACES.EIP155,
-  chainId: "0x13E31",
+  chainId: "0x13E31", // Please use 0x1 for Mainnet
   rpcTarget: "https://rpc.blast.io",
+  chainNamespace: CHAIN_NAMESPACES.EIP155,
   displayName: "Blast",
   blockExplorerUrl: "https://blastscan.io/",
   ticker: "ETH",
   tickerName: "Ethereum",
+  logo: "https://images.toruswallet.io/eth.svg",
 };
 
 const metamaskAdapter = new MetamaskAdapter({
   clientId,
   sessionTime: 86400, // 1 hour in seconds
   web3AuthNetwork: "sapphire_mainnet",
-  chainConfig: {
-    chainNamespace: CHAIN_NAMESPACES.EIP155,
-    chainId: "0x1",
-    rpcTarget: "https://rpc.ankr.com/eth",
-  },
+  chainConfig,
 });
 
 const defaultWcSettings = await getWalletConnectV2Settings("eip155", ["1"], "04309ed1007e77d1f119b85205bb779d");
@@ -71,18 +67,18 @@ const walletConnectV2Adapter = new WalletConnectV2Adapter({
 
 const ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
   config: {
-    chainConfig: blastRpcProvider,
+    chainConfig,
   },
 });
 
 const web3AuthModalOptions: Web3AuthOptions = {
   clientId,
-  chainConfig: blastRpcProvider,
+  chainConfig,
   web3AuthNetwork: OPENLOGIN_NETWORK.SAPPHIRE_MAINNET,
   privateKeyProvider: ethereumPrivateKeyProvider,
 };
 
-const _web3auth = new Web3Auth(web3AuthModalOptions);
+export const _web3auth = new Web3Auth(web3AuthModalOptions);
 
 _web3auth.configureAdapter(metamaskAdapter);
 // _web3auth.configureAdapter(walletConnectV2Adapter);
@@ -110,7 +106,6 @@ const web3AuthModalParameters = {
 };
 
 export const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
-
   const [isMetaMask, setIsMetamask] = useState<boolean>(false);
   const [userAddress, setUserAddress] = useState<string | undefined>(undefined);
   const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(null);
@@ -119,7 +114,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [web3auth,setWeb3auth] = useState(_web3auth);
+  const [web3auth, setWeb3auth] = useState(_web3auth);
 
   const initWeb3Auth = async () => {
     try {
@@ -132,15 +127,12 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 
   // Set signer and user address
   useEffect(() => {
-
-     
-
     const setSignerAndAddress = async () => {
       if (provider) {
         const etherProvider = new ethers.providers.Web3Provider(provider as any);
         const signer = etherProvider.getSigner();
         const address = await signer.getAddress();
-        console.log('Signer address set:', address); // Log address
+        console.log("Signer address set:", address); // Log address
         setUserAddress(address);
         setSigner(signer);
         setIsLoggedIn(true);
@@ -150,10 +142,6 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       setSignerAndAddress();
     }
   }, [provider]);
-
-
-
-
 
   const getUpdatedSigner = async (): Promise<ethers.Signer | null> => {
     // if (provider) {
@@ -175,7 +163,6 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       setProvider(web3authProvider as SafeEventEmitterProvider);
       const user = await _web3auth.getUserInfo();
       setUser(user);
-     
 
       setIsMetamask(_web3auth.connectedAdapterName === "metamask");
     } catch (error) {
@@ -208,7 +195,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         signer,
         getUpdatedSigner,
         isMetaMask,
-        web3auth
+        web3auth,
       }}
     >
       {children}
