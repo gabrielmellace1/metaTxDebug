@@ -16,6 +16,7 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@walletconnect/modal": "^2.6.2",
+    "@walletconnect/sign-client": "^2.13.1",
     "@web3auth/base": "^8.6.2",
     "@web3auth/ethereum-provider": "^8.6.2",
     "@web3auth/metamask-adapter": "^8.6.2",
@@ -44,6 +45,7 @@
     "react-virtualized-auto-sizer": "^1.0.24",
     "touch-pinch": "^1.0.1",
     "touch-position": "^2.0.0",
+    "viem": "^2.13.7",
     "web3": "^4.9.0"
   },
   "devDependencies": {

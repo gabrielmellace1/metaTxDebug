@@ -5,7 +5,7 @@ import {  getContractConfig } from './contractConfigs';
 
 
 const metaTx = () => {
-    const { provider, userAddress,isMetaMask,signer } = useAuth();
+    const { provider, userAddress, isSocial, signer } = useAuth();
 
    
 
@@ -54,26 +54,22 @@ const metaTx = () => {
 
            let signature;
 
-           if(isMetaMask) {
-                // signature =  await window.ethereum.request({
-                //     method: "eth_signTypedData_v4",
-                //     params: [userAddress, dataToSign],
-                //     jsonrpc: "2.0",
-                //     id: 999999999999,
-                // });
-            }
-            else {
-                    
-                const pkey: any = await provider.request({ method: "eth_private_key" });
-                const wallet = new ethers.Wallet(pkey);
-                signature = await wallet._signTypedData(
-                  config.domain,
-                  {
-                    MetaTransaction: config.types.MetaTransaction,
-                  },
-                  message
-                );
-            }
+           if (!isSocial) {
+             signature = await provider.request({
+               method: "eth_signTypedData_v4",
+               params: [userAddress, dataToSign],
+             });
+           } else {
+             const pkey: any = await provider.request({ method: "eth_private_key" });
+             const wallet = new ethers.Wallet(pkey);
+             signature = await wallet._signTypedData(
+               config.domain,
+               {
+                 MetaTransaction: config.types.MetaTransaction,
+               },
+               message
+             );
+           }
           
 
 

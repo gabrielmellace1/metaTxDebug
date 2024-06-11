@@ -20,6 +20,7 @@ interface AuthContextInterface {
   getUpdatedSigner: () => Promise<ethers.Signer | null>;
   isMetaMask: boolean;
   web3auth: any;
+  isSocial: boolean;
 }
 
 const AuthContext = createContext<AuthContextInterface>({
@@ -33,6 +34,7 @@ const AuthContext = createContext<AuthContextInterface>({
   signer: null,
   getUpdatedSigner: async () => null,
   isMetaMask: false,
+  isSocial: false,
   web3auth: null,
 });
 
@@ -58,11 +60,20 @@ const metamaskAdapter = new MetamaskAdapter({
   chainConfig,
 });
 
-const defaultWcSettings = await getWalletConnectV2Settings("eip155", ["1"], "04309ed1007e77d1f119b85205bb779d");
-const walletConnectModal = new WalletConnectModal({ projectId: "04309ed1007e77d1f119b85205bb779d" });
+const defaultWcSettings = await getWalletConnectV2Settings("eip155", ["81457"], "04309ed1007e77d1f119b85205bb779d");
 const walletConnectV2Adapter = new WalletConnectV2Adapter({
-  adapterSettings: { qrcodeModal: walletConnectModal, ...defaultWcSettings.adapterSettings },
-  loginSettings: { ...defaultWcSettings.loginSettings },
+  adapterSettings: {
+    ...defaultWcSettings.adapterSettings,
+  },
+  loginSettings: {
+    optionalNamespaces: {
+      eip155: {
+        methods: ["eth_sendTransaction", "eth_sign", "personal_sign", "eth_signTypedData", "eth_signTypedData_v4"],
+        chains: ["eip155:529495"],
+        events: ["chainChanged", "accountsChanged"],
+      },
+    },
+  },
 });
 
 const ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
@@ -81,7 +92,7 @@ const web3AuthModalOptions: Web3AuthOptions = {
 export const _web3auth = new Web3Auth(web3AuthModalOptions);
 
 _web3auth.configureAdapter(metamaskAdapter);
-// _web3auth.configureAdapter(walletConnectV2Adapter);
+_web3auth.configureAdapter(walletConnectV2Adapter);
 
 const web3AuthModalParameters = {
   modalConfig: {
@@ -115,6 +126,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [web3auth, setWeb3auth] = useState(_web3auth);
+  const [isSocial, setIsSocial] = useState(false);
 
   const initWeb3Auth = async () => {
     try {
@@ -165,6 +177,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       setUser(user);
 
       setIsMetamask(_web3auth.connectedAdapterName === "metamask");
+      setIsSocial(_web3auth.cachedAdapter === "openlogin");
     } catch (error) {
       console.log(error);
     }
@@ -173,6 +186,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   // Logout from Web3Auth
   const logout = async () => {
     await _web3auth.logout();
+    setIsSocial(false);
     setProvider(null);
     setUser(null);
     setUserAddress(undefined);
@@ -188,6 +202,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         login,
         logout,
         user,
+        isSocial,
         userAddress,
         isLoggedIn,
         signature,
